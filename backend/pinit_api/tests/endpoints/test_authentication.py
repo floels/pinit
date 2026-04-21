@@ -39,6 +39,26 @@ class AuthenticationTests(TestCase):
         tolerance_seconds = 60
         self.assertLess(delta_actual_predicted_expiration_seconds, tolerance_seconds)
 
+    def check_response_wrong_email(self, response=None):
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response_data = response.json()
+
+        self.assertEqual(
+            response_data["errors"],
+            [{"code": ERROR_CODE_INVALID_EMAIL}],
+        )
+
+    def check_response_wrong_password(self, response=None):
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response_data = response.json()
+
+        self.assertEqual(
+            response_data["errors"],
+            [{"code": ERROR_CODE_INVALID_PASSWORD}],
+        )
+
 
 class ObtainTokenTests(AuthenticationTests):
     def test_obtain_token_happy_path(self):
@@ -77,16 +97,6 @@ class ObtainTokenTests(AuthenticationTests):
 
         self.check_response_wrong_email(response=response)
 
-    def check_response_wrong_email(self, response=None):
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        response_data = response.json()
-
-        self.assertEqual(
-            response_data["errors"],
-            [{"code": ERROR_CODE_INVALID_EMAIL}],
-        )
-
     def test_obtain_token_wrong_password(self):
         request_payload = {
             "email": self.user_email,
@@ -96,16 +106,6 @@ class ObtainTokenTests(AuthenticationTests):
         response = self.post(request_payload=request_payload)
 
         self.check_response_wrong_password(response=response)
-
-    def check_response_wrong_password(self, response=None):
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-        response_data = response.json()
-
-        self.assertEqual(
-            response_data["errors"],
-            [{"code": ERROR_CODE_INVALID_PASSWORD}],
-        )
 
 
 class ObtainDemoTokenTests(AuthenticationTests):

@@ -81,10 +81,8 @@ const SignupFormContainer = ({
 
     setIsLoading(true);
 
-    let response;
-
     try {
-      response = await fetchSignup();
+      await fetchSignup();
     } catch (error) {
       const errorCode = (error as Error).message;
       updateFormErrorsFromErrorCode(errorCode);

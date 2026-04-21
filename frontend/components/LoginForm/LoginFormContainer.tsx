@@ -72,10 +72,8 @@ const LoginFormContainer = ({
 
     setIsLoading(true);
 
-    let response;
-
     try {
-      response = await fetchTokensAndThrow({ isDemo });
+      await fetchTokensAndThrow({ isDemo });
     } catch (error) {
       updateFormErrorsFromFetchError({ error: error as Error });
       return;
