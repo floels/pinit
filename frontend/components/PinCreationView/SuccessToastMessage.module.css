@@ -1,0 +1,13 @@
+.successToastMessageContainer {
+  display: flex;
+  align-items: center;
+}
+
+.successToastMessageLink {
+  margin-left: 20px;
+  color: var(--color-text-default);
+  text-decoration: none;
+  background-color: var(--color-background-secondary);
+  padding: 12px;
+  border-radius: 24px;
+}

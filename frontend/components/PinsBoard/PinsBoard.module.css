@@ -1,0 +1,27 @@
+.container {
+  width: 100%;
+}
+
+.loadingIconContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  margin-bottom: 48px;
+}
+
+.loadingSpinner {
+  color: var(--color-loading-spinner);
+}
+
+.errorMessage {
+  color: var(--color-text-warning);
+  font-size: var(--font-size-200);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.errorMessageIcon {
+  margin-right: 8px;
+}

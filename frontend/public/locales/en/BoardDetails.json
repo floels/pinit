@@ -1,0 +1,6 @@
+{
+  "ERROR_BOARD_NOT_FOUND": "We couldn't find the board you are looking for.",
+  "ERROR_FETCH_BOARD_DETAILS": "We couldn't retrieve the details of this board.",
+  "AUTHOR_PROFILE_PICTURE_ALT": "Profile picture of",
+  "PINS": "Pins"
+}

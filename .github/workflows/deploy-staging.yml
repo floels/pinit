@@ -1,0 +1,93 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -f backend/Dockerfile.staging -t pinit-api:${{ github.sha }} ./backend
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Clear existing images in ECR repository
+        run: |
+          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          REPOSITORY_NAME=pinit-api
+          aws ecr list-images --repository-name pinit-api --query 'imageIds[*]' --output json | jq -r '.[] | [.imageDigest] | @tsv' | while read IMAGE_DIGEST; do
+            aws ecr batch-delete-image --repository-name pinit-api --image-ids imageDigest=$IMAGE_DIGEST
+          done
+        env:
+          AWS_DEFAULT_REGION: eu-north-1
+
+      - name: Tag and push Docker image to Amazon ECR
+        run: |
+          COMMIT_SHA=${{ github.sha }}
+          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/pinit-api:$COMMIT_SHA
+          docker tag pinit-api:${COMMIT_SHA} $IMAGE_URI
+          docker push $IMAGE_URI
+
+      - name: Run migrations
+        run: |
+          docker run \
+          --env DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY \
+          --env POSTGRES_USER=$POSTGRES_USER \
+          --env POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+          --env POSTGRES_HOST=pinit-staging.c3eo8qy8w69x.eu-north-1.rds.amazonaws.com \
+          --env POSTGRES_PORT=5432 \
+          --env POSTGRES_DB=pinit_staging \
+          --env S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID=${{ secrets.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID }} \
+          --env S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY=${{ secrets.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY }} \
+          pinit-api:${{ github.sha }} python manage.py migrate
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+
+      - name: Generate Dockerrun.aws.json
+        run: |
+          COMMIT_SHA=${{ github.sha }}
+          IMAGE_REPO_NAME=pinit-api
+          AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/pinit-api:$COMMIT_SHA
+          echo '{
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "'$IMAGE_URI'",
+              "Update": "true"
+            },
+            "Ports": [
+              {
+                "ContainerPort": "80"
+              }
+            ]
+          }' > Dockerrun.aws.json
+
+      - name: Deploy to Elastic Beanstalk environment
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+          application_name: pinit-api
+          environment_name: pinit-api-staging
+          region: eu-north-1
+          version_label: ${{ github.sha }}
+          deployment_package: Dockerrun.aws.json

@@ -1,0 +1,54 @@
+.container {
+  min-width: 250px;
+  position: absolute;
+  top: 60px;
+  right: 2px;
+  border-radius: var(--border-radius-container);
+  box-shadow: var(--box-shadow-elevation-floating);
+  padding: 8px;
+  box-sizing: border-box;
+  background-color: var(--color-white);
+  z-index: 10; /* so it appears above page content */
+}
+
+.logoutButton {
+  padding: 8px;
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.logoutButton:hover {
+  background-color: var(--color-background-secondary);
+}
+
+.otherAccountsContainer {
+  margin-top: 16px;
+}
+
+.moreOptionsContainer {
+  margin-top: 16px;
+}
+
+.moreOptionsLabel {
+  padding: 8px;
+  font-size: var(--font-size-100);
+}
+
+.spinnerContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  color: var(--color-text-subtle);
+}
+
+.errorContainer {
+  padding: 8px;
+  font-size: var(--font-size-200);
+}
+
+.errorIcon {
+  margin-right: 8px;
+  color: var(--color-text-warning);
+}

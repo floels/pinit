@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.backgroundPicture {
+  object-fit: cover;
+  border-radius: 32px;
+}
+
+.profilePicture {
+  object-fit: cover;
+  border-radius: 60px;
+}
+
+.profilePicture.profilePictureWithBackgroundPicture {
+  margin-top: -60px;
+  border: 2px solid white;
+}
+
+.initialContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  background-color: var(--color-background-secondary);
+  font-size: var(--font-size-600);
+}

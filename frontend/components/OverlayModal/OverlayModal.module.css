@@ -1,0 +1,48 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  --border-radius-overlay-modal: 32px;
+}
+
+.modal {
+  width: min(
+    90%,
+    500px
+  ); /* we cap at 90% of the parent's width, to have a small margin left and right on small-width viewports */
+  position: relative;
+  background-color: var(--color-background-base);
+  border-radius: var(--border-radius-overlay-modal);
+}
+
+.closeButtonContainer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 16px 16px 0 16px;
+}
+
+.closeButton {
+  cursor: pointer;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  height: 40px;
+  width: 40px;
+  background-color: transparent;
+}
+
+.closeButton:hover {
+  background-color: var(--color-background-secondary);
+}

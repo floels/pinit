@@ -1,0 +1,206 @@
+.container {
+  height: 100%;
+  position: relative;
+}
+
+.slider {
+  height: calc(100vh - var(--header-height) - 60px);
+  position: relative;
+}
+
+.headerAndStepper {
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+.headersContainer {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  font-size: 60px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.topicHeadersContainer {
+  margin-top: 10px;
+  height: 70px;
+}
+
+/* We have to set a higher fixed height depending on small-width viewports,
+because then the header text is displayed on two lines instead of one. */
+
+@media (max-width: 640px) {
+  .topicHeadersContainer {
+    height: 140px;
+  }
+}
+
+.headerFixedSentence {
+  text-align: center;
+  margin: 0;
+}
+
+.topicHeader {
+  text-align: center;
+  transition:
+    opacity 0.7s ease-in-out,
+    transform 0.7s ease-in-out;
+  position: absolute; /* all headers are stacked, and then we play on opacity */
+  width: 100%;
+  margin: 0;
+  /* By default, header is invisible and in bottom position: */
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.topicHeader.topicHeaderVisible {
+  opacity: 1;
+}
+
+.topicHeader.topicHeaderCenterPosition {
+  transform: none;
+}
+
+.topicHeader.topicHeaderFood {
+  color: rgb(194, 139, 0);
+}
+
+.topicHeader.topicHeaderHome {
+  color: rgb(97, 140, 123);
+}
+
+.topicHeader.topicHeaderOutfit {
+  color: rgb(0, 118, 211);
+}
+
+.topicHeader.topicHeaderGardening {
+  color: rgb(64, 122, 87);
+}
+
+.stepper {
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin-top: 40px;
+  margin-bottom: 0;
+}
+
+.stepperListItem {
+  list-style: none;
+}
+
+.stepperButton {
+  cursor: pointer;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  margin: 6px;
+  background: rgb(225, 225, 225);
+}
+
+.stepperButton.stepperButtonActive.stepperButtonFood {
+  background-color: rgb(194, 139, 0);
+}
+
+.stepperButton.stepperButtonActive.stepperButtonHome {
+  background-color: rgb(97, 140, 123);
+}
+
+.stepperButton.stepperButtonActive.stepperButtonOutfit {
+  background-color: rgb(0, 118, 211);
+}
+
+.stepperButton.stepperButtonActive.stepperButtonGardening {
+  background-color: rgb(64, 122, 87);
+}
+
+.footerCarretAndBlur {
+  height: 200px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  background: linear-gradient(
+    rgba(255, 255, 255, 0) 0%,
+    rgb(255, 255, 255) 70%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.carret {
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 4px; /* so that the icon appears really centered */
+  margin-bottom: 16px;
+  animation-name: bouncing-carret;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  cursor: pointer;
+  border: none;
+}
+
+@keyframes bouncing-carret {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.carret.carretFood {
+  background-color: rgb(194, 139, 0);
+}
+
+.carret.carretHome {
+  background-color: rgb(97, 140, 123);
+}
+
+.carret.carretOutfit {
+  background-color: rgb(0, 118, 211);
+}
+
+.carret.carretGardening {
+  background-color: rgb(64, 122, 87);
+}
+
+.carretIcon {
+  color: var(--color-white);
+}
+
+.footer {
+  height: 60px;
+  width: 100%;
+  padding: 0;
+  background: rgb(255, 253, 146);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+}
+
+.footerTextAndIcon {
+  display: flex;
+  justify-content: center;
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+}
+
+.footerIcon {
+  margin-left: 4px;
+}

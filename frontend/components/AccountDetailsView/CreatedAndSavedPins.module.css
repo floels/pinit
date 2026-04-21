@@ -1,0 +1,41 @@
+.container {
+  width: 100%;
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 60px;
+}
+
+.savedTabButtonContainer {
+  margin-left: 20px;
+}
+
+.tabButton {
+  background: none;
+  cursor: pointer;
+  border: none;
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.tabButton.tabButtonInactive:hover {
+  background-color: var(--color-background-secondary);
+}
+
+.tabUnderlineActive {
+  height: 3px;
+  background-color: var(--color-text-default);
+}
+
+.tabUnderlineInactive {
+  height: 3px;
+}

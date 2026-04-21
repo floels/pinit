@@ -1,0 +1,73 @@
+:root {
+  --color-red: #e60023;
+  --color-red-dark: #ad081b;
+  --color-red-fiery: rgb(195, 47, 0);
+  --color-pink: rgb(255, 226, 235);
+  --color-purple-dark: rgb(195, 25, 82);
+  --color-yellow: rgb(255, 253, 146);
+  --color-green-minty: rgb(218, 255, 246);
+  --color-teal: rgb(0, 107, 108);
+  --color-gray-100: #efefef;
+  --color-gray-200: #e2e2e2;
+  --color-gray-300: #a5a5a5;
+  --color-gray-400: #767676;
+  --color-gray-500: #111;
+  --color-white: #fff;
+
+  --color-background-base: var(--color-white);
+  --color-background-important: var(--color-red);
+  --color-background-secondary: #e9e9e9;
+  --color-background-selected: var(--color-gray-500);
+  --color-background-gray-transparent: rgba(0, 0, 0, 0.4);
+  --color-background-light-transparent-overlay: rgba(255, 255, 255, 0.8);
+
+  --color-border-error: #c00;
+
+  --color-text-default: var(--color-gray-500);
+  --color-text-inverse: var(--color-white);
+  --color-text-warning: #cc9900;
+  --color-text-subtle: #5f5f5f;
+  --color-text-error: #c00;
+
+  --color-loading-spinner: var(--color-gray-400);
+
+  --font-size-100: 12px;
+  --font-size-200: 14px;
+  --font-size-300: 16px;
+  --font-size-400: 20px;
+  --font-size-500: 28px;
+  --font-size-600: 36px;
+
+  --font-weight-semibold: 600;
+
+  --color-border-container: #cdcdcd;
+
+  --box-shadow-elevation-floating: 0px 0px 4px 1px rgba(0, 0, 0, 0.1);
+  --box-shadow-focused-input: 0 0 0 4px rgba(0, 132, 255, 0.5);
+
+  --border-radius-container: 16px;
+
+  --font-family-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+    Helvetica, "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ",
+    Meiryo, "ＭＳ Ｐゴシック", Arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol";
+
+  --header-height: 80px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-main);
+  color: var(--color-text-default);
+}
+
+main {
+  position: relative; /* because child <HeaderSearchBarFocusedOverlay />
+  will have 'position: absolute;' */
+}
+
+/* https://fkhadra.github.io/react-toastify/how-to-style#override-existing-css-classes */
+.Toastify__toast-body {
+  font-family: var(--font-family-main);
+}

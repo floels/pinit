@@ -1,0 +1,79 @@
+.container {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.content {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-decoration: none;
+  color: var(--color-text-default);
+  font-size: var(--font-size-400);
+  font-weight: var(--font-weight-semibold);
+}
+
+.imagesContainer {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+}
+
+.coverPicture {
+  object-fit: cover;
+  display: block;
+}
+
+.coverPicturePlaceholder {
+  background-color: var(--color-background-secondary);
+  width: 160px;
+  height: 160px;
+}
+
+.secondaryPicture {
+  object-fit: cover;
+  display: block;
+  border-left: 1px solid white;
+}
+
+.secondaryPicture.topSecondaryPicture {
+  border-bottom: 1px solid white;
+}
+
+.secondaryPicturePlaceholder {
+  background-color: var(--color-background-secondary);
+  width: 80px;
+  height: 80px;
+  border-left: 1px solid white;
+  box-sizing: border-box;
+}
+
+.secondaryPicturePlaceholder.topSecondaryPicturePlaceholder {
+  border-bottom: 1px solid white;
+}
+
+.title {
+  margin-top: 8px;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  padding-left: 6px;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.overlay:hover {
+  display: block;
+  background-color: var(--color-background-gray-transparent);
+}

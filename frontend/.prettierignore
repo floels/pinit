@@ -1,0 +1,8 @@
+.github
+.vscode
+coverage
+node_modules
+playwright-report
+
+build
+dist
