@@ -1,0 +1,15 @@
+{
+  "CREATE_PIN": "Create Pin",
+  "DROPZONE_INSTRUCTION": "Choose a file or drag and drop it here",
+  "DROPZONE_ACCEPTED_FILES": "Accepted file types: .jpeg, .png",
+  "ALT_IMAGE_PREVIEW": "Pin image preview",
+  "LABEL_TITLE": "Title",
+  "PLACEHOLDER_TITLE": "Add a title",
+  "PLACEHOLDER_DESCRIPTION": "Add a detailed description",
+  "LABEL_DESCRIPTION": "Description",
+  "PUBLISH": "Publish",
+  "PUBLISHING": "Publishing",
+  "ERROR_POSTING_PIN": "An error occurred while trying to publish your Pin. Please try again.",
+  "PIN_PUBLISHED": "Your Pin has been published!",
+  "VIEW": "View"
+}

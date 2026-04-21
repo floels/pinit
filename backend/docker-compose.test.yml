@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID: ""
+      S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY: ""
+
+volumes:
+  postgres_data:

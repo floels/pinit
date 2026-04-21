@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PinIt API documentation</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <!-- Container for Redoc -->
+    <div id="redoc-container"></div>
+    <!-- Redoc Standalone Script -->
+    <script src="https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js"></script>
+    <script>
+      // Initialize Redoc
+      Redoc.init(
+        "/static/openapi_doc.yml",
+        {},
+        document.getElementById("redoc-container")
+      );
+    </script>
+  </body>
+</html>

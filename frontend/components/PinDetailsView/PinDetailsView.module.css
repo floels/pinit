@@ -1,0 +1,84 @@
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.backButton {
+  cursor: pointer;
+  border: none;
+  position: absolute;
+  left: 20px;
+  width: 48px;
+  height: 48px;
+  background: none;
+  border-radius: 50%;
+}
+
+@media (max-width: 700px) {
+  .backButton {
+    display: none;
+  }
+}
+
+.backButton:hover {
+  background-color: var(--color-background-secondary);
+}
+
+.image {
+  width: 500px;
+}
+
+.pinViewContainer {
+  display: flex;
+  box-shadow: var(--box-shadow-elevation-floating);
+  border-radius: 32px;
+  overflow: hidden; /* so that the border-radius affects child elements */
+  margin: 0px 8px;
+}
+
+@media (max-width: 1200px) {
+  .pinViewContainer {
+    flex-direction: column;
+  }
+}
+
+.pinInformation {
+  width: 500px;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+.pinTitle {
+  font-size: var(--font-size-500);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.pinDescription {
+  padding: 8px 0;
+}
+
+.authorDetails {
+  display: flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.authorDetails:hover {
+  text-decoration: underline;
+}
+
+.authorProfilePicture {
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.authorName {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-200);
+}

@@ -1,0 +1,76 @@
+{
+  "Common": {
+    "EXPLORE_LINK": "Explore"
+  },
+  "LoginForm": {
+    "WELCOME_TO_PINIT": "Welcome to PinIt",
+    "MISSING_EMAIL": "You missed a spot! Don't forget to add your email.",
+    "INVALID_EMAIL_INPUT": "Hmm... that doesn't look like an email address.",
+    "INVALID_PASSWORD_INPUT": "The password you entered is incorrect.",
+    "INVALID_EMAIL_LOGIN": "The email you entered does not belong to any account.",
+    "INVALID_PASSWORD_LOGIN": "The password you entered is incorrect. Try again.",
+    "LOG_IN": "Log in",
+    "NO_ACCOUNT_YET_CTA": "Not on PinIt yet? Sign up",
+    "LOG_IN_AS_DEMO": "Log in as demo user",
+    "EMAIL": "Email",
+    "PASSWORD": "Password"
+  },
+  "SignupForm": {
+    "WELCOME_TO_PINIT": "Welcome to PinIt",
+    "FIND_NEW_IDEAS": "Find new ideas to try",
+    "EMAIL": "Email",
+    "PASSWORD": "Password",
+    "BIRTHDATE": "Birthdate",
+    "CREATE_PASSWORD": "Create a password",
+    "MISSING_EMAIL": "You missed a spot! Don't forget to add your email.",
+    "INVALID_EMAIL_INPUT": "Hmm... that doesn't look like an email address.",
+    "INVALID_PASSWORD_INPUT": "The password you entered is incorrect.",
+    "INVALID_BIRTHDATE_INPUT": "You missed a spot. Don\u2019t forget to add your birthdate.",
+    "INVALID_EMAIL_SIGNUP": "The email you entered is incorrect.",
+    "INVALID_PASSWORD_SIGNUP": "The password you entered is incorrect.",
+    "INVALID_BIRTHDATE_SIGNUP": "The birthdate you entered is incorrect.",
+    "EMAIL_ALREADY_SIGNED_UP": "An account already exists for this email address.",
+    "CONTINUE": "Continue",
+    "ALREADY_HAVE_ACCOUNT_CTA": "Already a member? Log in"
+  },
+  "PictureSlider": {
+    "GET_YOUR_NEXT": "Get your next",
+    "HEADER_FOOD": "weeknight dinner idea",
+    "HEADER_HOME": "home decor idea",
+    "HEADER_OUTFIT": "new look outfit",
+    "HEADER_GARDENING": "green thumb idea",
+    "HOW_IT_WORKS": "Here's how it works"
+  },
+  "SecondFold": {
+    "HEADER": "Search for an idea",
+    "PARAGRAPH": "What do you want to try next? Think of something you\u2019re into\u2014like \u201ceasy chicken dinner\u201d\u2014and see what you find.",
+    "EASY_CHICKEN_DINNER": "easy chicken dinner",
+    "SIGN_UP_TO_GET_IDEAS": "Sign up to get your ideas",
+    "CHICKEN_PLATE": "Chicken plate"
+  },
+  "ThirdFold": {
+    "HEADER": "Save ideas you like",
+    "PARAGRAPH": "Collect your favorites so you can get back to them later.",
+    "FUTURE_HOME_VIBES": "Fern future home vibes",
+    "SCANDINAVIAN_BEDROOM": "My Scandinavian bedroom",
+    "DECK_OF_MY_DREAMS": "The deck of my dreams",
+    "SERVE_DRINKS": "Serve my drinks in style",
+    "BATHROOM_UPGRADE": "Our bathroom upgrade"
+  },
+  "FourthFold": {
+    "HEADER": "See it, make it, try it, do it",
+    "PARAGRAPH": "The best part of PinIt is discovering new things and ideas from people around the world.",
+    "LIP_SHADE_PICTURE_ALT": "lip shade image",
+    "EYE_SHADE_PICTURE_ALT": "eye shade image",
+    "SECONDARY_PICTURE_TEXT_TITLE": "Scout the City",
+    "SECONDARY_PICTURE_TEXT_SUBTITLE": "56.7k followers",
+    "CREATOR_THUMBNAIL_PICTURE": "creator thumbnail picture"
+  },
+  "FifthFold": {
+    "PICTURE_FOOD_ALT": "food",
+    "SIGNUP_HEADER": "Sign up to get your ideas",
+    "TERMS_OF_SERVICE": "Terms of service",
+    "PRIVACY_POLICY": "Privacy policy",
+    "HELP": "Help"
+  }
+}

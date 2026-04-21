@@ -1,0 +1,92 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 10px 24px;
+}
+
+.form {
+  width: 268px;
+}
+
+.logo {
+  margin: 8px 0;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 22px;
+}
+
+.emailInputContainer,
+.passwordInputContainer {
+  margin-bottom: 8px;
+}
+
+.otherErrorMessage {
+  font-size: var(--font-size-100);
+  color: var(--color-text-error);
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.otherErrorText {
+  margin: 6px;
+}
+
+.submitButton {
+  cursor: pointer;
+  border: none;
+  margin-top: 16px;
+  border-radius: 24px;
+  background-color: var(--color-background-important);
+  height: 40px;
+  width: 100%;
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+}
+
+.submitButton:hover {
+  background-color: var(--color-red-dark);
+}
+
+.noAccountYet {
+  margin-top: 20px;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  font-weight: var(--font-weight-semibold);
+}
+
+.loginAsDemo {
+  margin-top: 10px;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+}
+
+.loginAsDemo:hover {
+  text-decoration: underline;
+}
+
+.loadingOverlay {
+  background-color: var(--color-background-light-transparent-overlay);
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  border-radius: var(--border-radius-overlay-modal);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loadingSpinner {
+  color: var(--color-loading-spinner);
+}

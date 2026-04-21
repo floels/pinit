@@ -1,0 +1,33 @@
+.picturesBackground {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden; /* needed because of the `transform: translateY(-...)` applied to children elements (see below) */
+}
+
+.picturesBackgroundSecondColumn {
+  transform: translateY(-160px);
+}
+
+.picturesBackgroundThirdColumn {
+  transform: translateY(-240px);
+}
+
+.picturesBackgroundFourthColumn {
+  transform: translateY(-40px);
+}
+
+.picturesBackgroundFifthColumn {
+  transform: translateY(-240px);
+}
+
+.picturesBackgroundSixthColumn {
+  transform: translateY(-80px);
+}
+
+.backgroundPicture {
+  display: block;
+  object-fit: cover;
+  border-radius: 16px;
+  margin: 16px 8px;
+}

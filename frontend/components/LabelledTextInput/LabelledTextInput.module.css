@@ -1,0 +1,61 @@
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.labelText {
+  margin-left: 8px;
+  margin-bottom: 4px;
+  font-size: var(--font-size-200);
+  cursor: pointer;
+}
+
+.inputContainer {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  border-radius: 16px;
+  border-color: var(--color-border-container);
+  border-style: solid;
+  border-width: 2px;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 8px 16px;
+  font-size: var(--font-size-300);
+  font-family: inherit; /* otherwise some browsers will use monospace for input type="date" */
+}
+
+.input:hover {
+  border-color: var(--color-gray-300);
+}
+
+.input::placeholder {
+  color: #b5b5b5;
+}
+
+.input.inputError {
+  border-color: var(--color-border-error);
+}
+
+.showPasswordIconContainer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.errorMessage {
+  font-size: var(--font-size-100);
+  color: var(--color-text-error);
+  display: flex;
+  align-items: center;
+}
+
+.errorText {
+  margin: 6px;
+}

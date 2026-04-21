@@ -1,0 +1,6 @@
+{
+  "ERROR_PIN_NOT_FOUND": "We couldn't find the pin you are looking for.",
+  "ERROR_FETCH_PIN_DETAILS": "We couldn't retrieve the details of this pin.",
+  "ALT_PIN_BY": "Pin by",
+  "ALT_PROFILE_PICTURE_OF": "Profile picture of"
+}

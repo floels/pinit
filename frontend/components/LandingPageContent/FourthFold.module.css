@@ -1,0 +1,64 @@
+.container {
+  height: calc(100vh - var(--header-height));
+  background-color: var(--color-pink);
+  display: flex;
+  justify-content: flex-end;
+  /* ^- so that the text on the right pushes the pictures out to the left of the screen on small-width viewports */
+  align-items: center;
+}
+
+.picturesArea {
+  flex-grow: 1;
+  position: relative; /* necessary to hold the <Image /> child element */
+  height: 100%; /* necessary for the <Image /> child element to have the right height */
+  min-width: 320px; /* if we don't have this minimum width, the div with class .picturesOverlay will spill over to the .textArea on the right on small-width screens */
+}
+
+.coverPicture {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.picturesOverlay {
+  position: absolute;
+  bottom: 96px;
+  left: 84px;
+  cursor: pointer;
+}
+
+.secondaryPicture {
+  border-radius: 18px;
+}
+
+.thumbnailPicture {
+  position: absolute;
+  left: -36px;
+  bottom: 4px;
+}
+
+.secondaryPictureText {
+  margin-left: 48px;
+  margin-top: 4px;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: var(--color-white);
+  font-size: var(--font-size-300);
+}
+
+.secondaryPictureTextTitle {
+  font-weight: var(--font-weight-semibold);
+}
+
+.textArea {
+  width: 50%;
+  min-width: 400px;
+  display: flex;
+  justify-content: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+}

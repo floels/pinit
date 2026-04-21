@@ -1,0 +1,576 @@
+openapi: 3.0.3
+info:
+  title: PinIt API
+  version: 1.0.0
+paths:
+  /api/accounts/{username}/:
+    get:
+      operationId: accounts/<username>/
+      description: Get the public details for account with username 'username'.
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+      tags:
+        - Accounts
+      security:
+        - null
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountWithPublicDetails'
+        '404':
+          description: No account found for this username
+  /api/accounts/me/:
+    get:
+      operationId: accounts/me/
+      description: Get the public details for the account owned by the authenticated
+        user.
+      tags:
+        - Accounts
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountWithPrivateDetails'
+        '401':
+          description: Failed authentication
+  /api/create-pin/:
+    post:
+      operationId: create-pin/
+      description: Create a new pin.
+      tags:
+        - Pins
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image_file:
+                  type: string
+                  format: uri
+                title:
+                  type: string
+                description:
+                  type: string
+              required:
+              - image_file
+      security:
+        - jwtAuth: []
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pin'
+        '401':
+          description: Failed authentication
+  /api/pin-suggestions/:
+    get:
+      operationId: pin-suggestions/
+      description: Get the list of pin suggestions for the authenticated user.
+      parameters:
+        - name: page
+          in: query
+          description: Page number. Default is 1.
+          schema:
+            type: integer
+      tags:
+        - Pins
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinWithAuthorDetailsPaginatedList'
+  /api/pins/{unique_id}/:
+    get:
+      operationId: pins/<unique_id>/
+      description: Get detailed information for pin with ID 'unique_id'
+      parameters:
+        - in: path
+          name: unique_id
+          schema:
+            type: string
+          description: ID of Pin
+          required: true
+      tags:
+        - Pins
+      security:
+        - null
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinWithFullDetails'
+          description: Success
+        '404':
+          description: No pin found for provided ID
+  /api/save-pin/:
+    post:
+      operationId: save-pin/
+      description: Save a pin in a board.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pin_id:
+                  type: string
+                  description: ID of Pin to save
+                  example: "369169980854002"
+                board_id:
+                  type: string
+                  description: ID of board in which to save Pin
+                  example: "441312392807868"
+              required:
+                - pin_id
+                - board_id
+      tags:
+        - Pins
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Pin had already been saved in this board. Same response body as 201 response (see below).
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pin_id:
+                    type: string
+                    description: ID of saved pin
+                    example: "369169980854002"
+                  board_id:
+                    type: string
+                    description: ID of board in which pin was saved
+                    example: "441312392807868"
+        '401':
+          description: Failed authentication
+        '403':
+          description: Authenticated user doesn't own board
+        '404':
+          description: No pin found for provided ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - pin_not_found
+                            - board_not_found
+                          description: |-
+                            Error code. One of:
+                            * `pin_not_found`: Pin was not found for this ID
+                            * `board_not_found`: board was not found for this ID
+  /api/search/:
+    get:
+      operationId: search/
+      description: Get pins corresponding to search term provided in query param.
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Search term
+          required: true
+        - name: page
+          in: query
+          description: Page number. Default is 1.
+          schema:
+            type: integer
+      tags:
+      - Search
+      security:
+      - null
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinWithAuthorDetailsPaginatedList'
+          description: Success
+        '400':
+          description: No search term provided
+  /api/search-suggestions/:
+    get:
+      operationId: search-suggestions/
+      description: Get the list of search term suggestions, given an incomplete search term.
+      parameters:
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Incomplete search term
+        required: true
+      tags:
+      - Search
+      security:
+      - null
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: string
+                      description: Search suggestion
+                    description: List of search suggestions
+                    example: ["man", "mana", "manage", "manager"]
+        '400':
+          description: No search term provided
+  /api/signup/:
+    post:
+      operationId: signup/
+      description: Create a new account.
+      tags:
+      - Sign-up and authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email
+                password:
+                  type: string
+                  description: Password
+                birthdate:
+                  type: string
+                  format: date
+                  description: Birth date
+              required:
+                - birthdate
+                - email
+                - password
+      security:
+      - null
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: Access token
+                    example: eyJhbGciO...QLvrbXC7wonzMg
+                  refresh_token:
+                    type: string
+                    description: Refresh token
+                    example: eyJhbGciO...pQiTWpYL8LS0H1
+                  access_token_expiration_utc:
+                    type: string
+                    description: Access token expiration date (ISO 8601 format, UTC)
+                    example: '2024-03-01T11:36:57+00:00'
+        '400':
+          description: Failed signup
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          enum:
+                            - invalid_email
+                            - invalid_password
+                            - invalid_birthdate
+                            - email_already_signed_up
+                          type: string
+                          description: |-
+                            Error code. One of:
+                            * `invalid_email`: invalid email
+                            * `invalid_password`: invalid password
+                            * `invalid_birthdate`: invalid birth date
+                            * `email_already_signed_up`: email is already signed up
+  /api/token/obtain/:
+    post:
+      operationId: token/obtain/
+      description: |-
+        Obtain a pair of access and refresh JW authentication tokens.
+      tags:
+      - Sign-up and authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  required: true
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: Access token
+                    example: eyJhbGciO...QLvrbXC7wonzMg
+                  refresh_token:
+                    type: string
+                    description: Refresh token
+                    example: eyJhbGciO...pQiTWpYL8LS0H1
+                  access_token_expiration_utc:
+                    type: string
+                    description: Access token expiration date (ISO 8601 format, UTC)
+                    example: '2024-03-01T11:36:57+00:00'
+        '401':
+          description: Failed authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          enum:
+                            - invalid_email
+                            - invalid_password
+                          type: string
+                          description: |-
+                            Error code. One of:
+                            * `invalid_email`: invalid email
+                            * `invalid_password`: invalid password
+  /api/token/refresh/:
+    post:
+      operationId: token/refresh/
+      description: Obtain a new access token, using a refresh token.
+      tags:
+        - Sign-up and authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+                  description: Refresh token
+              required:
+              - refresh_token
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: Refreshed access token
+                    example: eyJhbGciO...QLvrbXC7wonzMg
+                  access_token_expiration_utc:
+                    type: string
+                    description: Refreshed access token expiration date (ISO 8601 format, UTC)
+                    example: '2024-03-02T11:36:57+00:00'
+        '401':
+          description: Failed refresh
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          enum:
+                            - invalid_refresh_token
+                          type: string
+                          description: |-
+                            Error code: `invalid_refresh_token`
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Account username
+          example: "johndoe"
+        display_name:
+          type: string
+          description: Account display name
+          example: "John Doe"
+        initial:
+          type: string
+          description: Account initial
+          example: "J"
+        profile_picture_url:
+          type: string
+          format: uri
+          description: Account profile picture URL
+    Board:
+      type: object
+      properties:
+        unique_id:
+          type: string
+          description: Board unique ID
+          example: "441312392807868"
+        title:
+          description: Board title
+          type: string
+          example: "My food board"
+        first_image_urls:
+          description: List of first image URLs
+          type: array
+          items:
+            type: string
+            format: uri
+    AccountWithBoards:
+      allOf:
+        - $ref: '#/components/schemas/Account'
+        - type: object
+          properties:
+            boards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Board'
+              description: List of boards authored by the account
+    AccountWithPublicDetails:
+      allOf:
+        - $ref: '#/components/schemas/AccountWithBoards'
+        - type: object
+          properties:
+            initial:
+              type: string
+              max_length: 1
+              description: Account initial
+              example: "J"
+            background_picture_url:
+              type: string
+              format: uri
+              description: Account background picture URL
+            description:
+              type: string
+              description: Description of the account
+    AccountWithPrivateDetails:
+      allOf:
+        - $ref: '#/components/schemas/AccountWithPublicDetails'
+        - properties:
+            type:
+              type: string
+              enum:
+                - personal
+                - business
+              description: Account type
+              example: "personal"
+            owner_email:
+              type: string
+              format: email
+              description: Account owner email
+              example: "johndoe@example.com"
+    Pin:
+      type: object
+      properties:
+        unique_id:
+          type: string
+          description: Pin unique ID
+          example: "837672678962535495"
+        image_url:
+          type: string
+          format: uri
+          description: Pin image URL
+        title:
+          type: string
+          description: Pin title
+          example: "Pin title"
+    PinWithAuthorDetails:
+      allOf:
+        - $ref: '#/components/schemas/Pin'
+        - properties:
+            author:
+              description: Pin author data
+              $ref: '#/components/schemas/Account'
+    PinWithFullDetails:
+      allOf:
+        - $ref: '#/components/schemas/PinWithAuthorDetails'
+        - properties:
+            description:
+              type: string
+              description: Pin description
+              example: "Pin description."
+    PinWithAuthorDetailsPaginatedList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 50
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PinWithAuthorDetails'
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

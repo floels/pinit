@@ -1,0 +1,11 @@
+{
+  "ERROR_DISPLAY_PINS": "An error occurred while attempting to display pins.",
+  "ALT_PIN_BY": "Pin by",
+  "ALT_PROFILE_PICTURE_OF": "Profile picture of",
+  "PIN_THUMBNAIL_SAVE_BUTTON_TEXT": "Save",
+  "PIN_THUMBNAIL_SAVED_LABEL_TEXT": "Saved",
+  "PIN_THUMBNAIL_SAVE_FLYOUT_TITLE": "Save",
+  "PIN_THUMBNAIL_SAVE_FLYOUT_BOARDS_LABEL": "Save to board",
+  "SAVE_IN_BOARD_BUTTON_TEXT": "Save",
+  "PIN_SAVE_ERROR_MESSAGE": "An error occurred while attempting to save this pin."
+}

@@ -1,0 +1,52 @@
+.dropzone {
+  min-height: 450px;
+  min-width: 380px;
+  border-radius: 32px;
+  border: 2px dashed rgb(218, 218, 218);
+  background-color: var(--color-background-secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.dropzoneIconAndInstruction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dropzoneInstruction {
+  font-size: var(--font-size-300);
+}
+
+.acceptedFilesInstruction {
+  font-size: var(--font-size-200);
+  position: absolute;
+  bottom: 0;
+}
+
+.imagePreviewContainer {
+  position: relative;
+}
+
+.imagePreview {
+  width: 380px;
+  border-radius: 32px;
+}
+
+.deleteIconContainer {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  background-color: var(--color-background-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}

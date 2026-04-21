@@ -1,0 +1,45 @@
+.container {
+  width: 100%;
+  padding-top: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.accountDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.namesContainer {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.displayName {
+  font-size: var(--font-size-600);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.logoAndUsername {
+  margin-top: 8px;
+  font-size: var(--font-size-200);
+  color: var(--color-text-subtle);
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  margin-right: 4px;
+  color: var(--color-text-subtle);
+  fill: currentColor;
+}
+
+.description {
+  margin-top: 16px;
+  font-size: var(--font-size-300);
+}

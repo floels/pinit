@@ -1,0 +1,82 @@
+.container {
+  flex-grow: 1;
+  margin: 0px 8px;
+  padding-left: 16px;
+  background-color: var(--color-background-secondary);
+  border-radius: 24px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.container.containerInputFocused {
+  box-shadow: var(--box-shadow-focused-input);
+}
+
+.inputSearchIcon {
+  margin-right: 8px;
+  color: var(--color-text-subtle);
+}
+
+.searchInput {
+  height: 100%;
+  border: none;
+  padding: 0px;
+  flex-grow: 1;
+  background-color: transparent;
+  font-size: 16px;
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.clearIconContainer {
+  height: 48px;
+  width: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.clearIconContainer.clearIconContainerHidden {
+  display: none;
+}
+
+.clearIconContainer:hover {
+  background-color: var(--color-gray-200);
+}
+
+.searchSuggestionsList {
+  list-style-type: none;
+  width: 100%;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding: 24px 0;
+  background-color: var(--color-background-base);
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  z-index: 10; /* so it appears above the overlay */
+}
+
+.searchSuggestionsList.searchSuggestionsListHidden {
+  display: none;
+}
+
+.searchSuggestionsListItem {
+  display: flex;
+  padding: 16px 0;
+  cursor: pointer;
+}
+
+.searchSuggestionsListItem:hover {
+  background-color: var(--color-gray-100);
+}
+
+.searchSuggestionSearchIcon {
+  margin: 0 24px;
+}
