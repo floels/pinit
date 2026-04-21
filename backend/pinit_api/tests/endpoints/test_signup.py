@@ -210,3 +210,52 @@ class SignupTests(TestCase):
         )
 
         self.check_not_added_user_or_account()
+
+
+# ── Web signup tests ──────────────────────────────────────────────────────────
+
+class WebSignupTests(SignupTests):
+    """Web signup returns access token in body and refresh token as httpOnly cookie."""
+
+    from pinit_api.views.authentication import REFRESH_TOKEN_COOKIE_NAME
+
+    def test_web_signup_happy_path(self):
+        from pinit_api.views.authentication import REFRESH_TOKEN_COOKIE_NAME
+
+        request_payload = {
+            "email": self.new_user_email,
+            "password": "Pa$$w0rd_new_user",
+            "birthdate": "1970-01-01",
+        }
+        response = self.client.post(
+            "/api/signup/web/", request_payload, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response_data = response.json()
+        self.assertTrue(response_data.get("access_token"))
+        self.assertNotIn("refresh_token", response_data)
+        self.assertTrue(response_data.get("access_token_expiration_utc"))
+
+        self.assertIn(REFRESH_TOKEN_COOKIE_NAME, response.cookies)
+        self.assertTrue(response.cookies[REFRESH_TOKEN_COOKIE_NAME].value)
+
+        self.check_added_user_and_account()
+        self.check_attributes_new_user()
+        self.check_attributes_new_account()
+
+    def test_web_signup_invalid_email(self):
+        request_payload = {
+            "email": "new.user@example.",
+            "password": "Pa$$w0rd_new_user",
+            "birthdate": "1970-01-01",
+        }
+        response = self.client.post(
+            "/api/signup/web/", request_payload, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.check_response_error_code(
+            response=response, error_code=ERROR_CODE_INVALID_EMAIL
+        )
+        self.check_not_added_user_or_account()

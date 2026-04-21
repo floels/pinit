@@ -1,3 +1,4 @@
+import { useAuthContext } from "@/contexts/authContext";
 import { useAccountContext } from "@/contexts/accountContext";
 import {
   API_ROUTE_MY_ACCOUNT_DETAILS,
@@ -14,11 +15,15 @@ import { useEffect } from "react";
 
 const AccountDetailsFetcher = () => {
   const logOut = useLogOut();
-
   const { setAccount } = useAccountContext();
+  const { accessToken } = useAuthContext();
 
   const fetchAccountDetails = async () => {
-    const response = await fetch(API_ROUTE_MY_ACCOUNT_DETAILS);
+    const response = await fetch(API_ROUTE_MY_ACCOUNT_DETAILS, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     if (response.status === 401) {
       throw new Response401Error();
@@ -34,26 +39,15 @@ const AccountDetailsFetcher = () => {
   const persistAccountData = (data: AccountWithPrivateDetails) => {
     const { username, profilePictureURL } = data;
 
-    persistUsername(username);
+    localStorage?.setItem(USERNAME_LOCAL_STORAGE_KEY, username);
 
     if (profilePictureURL) {
-      persistProfilePictureURL(profilePictureURL);
+      localStorage?.setItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY, profilePictureURL);
     }
   };
 
-  const persistUsername = (username: string) => {
-    localStorage?.setItem(USERNAME_LOCAL_STORAGE_KEY, username);
-  };
-
-  const persistProfilePictureURL = (profilePictureUrl: string) => {
-    localStorage?.setItem(
-      PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
-      profilePictureUrl,
-    );
-  };
-
   const { data, error } = useQuery({
-    queryKey: ["fetchMyAccountDetails"],
+    queryKey: ["fetchMyAccountDetails", accessToken],
     queryFn: fetchAccountDetails,
     retry: false,
   });

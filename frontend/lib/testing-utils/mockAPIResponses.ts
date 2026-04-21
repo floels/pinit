@@ -16,12 +16,15 @@ import { TypesOfAccount } from "../types/frontendTypes";
 
 export const MOCK_API_RESPONSES_JSON = {
   [API_ROUTE_SIGN_UP]: {
+    access_token: "mock.access.token.signup",
     access_token_expiration_utc: "2024-02-07T07:09:45+00:00",
   },
   [API_ROUTE_OBTAIN_TOKEN]: {
+    access_token: "mock.access.token.login",
     access_token_expiration_utc: "2024-02-08T07:09:45+00:00",
   },
   [API_ROUTE_REFRESH_TOKEN]: {
+    access_token: "mock.access.token.refresh",
     access_token_expiration_utc: "2024-02-09T07:09:45+00:00",
   },
   [API_ROUTE_PIN_SUGGESTIONS]: {

@@ -12,6 +12,7 @@ from pinit_api.lib.constants import (
 from pinit_api.views.authentication import (
     ERROR_CODE_INVALID_REFRESH_TOKEN,
     ERROR_CODE_MISSING_REFRESH_TOKEN,
+    REFRESH_TOKEN_COOKIE_NAME,
 )
 
 
@@ -177,3 +178,111 @@ class RefreshTokenTests(AuthenticationTests):
             response_data["errors"],
             [{"code": ERROR_CODE_MISSING_REFRESH_TOKEN}],
         )
+
+
+# ── Web endpoint tests ────────────────────────────────────────────────────────
+
+class WebObtainTokenTests(AuthenticationTests):
+    def post(self, request_payload=None):
+        return self.client.post(
+            "/api/token/web/obtain/", request_payload, format="json"
+        )
+
+    def test_web_obtain_token_happy_path(self):
+        response = self.post(
+            {"email": self.user_email, "password": self.user_password}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertTrue(response_data.get("access_token"))
+        self.assertNotIn("refresh_token", response_data)
+        self.check_access_token_expiration_utc(
+            response_data["access_token_expiration_utc"]
+        )
+
+        self.assertIn(REFRESH_TOKEN_COOKIE_NAME, response.cookies)
+        self.assertTrue(response.cookies[REFRESH_TOKEN_COOKIE_NAME].value)
+
+    def test_web_obtain_token_wrong_email(self):
+        response = self.post({"email": "wrong_email", "password": "somePa$$word"})
+        self.check_response_wrong_email(response=response)
+
+    def test_web_obtain_token_wrong_password(self):
+        response = self.post(
+            {"email": self.user_email, "password": "somePa$$word"}
+        )
+        self.check_response_wrong_password(response=response)
+
+
+class WebObtainDemoTokenTests(AuthenticationTests):
+    def setUp(self):
+        User.objects.create_user(email="demo@pinit.com", password="Pa$$w0rd")
+
+    def test_web_obtain_demo_token(self):
+        response = self.client.get("/api/token/web/obtain-demo/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertTrue(response_data.get("access_token"))
+        self.assertNotIn("refresh_token", response_data)
+
+        self.assertIn(REFRESH_TOKEN_COOKIE_NAME, response.cookies)
+        self.assertTrue(response.cookies[REFRESH_TOKEN_COOKIE_NAME].value)
+
+
+class WebRefreshTokenTests(AuthenticationTests):
+    def setUp(self):
+        super().setUp()
+        refresh_token_object = RefreshToken.for_user(self.user)
+        self.refresh_token = str(refresh_token_object)
+
+    def post(self):
+        self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = self.refresh_token
+        return self.client.post("/api/token/web/refresh/")
+
+    def test_web_refresh_token_happy_path(self):
+        response = self.post()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertTrue(response_data.get("access_token"))
+        self.check_access_token_expiration_utc(
+            response_data["access_token_expiration_utc"]
+        )
+
+    def test_web_refresh_token_missing_cookie(self):
+        response = self.client.post("/api/token/web/refresh/")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json()["errors"],
+            [{"code": ERROR_CODE_MISSING_REFRESH_TOKEN}],
+        )
+
+    def test_web_refresh_token_invalid_cookie(self):
+        self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = "wrong.refresh.token"
+        response = self.client.post("/api/token/web/refresh/")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.json()["errors"],
+            [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}],
+        )
+
+
+class WebLogoutTests(AuthenticationTests):
+    def setUp(self):
+        super().setUp()
+        refresh_token_object = RefreshToken.for_user(self.user)
+        self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = str(refresh_token_object)
+
+    def test_web_logout_clears_refresh_token_cookie(self):
+        response = self.client.post("/api/token/web/logout/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(REFRESH_TOKEN_COOKIE_NAME, response.cookies)
+        self.assertEqual(response.cookies[REFRESH_TOKEN_COOKIE_NAME]["max-age"], 0)

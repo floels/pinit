@@ -4,17 +4,10 @@ import LoginFormContainer from "./LoginFormContainer";
 import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
 import {
-  ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY,
   API_ROUTE_OBTAIN_DEMO_TOKEN,
   API_ROUTE_OBTAIN_TOKEN,
 } from "@/lib/constants";
-import {
-  MOCK_API_RESPONSES,
-  MOCK_API_RESPONSES_JSON,
-} from "@/lib/testing-utils/mockAPIResponses";
-import { MockLocalStorage } from "@/lib/testing-utils/misc";
-
-localStorage = new MockLocalStorage();
+import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 
 const mockReload = jest.fn();
 Object.defineProperty(window, "location", {
@@ -89,8 +82,7 @@ it("displays relevant input errors", async () => {
   ).toBeNull();
 });
 
-it(`sets the access token's expiration date in local storage 
-and reloads the page upon successful response`, async () => {
+it("reloads the page upon successful response", async () => {
   renderComponent();
 
   await typeInEmailInput("test@example.com");
@@ -103,17 +95,10 @@ and reloads the page upon successful response`, async () => {
 
   await submit();
 
-  expect(
-    localStorage.getItem(ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY),
-  ).toEqual(
-    MOCK_API_RESPONSES_JSON[API_ROUTE_OBTAIN_TOKEN].access_token_expiration_utc,
-  );
-
   expect(mockReload).toHaveBeenCalledTimes(1);
 });
 
-it(`sets the access token's expiration date in local storage 
-and reloads the page upon successful response for demo login`, async () => {
+it("reloads the page upon successful response for demo login", async () => {
   renderComponent();
 
   fetchMock.mockOnceIf(
@@ -123,12 +108,6 @@ and reloads the page upon successful response for demo login`, async () => {
 
   const demoLoginButton = screen.getByText(en.LoginForm.LOG_IN_AS_DEMO);
   await userEvent.click(demoLoginButton);
-
-  expect(
-    localStorage.getItem(ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY),
-  ).toEqual(
-    MOCK_API_RESPONSES_JSON[API_ROUTE_OBTAIN_TOKEN].access_token_expiration_utc,
-  );
 
   expect(mockReload).toHaveBeenCalledTimes(1);
 });

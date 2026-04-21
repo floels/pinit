@@ -3,14 +3,8 @@ import userEvent from "@testing-library/user-event";
 import SignupFormContainer from "./SignupFormContainer";
 import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
-import {
-  ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY,
-  API_ROUTE_SIGN_UP,
-} from "@/lib/constants";
-import {
-  MOCK_API_RESPONSES,
-  MOCK_API_RESPONSES_JSON,
-} from "@/lib/testing-utils/mockAPIResponses";
+import { API_ROUTE_SIGN_UP } from "@/lib/constants";
+import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 
 const handleClickAlreadyHaveAccount = () => {}; // NB: this behavior will be tested in <HeaderUnauthenticatedClient />
 
@@ -93,8 +87,7 @@ it("displays relevant input errors", async () => {
   ).toBeNull();
 });
 
-it(`sets the access token's expiration date in local storage 
-and reloads the page upon successful response`, async () => {
+it("reloads the page upon successful response", async () => {
   renderComponent();
 
   const emailInput = screen.getByLabelText(en.SignupForm.EMAIL);
@@ -113,12 +106,6 @@ and reloads the page upon successful response`, async () => {
   );
 
   await userEvent.click(submitButton);
-
-  expect(
-    localStorage.getItem(ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY),
-  ).toEqual(
-    MOCK_API_RESPONSES_JSON[API_ROUTE_SIGN_UP].access_token_expiration_utc,
-  );
 
   expect(mockReload).toHaveBeenCalledTimes(1);
 });

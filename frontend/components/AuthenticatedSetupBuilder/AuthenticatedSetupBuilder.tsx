@@ -1,24 +1,23 @@
-"use client";
-
 import { useState } from "react";
-
+import { useAuthContext } from "@/contexts/authContext";
 import AccessTokenRefresher from "./AccessTokenRefresher";
 import AccountDetailsFetcher from "./AccountDetailsFetcher";
 
 const AuthenticatedSetupBuilder = () => {
   const [isFetchingRefreshedToken, setIsFetchingRefreshedToken] =
     useState(true);
-
-  const handleFinishedFetchingRefreshToken = () => {
-    setIsFetchingRefreshedToken(false);
-  };
+  const { accessToken } = useAuthContext();
 
   if (isFetchingRefreshedToken) {
     return (
       <AccessTokenRefresher
-        handleFinishedFetching={handleFinishedFetchingRefreshToken}
+        handleFinishedFetching={() => setIsFetchingRefreshedToken(false)}
       />
     );
+  }
+
+  if (!accessToken) {
+    return null;
   }
 
   return <AccountDetailsFetcher />;

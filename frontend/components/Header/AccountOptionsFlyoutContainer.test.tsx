@@ -10,10 +10,6 @@ jest.mock("@/components/LogoutTrigger/LogoutTrigger", () => {
   return MockedLogoutTrigger;
 });
 
-jest.mock("js-cookie", () => ({
-  set: jest.fn(),
-}));
-
 const mockHandleClickOutOfAccountOptionsFlyout = jest.fn();
 
 const renderComponent = () => {

@@ -7,6 +7,7 @@ import {
 } from "@/lib/constants";
 import { MockLocalStorage, withQueryClient } from "@/lib/testing-utils/misc";
 import { AccountContext } from "@/contexts/accountContext";
+import { AuthContext } from "@/contexts/authContext";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_SERIALIZED,
@@ -21,18 +22,23 @@ jest.mock("@/lib/hooks/useLogOut", () => ({
 localStorage = new MockLocalStorage();
 
 const mockSetAccount = jest.fn();
+const MOCK_ACCESS_TOKEN = "mock.access.token";
 
 const renderComponent = () => {
   render(
-    <AccountContext.Provider
-      value={{ account: null, setAccount: mockSetAccount }}
+    <AuthContext.Provider
+      value={{ accessToken: MOCK_ACCESS_TOKEN, setAccessToken: jest.fn() }}
     >
-      {withQueryClient(<AccountDetailsFetcher />)};
-    </AccountContext.Provider>,
+      <AccountContext.Provider
+        value={{ account: null, setAccount: mockSetAccount }}
+      >
+        {withQueryClient(<AccountDetailsFetcher />)}
+      </AccountContext.Provider>
+    </AuthContext.Provider>,
   );
 };
 
-it(`calls 'setAccount' with proper arguments and persists 
+it(`calls 'setAccount' with proper arguments and persists
 relevant data upon successful fetch`, async () => {
   fetchMock.mockOnceIf(
     API_ROUTE_MY_ACCOUNT_DETAILS,
@@ -51,8 +57,28 @@ relevant data upon successful fetch`, async () => {
       responseSerialized.username,
     );
 
-    expect(localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY)).toEqual(
-      responseSerialized.profilePictureURL,
+    expect(
+      localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY),
+    ).toEqual(responseSerialized.profilePictureURL);
+  });
+});
+
+it("sends the access token as Authorization header", async () => {
+  fetchMock.mockOnceIf(
+    API_ROUTE_MY_ACCOUNT_DETAILS,
+    MOCK_API_RESPONSES[API_ROUTE_MY_ACCOUNT_DETAILS],
+  );
+
+  renderComponent();
+
+  await waitFor(() => {
+    expect(fetch).toHaveBeenCalledWith(
+      API_ROUTE_MY_ACCOUNT_DETAILS,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: `Bearer ${MOCK_ACCESS_TOKEN}`,
+        }),
+      }),
     );
   });
 });
