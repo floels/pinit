@@ -23,15 +23,8 @@ jobs:
       - name: Run migrations
         run: docker compose -f docker-compose.test.yml exec -T web python manage.py migrate
 
-      - name: Run tests with coverage
-        run: |
-          docker compose -f docker-compose.test.yml exec -T web coverage run manage.py test
-          docker compose -f docker-compose.test.yml exec -T web coverage xml
-
-      - name: Upload coverage report to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./backend/coverage.xml
+      - name: Run tests
+        run: docker compose -f docker-compose.test.yml exec -T web python manage.py test
 
       - name: Shut down Docker container
         run: docker compose -f docker-compose.test.yml down
