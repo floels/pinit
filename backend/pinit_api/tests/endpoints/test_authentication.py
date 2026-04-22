@@ -56,7 +56,7 @@ class AuthenticationTests(TestCase):
         )
 
 
-class ObtainTokenTests(AuthenticationTests):
+class ObtainTokenMobileTests(AuthenticationTests):
     def test_obtain_token_happy_path(self):
         request_payload = {
             "email": self.user_email,
@@ -104,7 +104,7 @@ class ObtainTokenTests(AuthenticationTests):
         self.check_response_wrong_password(response=response)
 
 
-class ObtainDemoTokenTests(AuthenticationTests):
+class ObtainDemoTokenMobileTests(AuthenticationTests):
     def setUp(self):
         User.objects.create_user(email="demo@pinit.com", password="Pa$$w0rd")
 
@@ -119,15 +119,13 @@ class ObtainDemoTokenTests(AuthenticationTests):
         self.assertTrue(response_data["refresh_token"])
 
 
-# ── Web endpoint tests ────────────────────────────────────────────────────────
-
-class WebObtainTokenTests(AuthenticationTests):
+class ObtainTokenWebTests(AuthenticationTests):
     def post(self, request_payload=None):
         return self.client.post(
             "/api/token/web/obtain/", request_payload, format="json"
         )
 
-    def test_web_obtain_token_happy_path(self):
+    def test_obtain_token_happy_path(self):
         response = self.post(
             {"email": self.user_email, "password": self.user_password}
         )
@@ -144,22 +142,22 @@ class WebObtainTokenTests(AuthenticationTests):
         self.assertIn(REFRESH_TOKEN_COOKIE_NAME, response.cookies)
         self.assertTrue(response.cookies[REFRESH_TOKEN_COOKIE_NAME].value)
 
-    def test_web_obtain_token_wrong_email(self):
+    def test_obtain_token_wrong_email(self):
         response = self.post({"email": "wrong_email", "password": "somePa$$word"})
         self.check_response_wrong_email(response=response)
 
-    def test_web_obtain_token_wrong_password(self):
+    def test_obtain_token_wrong_password(self):
         response = self.post(
             {"email": self.user_email, "password": "somePa$$word"}
         )
         self.check_response_wrong_password(response=response)
 
 
-class WebObtainDemoTokenTests(AuthenticationTests):
+class ObtainDemoTokenWebTests(AuthenticationTests):
     def setUp(self):
         User.objects.create_user(email="demo@pinit.com", password="Pa$$w0rd")
 
-    def test_web_obtain_demo_token(self):
+    def test_obtain_demo_token(self):
         response = self.client.get("/api/token/web/obtain-demo/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -172,13 +170,13 @@ class WebObtainDemoTokenTests(AuthenticationTests):
         self.assertTrue(response.cookies[REFRESH_TOKEN_COOKIE_NAME].value)
 
 
-class WebLogoutTests(AuthenticationTests):
+class LogoutTests(AuthenticationTests):
     def setUp(self):
         super().setUp()
         refresh_token_object = RefreshToken.for_user(self.user)
         self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = str(refresh_token_object)
 
-    def test_web_logout_clears_refresh_token_cookie(self):
+    def test_logout_clears_refresh_token_cookie(self):
         response = self.client.post("/api/token/web/logout/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
