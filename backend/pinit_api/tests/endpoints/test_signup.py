@@ -10,14 +10,15 @@ from pinit_api.serializers.user_serializers import (
     ERROR_CODE_INVALID_BIRTHDATE,
 )
 from pinit_api.tests.testing_utils.factories import AccountFactory
+from pinit_api.views.authentication import REFRESH_TOKEN_COOKIE_NAME
 
 
-class SignupTests(TestCase):
+class SignupTestsMixin:
+    new_user_email = "new.user@example.com"
+    existing_user_email = "existing.user@example.com"
+    existing_user_password = "Pa$$wOrd_existing_user"
+
     def setUp(self):
-        self.new_user_email = "new.user@example.com"
-        self.existing_user_email = "existing.user@example.com"
-        self.existing_user_password = "Pa$$wOrd_existing_user"
-
         self.existing_user = User.objects.create_user(
             email=self.existing_user_email,
             password=self.existing_user_password,
@@ -32,19 +33,11 @@ class SignupTests(TestCase):
         self.number_existing_accounts = Account.objects.count()
         self.number_existing_users = User.objects.count()
 
+    def post(self, request_payload):
+        raise NotImplementedError
+
     def check_response_happy_path(self, response):
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        response_data = response.json()
-
-        access_token = response_data["access_token"]
-        assert bool(access_token)
-
-        refresh_token = response_data["refresh_token"]
-        assert bool(refresh_token)
-
-        access_token_expiration_date = response_data["access_token_expiration_utc"]
-        assert bool(access_token_expiration_date)
+        raise NotImplementedError
 
     def check_added_user_and_account(self):
         self.assertEqual(User.objects.count(), self.number_existing_users + 1)
@@ -82,7 +75,7 @@ class SignupTests(TestCase):
             "password": "Pa$$w0rd_new_user",
             "birthdate": "1970-01-01",
         }
-        response = self.client.post("/api/signup/", request_payload, format="json")
+        response = self.post(request_payload)
 
         self.check_response_happy_path(response)
         self.check_added_user_and_account()
@@ -96,7 +89,7 @@ class SignupTests(TestCase):
             "birthdate": "1970-01-01",
         }
 
-        self.client.post("/api/signup/", request_payload, format="json")
+        self.post(request_payload)
 
         Account.objects.get(username="me1")
 
@@ -107,13 +100,12 @@ class SignupTests(TestCase):
             "birthdate": "1970-01-01",
         }
 
-        response = self.client.post("/api/signup/", request_payload, format="json")
+        response = self.post(request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.check_response_error_code(
             response=response, error_code=ERROR_CODE_INVALID_EMAIL
         )
-
         self.check_not_added_user_or_account()
 
     def test_signup_blank_email(self):
@@ -122,13 +114,13 @@ class SignupTests(TestCase):
             "password": "Pa$$w0rd_new_user",
             "birthdate": "1970-01-01",
         }
-        response = self.client.post("/api/signup/", request_payload, format="json")
+
+        response = self.post(request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.check_response_error_code(
             response=response, error_code=ERROR_CODE_INVALID_EMAIL
         )
-
         self.check_not_added_user_or_account()
 
     def test_signup_email_already_signed_up(self):
@@ -138,13 +130,12 @@ class SignupTests(TestCase):
             "birthdate": "1970-01-01",
         }
 
-        response = self.client.post("/api/signup/", request_payload, format="json")
+        response = self.post(request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.check_response_error_code(
             response=response, error_code=ERROR_CODE_EMAIL_ALREADY_SIGNED_UP
         )
-
         self.check_not_added_user_or_account()
 
     def test_signup_invalid_password(self):
@@ -154,13 +145,12 @@ class SignupTests(TestCase):
             "birthdate": "1970-01-01",
         }
 
-        response = self.client.post("/api/signup/", request_payload, format="json")
+        response = self.post(request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.check_response_error_code(
             response=response, error_code=ERROR_CODE_INVALID_PASSWORD
         )
-
         self.check_not_added_user_or_account()
 
     def test_signup_blank_password(self):
@@ -170,13 +160,12 @@ class SignupTests(TestCase):
             "birthdate": "1970-01-01",
         }
 
-        response = self.client.post("/api/signup/", request_payload, format="json")
+        response = self.post(request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.check_response_error_code(
             response=response, error_code=ERROR_CODE_INVALID_PASSWORD
         )
-
         self.check_not_added_user_or_account()
 
     def test_signup_invalid_birthdate(self):
@@ -186,13 +175,12 @@ class SignupTests(TestCase):
             "birthdate": "1970-13-01",
         }
 
-        response = self.client.post("/api/signup/", request_payload, format="json")
+        response = self.post(request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.check_response_error_code(
             response=response, error_code=ERROR_CODE_INVALID_BIRTHDATE
         )
-
         self.check_not_added_user_or_account()
 
     def test_signup_blank_birthdate(self):
@@ -202,35 +190,34 @@ class SignupTests(TestCase):
             "birthdate": "",
         }
 
-        response = self.client.post("/api/signup/", request_payload, format="json")
+        response = self.post(request_payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.check_response_error_code(
             response=response, error_code=ERROR_CODE_INVALID_BIRTHDATE
         )
-
         self.check_not_added_user_or_account()
 
 
-# ── Web signup tests ──────────────────────────────────────────────────────────
+class SignupMobileTests(SignupTestsMixin, TestCase):
+    def post(self, request_payload):
+        return self.client.post("/api/signup/", request_payload, format="json")
 
-class WebSignupTests(SignupTests):
-    """Web signup returns access token in body and refresh token as httpOnly cookie."""
+    def check_response_happy_path(self, response):
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    from pinit_api.views.authentication import REFRESH_TOKEN_COOKIE_NAME
+        response_data = response.json()
 
-    def test_web_signup_happy_path(self):
-        from pinit_api.views.authentication import REFRESH_TOKEN_COOKIE_NAME
+        self.assertTrue(response_data.get("access_token"))
+        self.assertTrue(response_data.get("refresh_token"))
+        self.assertTrue(response_data.get("access_token_expiration_utc"))
 
-        request_payload = {
-            "email": self.new_user_email,
-            "password": "Pa$$w0rd_new_user",
-            "birthdate": "1970-01-01",
-        }
-        response = self.client.post(
-            "/api/signup/web/", request_payload, format="json"
-        )
 
+class SignupWebTests(SignupTestsMixin, TestCase):
+    def post(self, request_payload):
+        return self.client.post("/api/signup/web/", request_payload, format="json")
+
+    def check_response_happy_path(self, response):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         response_data = response.json()
@@ -240,22 +227,3 @@ class WebSignupTests(SignupTests):
 
         self.assertIn(REFRESH_TOKEN_COOKIE_NAME, response.cookies)
         self.assertTrue(response.cookies[REFRESH_TOKEN_COOKIE_NAME].value)
-
-        self.check_added_user_and_account()
-        self.check_attributes_new_user()
-        self.check_attributes_new_account()
-
-    def test_web_signup_invalid_email(self):
-        request_payload = {
-            "email": "new.user@example.",
-            "password": "Pa$$w0rd_new_user",
-            "birthdate": "1970-01-01",
-        }
-        response = self.client.post(
-            "/api/signup/web/", request_payload, format="json"
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.check_response_error_code(
-            response=response, error_code=ERROR_CODE_INVALID_EMAIL
-        )
-        self.check_not_added_user_or_account()
