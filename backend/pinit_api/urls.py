@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from .views import (
     signup,
     authentication,
+    token_refresh,
     accounts,
     pin_creation,
     pin_suggestions,
@@ -17,35 +18,39 @@ urlpatterns = [
     path("doc/", TemplateView.as_view(template_name="redoc.html"), name="doc"),
     # Mobile auth endpoints (tokens in response body)
     path("signup/", signup.sign_up, name="sign_up"),
-    path("token/obtain/", authentication.obtain_token_pair, name="obtain_token"),
+    path(
+        "token/obtain/",
+        authentication.obtain_token_pair_mobile,
+        name="obtain_token",
+    ),
     path(
         "token/obtain-demo/",
-        authentication.obtain_demo_token_pair,
+        authentication.obtain_demo_token_pair_mobile,
         name="obtain_demo_token",
     ),
     path(
         "token/refresh/",
-        authentication.RefreshTokenView.as_view(),
+        token_refresh.RefreshTokenMobileView.as_view(),
         name="refresh_token",
     ),
     # Web auth endpoints (refresh token in httpOnly cookie)
     path("signup/web/", signup.web_sign_up, name="web_sign_up"),
     path(
         "token/web/obtain/",
-        authentication.web_obtain_token_pair,
+        authentication.obtain_token_pair_web,
         name="web_obtain_token",
     ),
     path(
         "token/web/obtain-demo/",
-        authentication.web_obtain_demo_token_pair,
+        authentication.obtain_demo_token_pair_web,
         name="web_obtain_demo_token",
     ),
     path(
         "token/web/refresh/",
-        authentication.WebRefreshTokenView.as_view(),
+        token_refresh.RefreshTokenWebView.as_view(),
         name="web_refresh_token",
     ),
-    path("token/web/logout/", authentication.web_log_out, name="web_log_out"),
+    path("token/web/logout/", authentication.log_out_web, name="log_out_web"),
     path(
         "accounts/me/",
         accounts.GetMyAccountDetailsView.as_view(),
