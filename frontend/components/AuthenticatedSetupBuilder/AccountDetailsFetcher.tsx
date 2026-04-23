@@ -39,11 +39,22 @@ const AccountDetailsFetcher = () => {
   const persistAccountData = (data: AccountWithPrivateDetails) => {
     const { username, profilePictureURL } = data;
 
-    localStorage?.setItem(USERNAME_LOCAL_STORAGE_KEY, username);
+    persistUsername(username);
 
     if (profilePictureURL) {
-      localStorage?.setItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY, profilePictureURL);
+      persistProfilePictureURL(profilePictureURL);
     }
+  };
+
+  const persistUsername = (username: string) => {
+    localStorage?.setItem(USERNAME_LOCAL_STORAGE_KEY, username);
+  };
+
+  const persistProfilePictureURL = (profilePictureUrl: string) => {
+    localStorage?.setItem(
+      PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
+      profilePictureUrl,
+    );
   };
 
   const { data, error } = useQuery({
