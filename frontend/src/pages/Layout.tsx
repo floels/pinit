@@ -6,9 +6,10 @@ import AuthenticatedSetupBuilder from "@/components/AuthenticatedSetupBuilder/Au
 import HeaderAuthenticatedContainer from "@/components/Header/HeaderAuthenticatedContainer";
 import HeaderUnauthenticated from "@/components/Header/HeaderUnauthenticated";
 import HeaderSearchBarFocusedOverlay from "@/components/Header/HeaderSearchBarFocusedOverlay";
+import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 
 const Layout = () => {
-  const { accessToken } = useAuthContext();
+  const { accessToken, isAuthInitialized } = useAuthContext();
 
   return (
     <>
@@ -21,7 +22,7 @@ const Layout = () => {
           <HeaderUnauthenticated />
         )}
         <main>
-          <Outlet />
+          {isAuthInitialized ? <Outlet /> : <SpinnerBelowHeader />}
           <HeaderSearchBarFocusedOverlay />
         </main>
       </HeaderSearchBarContextProvider>

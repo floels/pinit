@@ -3,14 +3,8 @@ import { API_URL_REFRESH_TOKEN } from "@/lib/constants";
 import { useAuthContext } from "@/contexts/authContext";
 import { useQuery } from "@tanstack/react-query";
 
-type AccessTokenRefresherProps = {
-  handleFinishedFetching: () => void;
-};
-
-const AccessTokenRefresher = ({
-  handleFinishedFetching,
-}: AccessTokenRefresherProps) => {
-  const { setAccessToken } = useAuthContext();
+const AccessTokenRefresher = () => {
+  const { setAccessToken, setIsAuthInitialized } = useAuthContext();
 
   const fetchRefreshedAccessToken = async () => {
     const response = await fetch(API_URL_REFRESH_TOKEN, {
@@ -36,9 +30,9 @@ const AccessTokenRefresher = ({
       if (data?.access_token) {
         setAccessToken(data.access_token);
       }
-      handleFinishedFetching();
+      setIsAuthInitialized(true);
     } else if (status === "error") {
-      handleFinishedFetching();
+      setIsAuthInitialized(true);
     }
   }, [status, data]);
 

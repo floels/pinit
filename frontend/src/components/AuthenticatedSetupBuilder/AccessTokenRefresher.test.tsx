@@ -5,27 +5,28 @@ import { withQueryClient } from "@/lib/testing-utils/misc";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 import { AuthContext } from "@/contexts/authContext";
 
-const mockHandleFinishedFetching = jest.fn();
 const mockSetAccessToken = jest.fn();
+const mockSetIsAuthInitialized = jest.fn();
 
 const renderComponent = () => {
   render(
     <AuthContext.Provider
-      value={{ accessToken: null, setAccessToken: mockSetAccessToken }}
+      value={{
+        accessToken: null,
+        setAccessToken: mockSetAccessToken,
+        isAuthInitialized: false,
+        setIsAuthInitialized: mockSetIsAuthInitialized,
+      }}
     >
-      {withQueryClient(
-        <AccessTokenRefresher
-          handleFinishedFetching={mockHandleFinishedFetching}
-        />,
-      )}
+      {withQueryClient(<AccessTokenRefresher />)}
     </AuthContext.Provider>,
   );
 };
 
 beforeEach(() => {
   fetchMock.resetMocks();
-  mockHandleFinishedFetching.mockReset();
   mockSetAccessToken.mockReset();
+  mockSetIsAuthInitialized.mockReset();
 });
 
 it("calls refresh endpoint on page load", () => {
@@ -39,7 +40,7 @@ it("calls refresh endpoint on page load", () => {
   );
 });
 
-it("stores access token in context and calls handleFinishedFetching on success", async () => {
+it("stores access token in context and sets isAuthInitialized on success", async () => {
   fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN]);
 
   renderComponent();
@@ -48,17 +49,17 @@ it("stores access token in context and calls handleFinishedFetching on success",
     expect(mockSetAccessToken).toHaveBeenCalledWith(
       "mock.access.token.refresh",
     );
-    expect(mockHandleFinishedFetching).toHaveBeenCalledTimes(1);
+    expect(mockSetIsAuthInitialized).toHaveBeenCalledWith(true);
   });
 });
 
-it("calls handleFinishedFetching without setting token on KO response", async () => {
+it("sets isAuthInitialized without setting token on KO response", async () => {
   fetchMock.mockResponseOnce("{}", { status: 401 });
 
   renderComponent();
 
   await waitFor(() => {
-    expect(mockHandleFinishedFetching).toHaveBeenCalledTimes(1);
+    expect(mockSetIsAuthInitialized).toHaveBeenCalledWith(true);
   });
 
   expect(mockSetAccessToken).not.toHaveBeenCalled();
