@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "./pages/Layout";
+import HomePage from "./pages/HomePage";
 import PinDetailsPage from "./pages/PinDetailsPage";
 import AccountDetailsPage from "./pages/AccountDetailsPage";
 import BoardPage from "./pages/BoardPage";
@@ -11,7 +12,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <div>Home</div>,
+        element: <HomePage />,
       },
       {
         path: "/pin/:id",
