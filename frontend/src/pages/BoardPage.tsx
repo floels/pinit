@@ -11,35 +11,46 @@ import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 const BoardPage = () => {
   const { username, slug } = useParams<{ username: string; slug: string }>();
 
-  const fetchBoard = async () => {
-    const response = await fetch(
-      `${API_BASE_URL}/${API_ENDPOINT_BOARD_DETAILS}/${username}/${slug}/`,
-    );
+  const fetchBoardDetails = async () => {
+    const url = `${API_BASE_URL}/${API_ENDPOINT_BOARD_DETAILS}/${username}/${slug}/`;
 
-    if (response.status === 404) throw new Response404Error();
+    const response = await fetch(url);
+
+    if (response.status === 404) {
+      throw new Response404Error();
+    }
 
     throwIfKO(response);
 
-    return serializeBoardWithFullDetails(await response.json());
+    const responseData = await response.json();
+
+    return serializeBoardWithFullDetails(responseData);
   };
 
-  const { data: board, error, isLoading } = useQuery({
+  const shouldRetry = (_failureCount: number, error: unknown) => {
+    return !(error instanceof Response404Error);
+  };
+
+  const { data: boardDetails, error, isLoading } = useQuery({
     queryKey: ["board", username, slug],
-    queryFn: fetchBoard,
-    retry: (_, error) => !(error instanceof Response404Error),
+    queryFn: fetchBoardDetails,
+    retry: shouldRetry,
   });
 
-  if (isLoading) return <SpinnerBelowHeader />;
+  if (isLoading) {
+    return <SpinnerBelowHeader />;
+  }
 
   if (error) {
     const errorMessageKey =
       error instanceof Response404Error
         ? "BoardDetails.ERROR_BOARD_NOT_FOUND"
         : "BoardDetails.ERROR_FETCH_BOARD_DETAILS";
+
     return <ErrorView errorMessageKey={errorMessageKey} />;
   }
 
-  return <BoardDetailsView board={board!} />;
+  return <BoardDetailsView board={boardDetails!} />;
 };
 
 export default BoardPage;

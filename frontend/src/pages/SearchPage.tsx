@@ -12,13 +12,15 @@ const SearchPage = () => {
   const searchTerm = searchParams.get("q");
 
   const fetchSearchResults = async () => {
-    const response = await fetch(
-      `${API_BASE_URL}/${API_ENDPOINT_SEARCH_PINS}?q=${searchTerm}`,
-    );
+    const url = `${API_BASE_URL}/${API_ENDPOINT_SEARCH_PINS}?q=${searchTerm}`;
+
+    const response = await fetch(url);
 
     throwIfKO(response);
 
-    return serializePinsWithAuthorDetails((await response.json()).results);
+    const responseData = await response.json();
+
+    return serializePinsWithAuthorDetails(responseData.results);
   };
 
   const { data: initialPins, error, isLoading } = useQuery({
@@ -27,9 +29,13 @@ const SearchPage = () => {
     enabled: !!searchTerm,
   });
 
-  if (!searchTerm) return <Navigate to="/" replace />;
+  if (!searchTerm) {
+    return <Navigate to="/" replace />;
+  }
 
-  if (isLoading) return <SpinnerBelowHeader />;
+  if (isLoading) {
+    return <SpinnerBelowHeader />;
+  }
 
   if (error) {
     return <ErrorView errorMessageKey="PinsSearch.ERROR_FETCH_SEARCH_RESULTS" />;

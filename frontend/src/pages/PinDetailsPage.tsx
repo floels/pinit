@@ -11,35 +11,46 @@ import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 const PinDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
 
-  const fetchPin = async () => {
-    const response = await fetch(
-      `${API_BASE_URL}/${API_ENDPOINT_PIN_DETAILS}/${id}/`,
-    );
+  const fetchPinDetails = async () => {
+    const url = `${API_BASE_URL}/${API_ENDPOINT_PIN_DETAILS}/${id}/`;
 
-    if (response.status === 404) throw new Response404Error();
+    const response = await fetch(url);
+
+    if (response.status === 404) {
+      throw new Response404Error();
+    }
 
     throwIfKO(response);
 
-    return serializePinWithFullDetails(await response.json());
+    const responseData = await response.json();
+
+    return serializePinWithFullDetails(responseData);
   };
 
-  const { data: pin, error, isLoading } = useQuery({
+  const shouldRetry = (_failureCount: number, error: unknown) => {
+    return !(error instanceof Response404Error);
+  };
+
+  const { data: pinDetails, error, isLoading } = useQuery({
     queryKey: ["pin", id],
-    queryFn: fetchPin,
-    retry: (_, error) => !(error instanceof Response404Error),
+    queryFn: fetchPinDetails,
+    retry: shouldRetry,
   });
 
-  if (isLoading) return <SpinnerBelowHeader />;
+  if (isLoading) {
+    return <SpinnerBelowHeader />;
+  }
 
   if (error) {
     const errorMessageKey =
       error instanceof Response404Error
         ? "PinDetails.ERROR_PIN_NOT_FOUND"
         : "PinDetails.ERROR_FETCH_PIN_DETAILS";
+
     return <ErrorView errorMessageKey={errorMessageKey} />;
   }
 
-  return <PinDetailsView pin={pin!} />;
+  return <PinDetailsView pin={pinDetails!} />;
 };
 
 export default PinDetailsPage;
