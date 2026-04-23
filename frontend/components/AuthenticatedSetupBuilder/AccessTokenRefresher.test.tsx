@@ -1,130 +1,65 @@
-import {
-  ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY,
-  API_ROUTE_REFRESH_TOKEN,
-} from "@/lib/constants";
+import { API_ROUTE_REFRESH_TOKEN } from "@/lib/constants";
 import { render, waitFor } from "@testing-library/react";
-import AccessTokenRefresher, {
-  TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION,
-} from "./AccessTokenRefresher";
-import { MockLocalStorage, withQueryClient } from "@/lib/testing-utils/misc";
-import {
-  MOCK_API_RESPONSES,
-  MOCK_API_RESPONSES_JSON,
-} from "@/lib/testing-utils/mockAPIResponses";
-
-jest.mock("js-cookie");
+import AccessTokenRefresher from "./AccessTokenRefresher";
+import { withQueryClient } from "@/lib/testing-utils/misc";
+import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
+import { AuthContext } from "@/contexts/authContext";
 
 const mockHandleFinishedFetching = jest.fn();
+const mockSetAccessToken = jest.fn();
 
 const renderComponent = () => {
   render(
-    withQueryClient(
-      <AccessTokenRefresher
-        handleFinishedFetching={mockHandleFinishedFetching}
-      />,
-    ),
+    <AuthContext.Provider
+      value={{ accessToken: null, setAccessToken: mockSetAccessToken }}
+    >
+      {withQueryClient(
+        <AccessTokenRefresher
+          handleFinishedFetching={mockHandleFinishedFetching}
+        />,
+      )}
+    </AuthContext.Provider>,
   );
 };
 
-localStorage = new MockLocalStorage();
-
 beforeEach(() => {
   fetchMock.resetMocks();
-
   mockHandleFinishedFetching.mockReset();
-
-  localStorage.clear();
+  mockSetAccessToken.mockReset();
 });
 
-it(`does not refresh access token, and calls 'handleFinishedFetching'
-if expiration date is beyond buffer`, () => {
-  const nowTime = new Date().getTime();
-
-  const accessTokenExpirationDate = new Date(
-    nowTime + 2 * TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION,
-  );
-
-  localStorage.setItem(
-    ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY,
-    accessTokenExpirationDate.toISOString(),
-  );
+it("calls refresh endpoint on page load", () => {
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ROUTE_REFRESH_TOKEN]);
 
   renderComponent();
 
-  expect(fetch).not.toHaveBeenCalled();
-
-  expect(mockHandleFinishedFetching).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledWith(
+    API_ROUTE_REFRESH_TOKEN,
+    expect.objectContaining({ method: "POST", credentials: "include" }),
+  );
 });
 
-it(`refreshes access token, persists new expiration date
-in local storage, and calls 'handleFinishedFetching' if no 
-expiration date was found in local storage`, async () => {
-  fetchMock.mockOnceIf(
-    API_ROUTE_REFRESH_TOKEN,
-    MOCK_API_RESPONSES[API_ROUTE_REFRESH_TOKEN],
-  );
+it("stores access token in context and calls handleFinishedFetching on success", async () => {
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ROUTE_REFRESH_TOKEN]);
 
   renderComponent();
 
   await waitFor(() => {
-    expect(
-      localStorage.getItem(ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY),
-    ).toEqual(
-      MOCK_API_RESPONSES_JSON[API_ROUTE_REFRESH_TOKEN]
-        .access_token_expiration_utc,
+    expect(mockSetAccessToken).toHaveBeenCalledWith(
+      "mock.access.token.refresh",
     );
+    expect(mockHandleFinishedFetching).toHaveBeenCalledTimes(1);
   });
-
-  expect(mockHandleFinishedFetching).toHaveBeenCalledTimes(1);
 });
 
-it("refreshes access token if invalid expiration date in local storage", () => {
-  localStorage.setItem(
-    ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY,
-    "20-10-03",
-  );
-
-  renderComponent();
-
-  expect(fetch).toHaveBeenCalledWith(
-    API_ROUTE_REFRESH_TOKEN,
-    expect.objectContaining({
-      method: "POST",
-    }),
-  );
-});
-
-it("refreshes access token if expiration date in local storage is within buffer", () => {
-  const nowTime = new Date().getTime();
-
-  const accessTokenExpirationDate = new Date(
-    nowTime + TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION / 2,
-  );
-
-  localStorage.setItem(
-    ACCESS_TOKEN_EXPIRATION_DATE_LOCAL_STORAGE_KEY,
-    accessTokenExpirationDate.toISOString(),
-  );
-
-  renderComponent();
-
-  expect(fetch).toHaveBeenCalledWith(
-    API_ROUTE_REFRESH_TOKEN,
-    expect.objectContaining({
-      method: "POST",
-    }),
-  );
-});
-
-it(`calls 'handleFinishedFetching' upon KO response
-if no expiration date was found in local storage`, async () => {
-  fetchMock.mockOnceIf(API_ROUTE_REFRESH_TOKEN, "{}", {
-    status: 401,
-  });
+it("calls handleFinishedFetching without setting token on KO response", async () => {
+  fetchMock.mockResponseOnce("{}", { status: 401 });
 
   renderComponent();
 
   await waitFor(() => {
     expect(mockHandleFinishedFetching).toHaveBeenCalledTimes(1);
   });
+
+  expect(mockSetAccessToken).not.toHaveBeenCalled();
 });

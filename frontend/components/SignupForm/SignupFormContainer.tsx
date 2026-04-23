@@ -14,7 +14,6 @@ import {
 } from "../../lib/utils/validation";
 import SignupForm, { FormErrors } from "./SignupForm";
 import { ResponseKOError } from "@/lib/customErrors";
-import { setAccessTokenExpirationDate } from "@/lib/utils/authentication";
 
 type SignupFormContainerProps = {
   handleClickAlreadyHaveAccount: () => void;
@@ -82,25 +81,13 @@ const SignupFormContainer = ({
 
     setIsLoading(true);
 
-    let response;
-
     try {
-      response = await fetchSignup();
+      await fetchSignup();
     } catch (error) {
       const errorCode = (error as Error).message;
       updateFormErrorsFromErrorCode(errorCode);
       return;
     }
-
-    let responseData;
-
-    try {
-      responseData = await response.json();
-    } catch {
-      // Fail silently
-    }
-
-    setAccessTokenExpirationDate(responseData.access_token_expiration_utc);
 
     window.location.reload();
   };
@@ -113,10 +100,9 @@ const SignupFormContainer = ({
     try {
       response = await fetch(API_ROUTE_SIGN_UP, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: requestBody,
+        credentials: "include",
       });
     } catch {
       throw new Error(ERROR_CODE_FETCH_FAILED);

@@ -10,6 +10,7 @@ from ..lib.utils import (
 )
 from ..models import Account
 from ..serializers import UserCreateSerializer
+from .authentication import set_refresh_token_cookie
 
 FORBIDDEN_USERNAMES = [
     "me",  # since '/accounts/me/' URL is reserved (see 'urls.py')
@@ -17,20 +18,46 @@ FORBIDDEN_USERNAMES = [
 ]
 
 
-@api_view(["POST"])
-def sign_up(request):
+def create_user_and_get_tokens(request):
+    """Returns (tokens_data, error_response). Exactly one of the two is None."""
     user_serializer = UserCreateSerializer(data=request.data)
 
     if not user_serializer.is_valid():
-        return get_error_response(user_serializer=user_serializer)
+        return None, get_error_response(user_serializer=user_serializer)
 
     user = user_serializer.save()
 
     create_personal_account(user=user)
 
-    tokens_data = get_tokens_data(user=user)
+    return get_tokens_data(user=user), None
+
+
+@api_view(["POST"])
+def sign_up_mobile(request):
+    tokens_data, error = create_user_and_get_tokens(request)
+
+    if error:
+        return error
 
     return Response(tokens_data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+def sign_up_web(request):
+    tokens_data, error = create_user_and_get_tokens(request)
+
+    if error:
+        return error
+
+    response = Response(
+        {
+            "access_token": tokens_data["access_token"],
+            "access_token_expiration_utc": tokens_data["access_token_expiration_utc"],
+        },
+        status=status.HTTP_201_CREATED,
+    )
+    set_refresh_token_cookie(response, tokens_data["refresh_token"])
+    return response
 
 
 def get_error_response(user_serializer=None):

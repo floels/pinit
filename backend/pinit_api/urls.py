@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from .views import (
     signup,
     authentication,
+    token_refresh,
     accounts,
     pin_creation,
     pin_suggestions,
@@ -15,22 +16,40 @@ from .views import (
 
 urlpatterns = [
     path("doc/", TemplateView.as_view(template_name="redoc.html"), name="doc"),
-    path("signup/", signup.sign_up, name="sign_up"),
+    # TODO: include 'mobile' in the URL path for all mobile auth endpoints (e.g. 'token/refresh/' -> 'token/mobile/refresh/')
+    path("signup/", signup.sign_up_mobile, name="sign_up_mobile"),
     path(
         "token/obtain/",
-        authentication.obtain_token_pair,
+        authentication.obtain_token_pair_mobile,
         name="obtain_token",
     ),
     path(
         "token/obtain-demo/",
-        authentication.obtain_demo_token_pair,
+        authentication.obtain_demo_token_pair_mobile,
         name="obtain_demo_token",
     ),
     path(
         "token/refresh/",
-        authentication.RefreshTokenView.as_view(),
-        name=("refresh_token"),
+        token_refresh.RefreshTokenMobileView.as_view(),
+        name="refresh_token",
     ),
+    path("signup/web/", signup.sign_up_web, name="sign_up_web"),
+    path(
+        "token/web/obtain/",
+        authentication.obtain_token_pair_web,
+        name="web_obtain_token",
+    ),
+    path(
+        "token/web/obtain-demo/",
+        authentication.obtain_demo_token_pair_web,
+        name="web_obtain_demo_token",
+    ),
+    path(
+        "token/web/refresh/",
+        token_refresh.RefreshTokenWebView.as_view(),
+        name="web_refresh_token",
+    ),
+    path("token/web/logout/", authentication.log_out_web, name="log_out_web"),
     path(
         "accounts/me/",
         accounts.GetMyAccountDetailsView.as_view(),

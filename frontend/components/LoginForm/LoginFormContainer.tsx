@@ -7,7 +7,6 @@ import {
   API_ROUTE_OBTAIN_DEMO_TOKEN,
 } from "../../lib/constants";
 import { isValidEmail, isValidPassword } from "../../lib/utils/validation";
-import { setAccessTokenExpirationDate } from "@/lib/utils/authentication";
 import LoginForm, { FormErrors } from "./LoginForm";
 
 type LoginFormContainerProps = {
@@ -73,26 +72,14 @@ const LoginFormContainer = ({
 
     setIsLoading(true);
 
-    let response;
-
     try {
-      response = await fetchTokensAndThrow({ isDemo });
+      await fetchTokensAndThrow({ isDemo });
     } catch (error) {
       updateFormErrorsFromFetchError({ error: error as Error });
       return;
     } finally {
       setIsLoading(false);
     }
-
-    let responseData;
-
-    try {
-      responseData = await response.json();
-    } catch {
-      // Fail silently
-    }
-
-    setAccessTokenExpirationDate(responseData.access_token_expiration_utc);
 
     window.location.reload();
   };
@@ -111,14 +98,15 @@ const LoginFormContainer = ({
 
     try {
       if (isDemo) {
-        response = await fetch(API_ROUTE_OBTAIN_DEMO_TOKEN);
+        response = await fetch(API_ROUTE_OBTAIN_DEMO_TOKEN, {
+          credentials: "include",
+        });
       } else {
         response = await fetch(API_ROUTE_OBTAIN_TOKEN, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: requestBody,
+          credentials: "include",
         });
       }
     } catch {

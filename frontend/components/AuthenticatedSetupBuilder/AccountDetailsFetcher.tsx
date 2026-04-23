@@ -1,3 +1,4 @@
+import { useAuthContext } from "@/contexts/authContext";
 import { useAccountContext } from "@/contexts/accountContext";
 import {
   API_ROUTE_MY_ACCOUNT_DETAILS,
@@ -14,11 +15,15 @@ import { useEffect } from "react";
 
 const AccountDetailsFetcher = () => {
   const logOut = useLogOut();
-
   const { setAccount } = useAccountContext();
+  const { accessToken } = useAuthContext();
 
   const fetchAccountDetails = async () => {
-    const response = await fetch(API_ROUTE_MY_ACCOUNT_DETAILS);
+    const response = await fetch(API_ROUTE_MY_ACCOUNT_DETAILS, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     if (response.status === 401) {
       throw new Response401Error();
@@ -53,7 +58,7 @@ const AccountDetailsFetcher = () => {
   };
 
   const { data, error } = useQuery({
-    queryKey: ["fetchMyAccountDetails"],
+    queryKey: ["fetchMyAccountDetails", accessToken],
     queryFn: fetchAccountDetails,
     retry: false,
   });
