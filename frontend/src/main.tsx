@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./router";
 import "./i18n";
+import "@/styles/globals.css";
 import { AuthContextProvider } from "@/contexts/authContext";
 import { AccountContextProvider } from "@/contexts/accountContext";
 import QueryClientProvider from "@/components/QueryClientProvider/QueryClientProvider";

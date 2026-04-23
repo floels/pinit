@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState, useRef } from "react";
 import HeaderAuthenticated from "./HeaderAuthenticated";
 import {

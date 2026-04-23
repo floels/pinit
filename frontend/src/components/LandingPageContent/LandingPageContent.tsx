@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import debounce from "lodash/debounce";
 import PictureSlider from "./PictureSlider";

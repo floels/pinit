@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect } from "react";
 import styles from "./LogoutTrigger.module.css";
 import { useLogOut } from "@/lib/hooks/useLogOut";
