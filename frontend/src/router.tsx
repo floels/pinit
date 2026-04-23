@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import PinDetailsPage from "./pages/PinDetailsPage";
 import AccountDetailsPage from "./pages/AccountDetailsPage";
 import BoardPage from "./pages/BoardPage";
+import PinCreationToolPage from "./pages/PinCreationToolPage";
 import SearchPage from "./pages/SearchPage";
 
 export const router = createBrowserRouter([
@@ -20,7 +21,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/pin-creation-tool",
-        element: <div>Pin creation</div>,
+        element: <PinCreationToolPage />,
       },
       {
         path: "/search/pins",
