@@ -14,19 +14,13 @@ from .authentication import (
 
 # This view is taking inspiration from:
 # https://github.com/jazzband/djangorestframework-simplejwt/blob/master/rest_framework_simplejwt/views.py#L63-L69
-class RefreshTokenMobileView(TokenViewBase):
+class RefreshTokenView(TokenViewBase):
     _serializer_class = (
         "pinit_api.serializers.token_serializers.CustomTokenRefreshSerializer"
     )
 
     def get_refresh_token(self, request):
-        if "refresh_token" not in request.data:
-            return None, Response(
-                {"errors": [{"code": ERROR_CODE_MISSING_REFRESH_TOKEN}]},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        return request.data["refresh_token"], None
+        raise NotImplementedError
 
     def post(self, request):
         refresh_token, error = self.get_refresh_token(request)
@@ -59,7 +53,18 @@ class RefreshTokenMobileView(TokenViewBase):
         )
 
 
-class RefreshTokenWebView(RefreshTokenMobileView):
+class RefreshTokenMobileView(RefreshTokenView):
+    def get_refresh_token(self, request):
+        if "refresh_token" not in request.data:
+            return None, Response(
+                {"errors": [{"code": ERROR_CODE_MISSING_REFRESH_TOKEN}]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return request.data["refresh_token"], None
+
+
+class RefreshTokenWebView(RefreshTokenView):
     def get_refresh_token(self, request):
         token = request.COOKIES.get(REFRESH_TOKEN_COOKIE_NAME)
 
