@@ -11,17 +11,19 @@ const SearchPage = () => {
   const [searchParams] = useSearchParams();
   const searchTerm = searchParams.get("q");
 
+  const fetchSearchResults = async () => {
+    const response = await fetch(
+      `${API_BASE_URL}/${API_ENDPOINT_SEARCH_PINS}?q=${searchTerm}`,
+    );
+
+    throwIfKO(response);
+
+    return serializePinsWithAuthorDetails((await response.json()).results);
+  };
+
   const { data: initialPins, error, isLoading } = useQuery({
     queryKey: ["search", searchTerm],
-    queryFn: async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/${API_ENDPOINT_SEARCH_PINS}?q=${searchTerm}`,
-      );
-
-      throwIfKO(response);
-
-      return serializePinsWithAuthorDetails((await response.json()).results);
-    },
+    queryFn: fetchSearchResults,
     enabled: !!searchTerm,
   });
 

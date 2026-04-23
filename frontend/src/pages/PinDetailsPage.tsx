@@ -11,19 +11,21 @@ import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 const PinDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
 
+  const fetchPin = async () => {
+    const response = await fetch(
+      `${API_BASE_URL}/${API_ENDPOINT_PIN_DETAILS}/${id}/`,
+    );
+
+    if (response.status === 404) throw new Response404Error();
+
+    throwIfKO(response);
+
+    return serializePinWithFullDetails(await response.json());
+  };
+
   const { data: pin, error, isLoading } = useQuery({
     queryKey: ["pin", id],
-    queryFn: async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/${API_ENDPOINT_PIN_DETAILS}/${id}/`,
-      );
-
-      if (response.status === 404) throw new Response404Error();
-
-      throwIfKO(response);
-
-      return serializePinWithFullDetails(await response.json());
-    },
+    queryFn: fetchPin,
     retry: (_, error) => !(error instanceof Response404Error),
   });
 

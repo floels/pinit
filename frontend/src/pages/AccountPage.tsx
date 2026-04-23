@@ -11,19 +11,21 @@ import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 const AccountPage = () => {
   const { username } = useParams<{ username: string }>();
 
+  const fetchAccount = async () => {
+    const response = await fetch(
+      `${API_BASE_URL}/${API_ENDPOINT_ACCOUNT_DETAILS}/${username}/`,
+    );
+
+    if (response.status === 404) throw new Response404Error();
+
+    throwIfKO(response);
+
+    return serializeAccountWithPublicDetails(await response.json());
+  };
+
   const { data: account, error, isLoading } = useQuery({
     queryKey: ["account", username],
-    queryFn: async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/${API_ENDPOINT_ACCOUNT_DETAILS}/${username}/`,
-      );
-
-      if (response.status === 404) throw new Response404Error();
-
-      throwIfKO(response);
-
-      return serializeAccountWithPublicDetails(await response.json());
-    },
+    queryFn: fetchAccount,
     retry: (_, error) => !(error instanceof Response404Error),
   });
 

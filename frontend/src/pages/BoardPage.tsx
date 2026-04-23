@@ -11,19 +11,21 @@ import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 const BoardPage = () => {
   const { username, slug } = useParams<{ username: string; slug: string }>();
 
+  const fetchBoard = async () => {
+    const response = await fetch(
+      `${API_BASE_URL}/${API_ENDPOINT_BOARD_DETAILS}/${username}/${slug}/`,
+    );
+
+    if (response.status === 404) throw new Response404Error();
+
+    throwIfKO(response);
+
+    return serializeBoardWithFullDetails(await response.json());
+  };
+
   const { data: board, error, isLoading } = useQuery({
     queryKey: ["board", username, slug],
-    queryFn: async () => {
-      const response = await fetch(
-        `${API_BASE_URL}/${API_ENDPOINT_BOARD_DETAILS}/${username}/${slug}/`,
-      );
-
-      if (response.status === 404) throw new Response404Error();
-
-      throwIfKO(response);
-
-      return serializeBoardWithFullDetails(await response.json());
-    },
+    queryFn: fetchBoard,
     retry: (_, error) => !(error instanceof Response404Error),
   });
 
