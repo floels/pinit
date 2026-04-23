@@ -1,5 +1,3 @@
-"use client";
-
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { API_ROUTE_CREATE_PIN } from "@/lib/constants";

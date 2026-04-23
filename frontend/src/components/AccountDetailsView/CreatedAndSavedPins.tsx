@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import styles from "./CreatedAndSavedPins.module.css";
 import { useTranslation } from "react-i18next";

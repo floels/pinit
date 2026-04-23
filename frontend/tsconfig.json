@@ -7,7 +7,8 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/public/*": ["./public/*"],
+      "@/*": ["./src/*"]
     }
   },
   "files": [],

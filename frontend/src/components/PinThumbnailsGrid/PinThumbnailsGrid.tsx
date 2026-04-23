@@ -1,5 +1,3 @@
-"use client";
-
 import { PinWithAuthorDetails } from "@/lib/types/frontendTypes";
 import PinThumbnailContainer from "../PinsBoard/PinThumbnailContainer";
 import { useEffect, useState } from "react";

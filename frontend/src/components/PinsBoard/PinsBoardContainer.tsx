@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { appendQueryParam } from "@/lib/utils/strings";
 import PinsBoard from "./PinsBoard";

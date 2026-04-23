@@ -1,5 +1,3 @@
-"use client";
-
 import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";
 import {
   Dispatch,

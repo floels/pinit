@@ -1,5 +1,3 @@
-"use client";
-
 import {
   QueryClientProvider as TanstackQueryClientProvider,
   QueryClient,

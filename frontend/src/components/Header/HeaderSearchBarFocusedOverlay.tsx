@@ -1,5 +1,3 @@
-"use client";
-
 import { useHeaderSearchBarContext } from "@/contexts/headerSearchBarContext";
 import styles from "./HeaderSearchBarFocusedOverlay.module.css";
 
