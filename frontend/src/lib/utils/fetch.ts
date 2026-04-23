@@ -24,3 +24,4 @@ export const throwIfKO = (response: Response) => {
     throw new ResponseKOError();
   }
 };
+

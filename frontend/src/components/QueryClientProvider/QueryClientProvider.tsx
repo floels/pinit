@@ -3,7 +3,9 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { isNot404 } from "@/lib/utils/fetch";
+import { Response404Error } from "@/lib/customErrors";
+
+const isNot404 = (error: unknown) => !(error instanceof Response404Error);
 
 type QueryClientProviderProps = {
   children: React.ReactNode;
