@@ -29,6 +29,12 @@
       "rules": {
         "no-global-assign": "off"
       }
+    },
+    {
+      "files": ["jest.config.js", "__mocks__/**/*.js"],
+      "env": {
+        "node": true
+      }
     }
   ]
 }
