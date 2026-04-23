@@ -3,8 +3,8 @@ import {
   ERROR_CODE_INVALID_PASSWORD,
   ERROR_CODE_INVALID_EMAIL,
   ERROR_CODE_FETCH_FAILED,
-  API_ROUTE_OBTAIN_TOKEN,
-  API_ROUTE_OBTAIN_DEMO_TOKEN,
+  API_URL_OBTAIN_TOKEN,
+  API_URL_OBTAIN_DEMO_TOKEN,
 } from "../../lib/constants";
 import { isValidEmail, isValidPassword } from "../../lib/utils/validation";
 import LoginForm, { FormErrors } from "./LoginForm";
@@ -98,11 +98,11 @@ const LoginFormContainer = ({
 
     try {
       if (isDemo) {
-        response = await fetch(API_ROUTE_OBTAIN_DEMO_TOKEN, {
+        response = await fetch(API_URL_OBTAIN_DEMO_TOKEN, {
           credentials: "include",
         });
       } else {
-        response = await fetch(API_ROUTE_OBTAIN_TOKEN, {
+        response = await fetch(API_URL_OBTAIN_TOKEN, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: requestBody,

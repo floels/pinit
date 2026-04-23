@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/authContext";
-import { API_ROUTE_PIN_SUGGESTIONS } from "@/lib/constants";
+import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
 import { serializePinsWithAuthorDetails } from "@/lib/utils/serializers";
 import { throwIfKO } from "@/lib/utils/fetch";
 import { Response401Error } from "@/lib/customErrors";
@@ -14,7 +14,7 @@ const HomePage = () => {
   const { accessToken } = useAuthContext();
 
   const fetchPinSuggestions = async () => {
-    const response = await fetch(API_ROUTE_PIN_SUGGESTIONS, {
+    const response = await fetch(API_URL_PIN_SUGGESTIONS, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
@@ -53,7 +53,7 @@ const HomePage = () => {
   return (
     <PinsBoardContainer
       initialPins={initialPins!}
-      fetchPinsAPIRoute={API_ROUTE_PIN_SUGGESTIONS}
+      fetchPinsAPIRoute={API_URL_PIN_SUGGESTIONS}
     />
   );
 };

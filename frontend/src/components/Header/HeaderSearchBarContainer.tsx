@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import debounce from "lodash/debounce";
 import { useNavigate } from "react-router-dom";
-import { API_ROUTE_SEARCH_SUGGESTIONS } from "@/lib/constants";
+import { API_URL_SEARCH_SUGGESTIONS } from "@/lib/constants";
 import HeaderSearchBar from "./HeaderSearchBar";
 import { useHeaderSearchBarContext } from "@/contexts/headerSearchBarContext";
 
@@ -81,7 +81,7 @@ const HeaderSearchBarContainer = () => {
 
     try {
       response = await fetch(
-        `${API_ROUTE_SEARCH_SUGGESTIONS}?search=${searchTerm.toLowerCase()}`,
+        `${API_URL_SEARCH_SUGGESTIONS}?search=${searchTerm.toLowerCase()}`,
       );
     } catch {
       setSearchSuggestions([]);

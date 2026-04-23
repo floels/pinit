@@ -6,7 +6,7 @@ import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
 } from "@/lib/testing-utils/mockAPIResponses";
-import { API_ROUTE_PIN_SUGGESTIONS } from "@/lib/constants";
+import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
 import { AuthContext } from "@/contexts/authContext";
 import en from "@/public/locales/en/HomePageContent.json";
 
@@ -47,23 +47,23 @@ it("renders landing page content when not authenticated", () => {
 });
 
 it("fetches pin suggestions from the correct endpoint when authenticated", () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ROUTE_PIN_SUGGESTIONS]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_PIN_SUGGESTIONS]);
 
   renderComponent({ accessToken: mockAccessToken });
 
-  expect(fetch).toHaveBeenCalledWith(API_ROUTE_PIN_SUGGESTIONS, {
+  expect(fetch).toHaveBeenCalledWith(API_URL_PIN_SUGGESTIONS, {
     headers: { Authorization: `Bearer ${mockAccessToken}` },
   });
 });
 
 it("renders pins upon successful fetch", async () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ROUTE_PIN_SUGGESTIONS]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_PIN_SUGGESTIONS]);
 
   renderComponent({ accessToken: mockAccessToken });
 
   await waitFor(() => {
     screen.getByText(
-      MOCK_API_RESPONSES_JSON[API_ROUTE_PIN_SUGGESTIONS].results[0].title,
+      MOCK_API_RESPONSES_JSON[API_URL_PIN_SUGGESTIONS].results[0].title,
     );
   });
 });

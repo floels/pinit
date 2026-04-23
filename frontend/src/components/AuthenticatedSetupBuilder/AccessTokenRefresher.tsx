@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { API_ROUTE_REFRESH_TOKEN } from "@/lib/constants";
+import { API_URL_REFRESH_TOKEN } from "@/lib/constants";
 import { useAuthContext } from "@/contexts/authContext";
 import { useQuery } from "@tanstack/react-query";
 
@@ -13,7 +13,7 @@ const AccessTokenRefresher = ({
   const { setAccessToken } = useAuthContext();
 
   const fetchRefreshedAccessToken = async () => {
-    const response = await fetch(API_ROUTE_REFRESH_TOKEN, {
+    const response = await fetch(API_URL_REFRESH_TOKEN, {
       method: "POST",
       credentials: "include",
     });

@@ -6,7 +6,7 @@ import {
 } from "@/lib/types/frontendTypes";
 import PinThumbnail from "./PinThumbnail";
 import { useEffect, useState } from "react";
-import { API_ROUTE_SAVE_PIN } from "@/lib/constants";
+import { API_URL_SAVE_PIN } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
 import { throwIfKO } from "@/lib/utils/fetch";
 
@@ -99,7 +99,7 @@ const PinThumbnailContainer = ({
       board_id: board.id,
     });
 
-    const response = await fetch(API_ROUTE_SAVE_PIN, {
+    const response = await fetch(API_URL_SAVE_PIN, {
       method: "POST",
       body: requestBody,
     });

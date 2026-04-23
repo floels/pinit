@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import SignupFormContainer from "./SignupFormContainer";
 import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
-import { API_ROUTE_SIGN_UP } from "@/lib/constants";
+import { API_URL_SIGN_UP } from "@/lib/constants";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 
 const handleClickAlreadyHaveAccount = () => {}; // NB: this behavior will be tested in <HeaderUnauthenticatedClient />
@@ -100,8 +100,8 @@ it("reloads the page upon successful response", async () => {
   await userEvent.type(birthdateInput, "1970-01-01");
 
   fetchMock.mockOnceIf(
-    API_ROUTE_SIGN_UP,
-    MOCK_API_RESPONSES[API_ROUTE_SIGN_UP],
+    API_URL_SIGN_UP,
+    MOCK_API_RESPONSES[API_URL_SIGN_UP],
     { status: 201 },
   );
 
@@ -123,7 +123,7 @@ it("displays relevant error when receiving KO responses", async () => {
   await userEvent.type(birthdateInput, "1970-01-01");
 
   fetchMock.mockOnceIf(
-    API_ROUTE_SIGN_UP,
+    API_URL_SIGN_UP,
     JSON.stringify({ errors: [{ code: "invalid_email" }] }),
     { status: 400 },
   );
@@ -132,7 +132,7 @@ it("displays relevant error when receiving KO responses", async () => {
   screen.getByText(en.SignupForm.INVALID_EMAIL_SIGNUP);
 
   fetchMock.mockOnceIf(
-    API_ROUTE_SIGN_UP,
+    API_URL_SIGN_UP,
     JSON.stringify({ errors: [{ code: "invalid_password" }] }),
     { status: 400 },
   );
@@ -142,7 +142,7 @@ it("displays relevant error when receiving KO responses", async () => {
   screen.getByText(en.SignupForm.INVALID_PASSWORD_SIGNUP);
 
   fetchMock.mockOnceIf(
-    API_ROUTE_SIGN_UP,
+    API_URL_SIGN_UP,
     JSON.stringify({ errors: [{ code: "invalid_birthdate" }] }),
     { status: 400 },
   );
@@ -153,7 +153,7 @@ it("displays relevant error when receiving KO responses", async () => {
   screen.getByText(en.SignupForm.INVALID_BIRTHDATE_SIGNUP);
 
   fetchMock.mockOnceIf(
-    API_ROUTE_SIGN_UP,
+    API_URL_SIGN_UP,
     JSON.stringify({ errors: [{ code: "email_already_signed_up" }] }),
     { status: 400 },
   );
@@ -163,7 +163,7 @@ it("displays relevant error when receiving KO responses", async () => {
 
   screen.getByText(en.SignupForm.EMAIL_ALREADY_SIGNED_UP);
 
-  fetchMock.mockOnceIf(API_ROUTE_SIGN_UP, "{}", {
+  fetchMock.mockOnceIf(API_URL_SIGN_UP, "{}", {
     status: 400,
   });
   await userEvent.clear(passwordInput);

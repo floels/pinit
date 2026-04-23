@@ -3,7 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import en from "@/public/locales/en/PinsBoard.json";
 import PinsBoardContainer from "./PinsBoardContainer";
 import { ToastContainer } from "react-toastify";
-import { API_ROUTE_PIN_SUGGESTIONS } from "@/lib/constants";
+import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
 import { mockIntersectionObserver } from "@/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
@@ -12,7 +12,7 @@ import {
 } from "@/lib/testing-utils/mockAPIResponses";
 
 const initialPins =
-  MOCK_API_RESPONSES_SERIALIZED[API_ROUTE_PIN_SUGGESTIONS].results;
+  MOCK_API_RESPONSES_SERIALIZED[API_URL_PIN_SUGGESTIONS].results;
 
 const simulateScrollToBottomOfPage = () => {
   const callback = (global.IntersectionObserver as jest.Mock).mock.calls[1][0]; // here
@@ -35,7 +35,7 @@ const renderComponent = () => {
       <ToastContainer />
       <PinsBoardContainer
         initialPins={initialPins}
-        fetchPinsAPIRoute={API_ROUTE_PIN_SUGGESTIONS}
+        fetchPinsAPIRoute={API_URL_PIN_SUGGESTIONS}
       />
     </MemoryRouter>,
   );
@@ -43,8 +43,8 @@ const renderComponent = () => {
 
 it("fetches new thumbnails when user scrolls to bottom", async () => {
   fetchMock.mockOnceIf(
-    `${API_ROUTE_PIN_SUGGESTIONS}?page=2`,
-    MOCK_API_RESPONSES[API_ROUTE_PIN_SUGGESTIONS],
+    `${API_URL_PIN_SUGGESTIONS}?page=2`,
+    MOCK_API_RESPONSES[API_URL_PIN_SUGGESTIONS],
   );
 
   renderComponent();
@@ -56,7 +56,7 @@ it("fetches new thumbnails when user scrolls to bottom", async () => {
 
     const expectedNumberThumbnails =
       initialPins.length +
-      MOCK_API_RESPONSES_JSON[API_ROUTE_PIN_SUGGESTIONS].results.length;
+      MOCK_API_RESPONSES_JSON[API_URL_PIN_SUGGESTIONS].results.length;
 
     expect(renderedPinThumbnails).toHaveLength(expectedNumberThumbnails);
   });
@@ -76,7 +76,7 @@ it("displays loading spinner while fetching new thumbnails", () => {
 });
 
 it("displays error message in case of KO response upon new thumbnails fetch", async () => {
-  fetchMock.mockOnceIf(`${API_ROUTE_PIN_SUGGESTIONS}?page=2`, "{}", {
+  fetchMock.mockOnceIf(`${API_URL_PIN_SUGGESTIONS}?page=2`, "{}", {
     status: 400,
   });
 

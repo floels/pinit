@@ -4,8 +4,8 @@ import LoginFormContainer from "./LoginFormContainer";
 import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
 import {
-  API_ROUTE_OBTAIN_DEMO_TOKEN,
-  API_ROUTE_OBTAIN_TOKEN,
+  API_URL_OBTAIN_DEMO_TOKEN,
+  API_URL_OBTAIN_TOKEN,
 } from "@/lib/constants";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 
@@ -89,8 +89,8 @@ it("reloads the page upon successful response", async () => {
   await typeInPasswordInput("Pa$$w0rd");
 
   fetchMock.mockOnceIf(
-    API_ROUTE_OBTAIN_TOKEN,
-    MOCK_API_RESPONSES[API_ROUTE_OBTAIN_TOKEN],
+    API_URL_OBTAIN_TOKEN,
+    MOCK_API_RESPONSES[API_URL_OBTAIN_TOKEN],
   );
 
   await submit();
@@ -102,8 +102,8 @@ it("reloads the page upon successful response for demo login", async () => {
   renderComponent();
 
   fetchMock.mockOnceIf(
-    API_ROUTE_OBTAIN_DEMO_TOKEN,
-    MOCK_API_RESPONSES[API_ROUTE_OBTAIN_TOKEN],
+    API_URL_OBTAIN_DEMO_TOKEN,
+    MOCK_API_RESPONSES[API_URL_OBTAIN_TOKEN],
   );
 
   const demoLoginButton = screen.getByText(en.LoginForm.LOG_IN_AS_DEMO);
@@ -119,7 +119,7 @@ it("displays relevant errors when receiving KO responses", async () => {
   await typeInPasswordInput("Pa$$w0rd");
 
   fetchMock.mockOnceIf(
-    API_ROUTE_OBTAIN_TOKEN,
+    API_URL_OBTAIN_TOKEN,
     JSON.stringify({ errors: [{ code: "invalid_email" }] }),
     { status: 401 },
   );
@@ -129,7 +129,7 @@ it("displays relevant errors when receiving KO responses", async () => {
   screen.getByText(en.LoginForm.INVALID_EMAIL_LOGIN);
 
   fetchMock.mockOnceIf(
-    API_ROUTE_OBTAIN_TOKEN,
+    API_URL_OBTAIN_TOKEN,
     JSON.stringify({ errors: [{ code: "invalid_password" }] }),
     { status: 401 },
   );
@@ -139,7 +139,7 @@ it("displays relevant errors when receiving KO responses", async () => {
   await submit();
   screen.getByText(en.LoginForm.INVALID_PASSWORD_LOGIN);
 
-  fetchMock.mockOnceIf(API_ROUTE_OBTAIN_TOKEN, "{}", {
+  fetchMock.mockOnceIf(API_URL_OBTAIN_TOKEN, "{}", {
     status: 400,
   });
   await clearPasswordInput();

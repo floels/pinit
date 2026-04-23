@@ -4,7 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import HeaderSearchBarContainer, {
   AUTOCOMPLETE_DEBOUNCE_TIME_MS,
 } from "./HeaderSearchBarContainer";
-import { API_ROUTE_SEARCH_SUGGESTIONS } from "@/lib/constants";
+import { API_URL_SEARCH_SUGGESTIONS } from "@/lib/constants";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
 import {
   MOCK_API_RESPONSES,
@@ -96,8 +96,8 @@ it("hides search icon when input gets focus", async () => {
 
 it("displays search suggestions with search term as first suggestion", async () => {
   fetchMock.mockOnceIf(
-    `${API_ROUTE_SEARCH_SUGGESTIONS}?search=foo`,
-    MOCK_API_RESPONSES[API_ROUTE_SEARCH_SUGGESTIONS],
+    `${API_URL_SEARCH_SUGGESTIONS}?search=foo`,
+    MOCK_API_RESPONSES[API_URL_SEARCH_SUGGESTIONS],
   );
 
   renderComponent();
@@ -118,11 +118,11 @@ it("displays search suggestions with search term as first suggestion", async () 
 
 it("displays search suggestions as such if search term is already among suggestions", async () => {
   fetchMock.mockOnceIf(
-    `${API_ROUTE_SEARCH_SUGGESTIONS}?search=foo`,
+    `${API_URL_SEARCH_SUGGESTIONS}?search=foo`,
     JSON.stringify({
       results: [
         "foo",
-        ...MOCK_API_RESPONSES_JSON[API_ROUTE_SEARCH_SUGGESTIONS].results,
+        ...MOCK_API_RESPONSES_JSON[API_URL_SEARCH_SUGGESTIONS].results,
       ],
     }),
   );
@@ -145,8 +145,8 @@ it("displays search suggestions as such if search term is already among suggesti
 
 it("navigates to search route when user clicks suggestion", async () => {
   fetchMock.mockOnceIf(
-    `${API_ROUTE_SEARCH_SUGGESTIONS}?search=foo`,
-    MOCK_API_RESPONSES[API_ROUTE_SEARCH_SUGGESTIONS],
+    `${API_URL_SEARCH_SUGGESTIONS}?search=foo`,
+    MOCK_API_RESPONSES[API_URL_SEARCH_SUGGESTIONS],
   );
 
   renderComponent();
@@ -182,8 +182,8 @@ it("does not display any suggestion in case of KO response from the API", async 
   // We need to start with a first successful request in order to trigger an
   // initial state change:
   fetchMock.mockOnceIf(
-    `${API_ROUTE_SEARCH_SUGGESTIONS}?search=foo`,
-    MOCK_API_RESPONSES[API_ROUTE_SEARCH_SUGGESTIONS],
+    `${API_URL_SEARCH_SUGGESTIONS}?search=foo`,
+    MOCK_API_RESPONSES[API_URL_SEARCH_SUGGESTIONS],
   );
 
   await typeSearchTerm("foo");
@@ -192,7 +192,7 @@ it("does not display any suggestion in case of KO response from the API", async 
     screen.getByTestId("search-suggestions-list");
   });
 
-  fetchMock.mockOnceIf(`${API_ROUTE_SEARCH_SUGGESTIONS}?search=foobar`, "{}", {
+  fetchMock.mockOnceIf(`${API_URL_SEARCH_SUGGESTIONS}?search=foobar`, "{}", {
     status: 400,
   });
 
@@ -209,8 +209,8 @@ it("does not display any suggestion in case of fetch error", async () => {
   // We need to start with a first successful request in order to trigger an
   // initial state change:
   fetchMock.mockOnceIf(
-    `${API_ROUTE_SEARCH_SUGGESTIONS}?search=foo`,
-    MOCK_API_RESPONSES[API_ROUTE_SEARCH_SUGGESTIONS],
+    `${API_URL_SEARCH_SUGGESTIONS}?search=foo`,
+    MOCK_API_RESPONSES[API_URL_SEARCH_SUGGESTIONS],
   );
 
   await typeSearchTerm("foo");
@@ -244,7 +244,7 @@ it("fetches only once if two characters are typed within debounce time", async (
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenLastCalledWith(
-      `${API_ROUTE_SEARCH_SUGGESTIONS}?search=ab`,
+      `${API_URL_SEARCH_SUGGESTIONS}?search=ab`,
     );
   });
 
@@ -262,7 +262,7 @@ it("fetches twice if two characters are typed beyond debounce time", async () =>
 
   await waitFor(() => {
     expect(fetch).toHaveBeenLastCalledWith(
-      `${API_ROUTE_SEARCH_SUGGESTIONS}?search=a`,
+      `${API_URL_SEARCH_SUGGESTIONS}?search=a`,
     );
   });
 
@@ -272,7 +272,7 @@ it("fetches twice if two characters are typed beyond debounce time", async () =>
 
   await waitFor(() => {
     expect(fetch).toHaveBeenLastCalledWith(
-      `${API_ROUTE_SEARCH_SUGGESTIONS}?search=ab`,
+      `${API_URL_SEARCH_SUGGESTIONS}?search=ab`,
     );
   });
 

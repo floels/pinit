@@ -1,7 +1,7 @@
 import { useAuthContext } from "@/contexts/authContext";
 import { useAccountContext } from "@/contexts/accountContext";
 import {
-  API_ROUTE_MY_ACCOUNT_DETAILS,
+  API_URL_MY_ACCOUNT_DETAILS,
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
   USERNAME_LOCAL_STORAGE_KEY,
 } from "@/lib/constants";
@@ -19,7 +19,7 @@ const AccountDetailsFetcher = () => {
   const { accessToken } = useAuthContext();
 
   const fetchAccountDetails = async () => {
-    const response = await fetch(API_ROUTE_MY_ACCOUNT_DETAILS, {
+    const response = await fetch(API_URL_MY_ACCOUNT_DETAILS, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
