@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "./pages/Layout";
 import PinDetailsPage from "./pages/PinDetailsPage";
-import AccountPage from "./pages/AccountPage";
+import AccountDetailsPage from "./pages/AccountDetailsPage";
 import BoardPage from "./pages/BoardPage";
 import SearchPage from "./pages/SearchPage";
 
@@ -27,7 +27,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/:username",
-        element: <AccountPage />,
+        element: <AccountDetailsPage />,
       },
       {
         path: "/:username/:slug",
