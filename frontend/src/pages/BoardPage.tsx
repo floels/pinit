@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { API_BASE_URL, API_ENDPOINT_BOARD_DETAILS } from "@/lib/constants";
+import { API_URL_BOARD_DETAILS } from "@/lib/constants";
 import { throwIfKO } from "@/lib/utils/fetch";
 import { serializeBoardWithFullDetails } from "@/lib/utils/serializers";
 import { Response404Error } from "@/lib/customErrors";
@@ -12,7 +12,7 @@ const BoardPage = () => {
   const { username, slug } = useParams<{ username: string; slug: string }>();
 
   const fetchBoardDetails = async () => {
-    const url = `${API_BASE_URL}/${API_ENDPOINT_BOARD_DETAILS}/${username}/${slug}/`;
+    const url = `${API_URL_BOARD_DETAILS}/${username}/${slug}/`;
 
     const response = await fetch(url);
 

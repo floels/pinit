@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import { API_ROUTE_LOG_OUT } from "../constants";
+import { API_URL_LOG_OUT } from "../constants";
 import { useAuthContext } from "@/contexts/authContext";
 import { useTranslation } from "react-i18next";
 
@@ -9,7 +9,7 @@ export const useLogOut = () => {
 
   const logOut = async () => {
     try {
-      await fetch(API_ROUTE_LOG_OUT, {
+      await fetch(API_URL_LOG_OUT, {
         method: "POST",
         credentials: "include",
       });

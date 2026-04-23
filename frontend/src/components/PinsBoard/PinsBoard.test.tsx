@@ -4,7 +4,7 @@ import PinsBoard from "./PinsBoard";
 import { mockIntersectionObserver } from "@/lib/testing-utils/misc";
 import en from "@/public/locales/en/PinsSearch.json";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
-import { API_ROUTE_PIN_SUGGESTIONS } from "@/lib/constants";
+import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
 
 const VIEWPORT_WIDTH_PX = 1200;
 
@@ -16,7 +16,7 @@ Object.defineProperty(window, "innerWidth", {
 
 const NUMBER_PINS = 50;
 
-const pins = MOCK_API_RESPONSES_SERIALIZED[API_ROUTE_PIN_SUGGESTIONS].results;
+const pins = MOCK_API_RESPONSES_SERIALIZED[API_URL_PIN_SUGGESTIONS].results;
 
 const renderComponent = () => {
   render(

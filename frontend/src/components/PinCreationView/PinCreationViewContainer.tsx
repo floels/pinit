@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { API_ROUTE_CREATE_PIN } from "@/lib/constants";
+import { API_URL_CREATE_PIN } from "@/lib/constants";
 import { toast } from "react-toastify";
 import SuccessToastMessage from "./SuccessToastMessage";
 import PinCreationView from "./PinCreationView";
@@ -90,7 +90,7 @@ const PinCreationViewContainer = () => {
   };
 
   const postFormData = async (formData: FormData) => {
-    const response = await fetch(API_ROUTE_CREATE_PIN, {
+    const response = await fetch(API_URL_CREATE_PIN, {
       method: "POST",
       body: formData,
     });

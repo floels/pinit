@@ -1,33 +1,33 @@
 import {
-  API_ENDPOINT_ACCOUNT_DETAILS,
-  API_ENDPOINT_BOARD_DETAILS,
-  API_ENDPOINT_PIN_DETAILS,
-  API_ENDPOINT_SEARCH_PINS,
-  API_ROUTE_CREATE_PIN,
-  API_ROUTE_MY_ACCOUNT_DETAILS,
-  API_ROUTE_OBTAIN_TOKEN,
-  API_ROUTE_PIN_SUGGESTIONS,
-  API_ROUTE_REFRESH_TOKEN,
-  API_ROUTE_SAVE_PIN,
-  API_ROUTE_SEARCH_SUGGESTIONS,
-  API_ROUTE_SIGN_UP,
+  API_URL_ACCOUNT_DETAILS,
+  API_URL_BOARD_DETAILS,
+  API_URL_CREATE_PIN,
+  API_URL_MY_ACCOUNT_DETAILS,
+  API_URL_OBTAIN_TOKEN,
+  API_URL_PIN_DETAILS,
+  API_URL_PIN_SUGGESTIONS,
+  API_URL_REFRESH_TOKEN,
+  API_URL_SAVE_PIN,
+  API_URL_SEARCH,
+  API_URL_SEARCH_SUGGESTIONS,
+  API_URL_SIGN_UP,
 } from "../constants";
 import { TypesOfAccount } from "../types/frontendTypes";
 
 export const MOCK_API_RESPONSES_JSON = {
-  [API_ROUTE_SIGN_UP]: {
+  [API_URL_SIGN_UP]: {
     access_token: "mock.access.token.signup",
     access_token_expiration_utc: "2024-02-07T07:09:45+00:00",
   },
-  [API_ROUTE_OBTAIN_TOKEN]: {
+  [API_URL_OBTAIN_TOKEN]: {
     access_token: "mock.access.token.login",
     access_token_expiration_utc: "2024-02-08T07:09:45+00:00",
   },
-  [API_ROUTE_REFRESH_TOKEN]: {
+  [API_URL_REFRESH_TOKEN]: {
     access_token: "mock.access.token.refresh",
     access_token_expiration_utc: "2024-02-09T07:09:45+00:00",
   },
-  [API_ROUTE_PIN_SUGGESTIONS]: {
+  [API_URL_PIN_SUGGESTIONS]: {
     results: Array.from({ length: 50 }, (_, index) => ({
       unique_id: String(index).padStart(18, "0"),
       image_url:
@@ -42,7 +42,7 @@ export const MOCK_API_RESPONSES_JSON = {
       },
     })),
   },
-  [API_ROUTE_MY_ACCOUNT_DETAILS]: {
+  [API_URL_MY_ACCOUNT_DETAILS]: {
     username: "johndoe",
     display_name: "John Doe",
     profile_picture_url:
@@ -76,7 +76,7 @@ export const MOCK_API_RESPONSES_JSON = {
     type: "personal",
     owner_email: "john.doe@example.com",
   },
-  [API_ROUTE_SEARCH_SUGGESTIONS]: {
+  [API_URL_SEARCH_SUGGESTIONS]: {
     results: [
       "foo suggestion 1",
       "foo suggestion 2",
@@ -86,17 +86,17 @@ export const MOCK_API_RESPONSES_JSON = {
       "foo suggestion 6",
     ],
   },
-  [API_ROUTE_CREATE_PIN]: {
+  [API_URL_CREATE_PIN]: {
     unique_id: "000000000000000001",
     image_url:
       "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
     title: "Pin title",
   },
-  [API_ROUTE_SAVE_PIN]: {
+  [API_URL_SAVE_PIN]: {
     board_id: "000000000000000001",
     pin_id: "000000000000000001",
   },
-  [API_ENDPOINT_SEARCH_PINS]: {
+  [API_URL_SEARCH]: {
     results: Array.from({ length: 50 }, (_, index) => ({
       unique_id: String(index).padStart(18, "0"),
       image_url:
@@ -110,7 +110,7 @@ export const MOCK_API_RESPONSES_JSON = {
       },
     })),
   },
-  [API_ENDPOINT_PIN_DETAILS]: {
+  [API_URL_PIN_DETAILS]: {
     unique_id: "000000000000000001",
     image_url:
       "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
@@ -124,7 +124,7 @@ export const MOCK_API_RESPONSES_JSON = {
     },
     description: "Pin description.",
   },
-  [API_ENDPOINT_ACCOUNT_DETAILS]: {
+  [API_URL_ACCOUNT_DETAILS]: {
     username: "johndoe",
     display_name: "John Doe",
     profile_picture_url:
@@ -156,7 +156,7 @@ export const MOCK_API_RESPONSES_JSON = {
       "https://i.pinimg.com/1200x/a9/b1/51/a9b151f4593e062c012579071aa09d16.jpg",
     description: "Description for account of John Doe.",
   },
-  [API_ENDPOINT_BOARD_DETAILS]: {
+  [API_URL_BOARD_DETAILS]: {
     id: "000000000000000001",
     name: "Board 1 name",
     slug: "board-1",
@@ -202,7 +202,7 @@ export const MOCK_API_RESPONSES_JSON = {
 // 'lib/utils/serializers.ts' here because otherwise we wouldn't
 // be able to detect in the tests if there is a bug in them.
 export const MOCK_API_RESPONSES_SERIALIZED = {
-  [API_ENDPOINT_PIN_DETAILS]: {
+  [API_URL_PIN_DETAILS]: {
     id: "000000000000000001",
     imageURL:
       "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
@@ -216,7 +216,7 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
     },
     description: "Pin description.",
   },
-  [API_ENDPOINT_ACCOUNT_DETAILS]: {
+  [API_URL_ACCOUNT_DETAILS]: {
     username: "johndoe",
     displayName: "John Doe",
     profilePictureURL:
@@ -248,7 +248,7 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
       "https://i.pinimg.com/1200x/a9/b1/51/a9b151f4593e062c012579071aa09d16.jpg",
     description: "Description for account of John Doe.",
   },
-  [API_ROUTE_MY_ACCOUNT_DETAILS]: {
+  [API_URL_MY_ACCOUNT_DETAILS]: {
     username: "johndoe",
     displayName: "John Doe",
     initial: "J",
@@ -282,7 +282,7 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
     type: TypesOfAccount.PERSONAL,
     ownerEmail: "john.doe@example.com",
   },
-  [API_ROUTE_PIN_SUGGESTIONS]: {
+  [API_URL_PIN_SUGGESTIONS]: {
     results: Array.from({ length: 50 }, (_, index) => ({
       id: String(index).padStart(18, "0"),
       title: `Pin ${index} title`,
@@ -297,7 +297,7 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
       },
     })),
   },
-  [API_ENDPOINT_BOARD_DETAILS]: {
+  [API_URL_BOARD_DETAILS]: {
     id: "000000000000000001",
     name: "Board 1 name",
     slug: "board-1",

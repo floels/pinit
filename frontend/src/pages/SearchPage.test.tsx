@@ -4,7 +4,7 @@ import SearchPage from "./SearchPage";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 import { mockIntersectionObserver } from "@/lib/testing-utils/misc";
 import { MOCK_API_RESPONSES, MOCK_API_RESPONSES_JSON } from "@/lib/testing-utils/mockAPIResponses";
-import { API_BASE_URL, API_ENDPOINT_SEARCH_PINS } from "@/lib/constants";
+import { API_URL_SEARCH } from "@/lib/constants";
 import en from "@/public/locales/en/PinsSearch.json";
 
 const searchTerm = "mountains";
@@ -27,23 +27,23 @@ beforeEach(() => {
 });
 
 it("fetches search results from the correct endpoint", () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ENDPOINT_SEARCH_PINS]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_SEARCH]);
 
   renderComponent();
 
   expect(fetch).toHaveBeenCalledWith(
-    `${API_BASE_URL}/${API_ENDPOINT_SEARCH_PINS}?q=${searchTerm}`,
+    `${API_URL_SEARCH}?q=${searchTerm}`,
   );
 });
 
 it("renders search results upon successful fetch", async () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ENDPOINT_SEARCH_PINS]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_SEARCH]);
 
   renderComponent();
 
   await waitFor(() => {
     screen.getByText(
-      MOCK_API_RESPONSES_JSON[API_ENDPOINT_SEARCH_PINS].results[0].title,
+      MOCK_API_RESPONSES_JSON[API_URL_SEARCH].results[0].title,
     );
   });
 });

@@ -1,4 +1,4 @@
-import { API_ROUTE_REFRESH_TOKEN } from "@/lib/constants";
+import { API_URL_REFRESH_TOKEN } from "@/lib/constants";
 import { render, waitFor } from "@testing-library/react";
 import AccessTokenRefresher from "./AccessTokenRefresher";
 import { withQueryClient } from "@/lib/testing-utils/misc";
@@ -29,18 +29,18 @@ beforeEach(() => {
 });
 
 it("calls refresh endpoint on page load", () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ROUTE_REFRESH_TOKEN]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN]);
 
   renderComponent();
 
   expect(fetch).toHaveBeenCalledWith(
-    API_ROUTE_REFRESH_TOKEN,
+    API_URL_REFRESH_TOKEN,
     expect.objectContaining({ method: "POST", credentials: "include" }),
   );
 });
 
 it("stores access token in context and calls handleFinishedFetching on success", async () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ROUTE_REFRESH_TOKEN]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN]);
 
   renderComponent();
 

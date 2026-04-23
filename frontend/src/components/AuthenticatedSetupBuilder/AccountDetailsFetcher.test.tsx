@@ -1,7 +1,7 @@
 import { render, waitFor } from "@testing-library/react";
 import AccountDetailsFetcher from "./AccountDetailsFetcher";
 import {
-  API_ROUTE_MY_ACCOUNT_DETAILS,
+  API_URL_MY_ACCOUNT_DETAILS,
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
   USERNAME_LOCAL_STORAGE_KEY,
 } from "@/lib/constants";
@@ -41,14 +41,14 @@ const renderComponent = () => {
 it(`calls 'setAccount' with proper arguments and persists
 relevant data upon successful fetch`, async () => {
   fetchMock.mockOnceIf(
-    API_ROUTE_MY_ACCOUNT_DETAILS,
-    MOCK_API_RESPONSES[API_ROUTE_MY_ACCOUNT_DETAILS],
+    API_URL_MY_ACCOUNT_DETAILS,
+    MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS],
   );
 
   renderComponent();
 
   const responseSerialized =
-    MOCK_API_RESPONSES_SERIALIZED[API_ROUTE_MY_ACCOUNT_DETAILS];
+    MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
 
   await waitFor(() => {
     expect(mockSetAccount).toHaveBeenCalledWith(responseSerialized);
@@ -65,15 +65,15 @@ relevant data upon successful fetch`, async () => {
 
 it("sends the access token as Authorization header", async () => {
   fetchMock.mockOnceIf(
-    API_ROUTE_MY_ACCOUNT_DETAILS,
-    MOCK_API_RESPONSES[API_ROUTE_MY_ACCOUNT_DETAILS],
+    API_URL_MY_ACCOUNT_DETAILS,
+    MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS],
   );
 
   renderComponent();
 
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledWith(
-      API_ROUTE_MY_ACCOUNT_DETAILS,
+      API_URL_MY_ACCOUNT_DETAILS,
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: `Bearer ${MOCK_ACCESS_TOKEN}`,
@@ -84,7 +84,7 @@ it("sends the access token as Authorization header", async () => {
 });
 
 it("triggers logout upon 401 response", async () => {
-  fetchMock.mockOnceIf(API_ROUTE_MY_ACCOUNT_DETAILS, "{}", {
+  fetchMock.mockOnceIf(API_URL_MY_ACCOUNT_DETAILS, "{}", {
     status: 401,
   });
 

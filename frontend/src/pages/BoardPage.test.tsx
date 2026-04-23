@@ -6,7 +6,7 @@ import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
 } from "@/lib/testing-utils/mockAPIResponses";
-import { API_BASE_URL, API_ENDPOINT_BOARD_DETAILS } from "@/lib/constants";
+import { API_URL_BOARD_DETAILS } from "@/lib/constants";
 import en from "@/public/locales/en/BoardDetails.json";
 
 const username = "johndoe";
@@ -26,22 +26,22 @@ beforeEach(() => {
 });
 
 it("fetches board details from the correct endpoint", () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ENDPOINT_BOARD_DETAILS]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_BOARD_DETAILS]);
 
   renderComponent();
 
   expect(fetch).toHaveBeenCalledWith(
-    `${API_BASE_URL}/${API_ENDPOINT_BOARD_DETAILS}/${username}/${slug}/`,
+    `${API_URL_BOARD_DETAILS}/${username}/${slug}/`,
   );
 });
 
 it("renders board details upon successful fetch", async () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ENDPOINT_BOARD_DETAILS]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_BOARD_DETAILS]);
 
   renderComponent();
 
   await waitFor(() => {
-    screen.getByText(MOCK_API_RESPONSES_JSON[API_ENDPOINT_BOARD_DETAILS].name);
+    screen.getByText(MOCK_API_RESPONSES_JSON[API_URL_BOARD_DETAILS].name);
   });
 });
 

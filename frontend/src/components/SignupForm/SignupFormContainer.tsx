@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  API_ROUTE_SIGN_UP,
+  API_URL_SIGN_UP,
   ERROR_CODE_EMAIL_ALREADY_SIGNED_UP,
   ERROR_CODE_FETCH_FAILED,
   ERROR_CODE_INVALID_BIRTHDATE,
@@ -98,7 +98,7 @@ const SignupFormContainer = ({
     let response;
 
     try {
-      response = await fetch(API_ROUTE_SIGN_UP, {
+      response = await fetch(API_URL_SIGN_UP, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: requestBody,

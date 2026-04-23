@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { API_BASE_URL, API_ENDPOINT_PIN_DETAILS } from "@/lib/constants";
+import { API_URL_PIN_DETAILS } from "@/lib/constants";
 import { throwIfKO } from "@/lib/utils/fetch";
 import { serializePinWithFullDetails } from "@/lib/utils/serializers";
 import { Response404Error } from "@/lib/customErrors";
@@ -12,7 +12,7 @@ const PinDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
 
   const fetchPinDetails = async () => {
-    const url = `${API_BASE_URL}/${API_ENDPOINT_PIN_DETAILS}/${id}/`;
+    const url = `${API_URL_PIN_DETAILS}/${id}/`;
 
     const response = await fetch(url);
 

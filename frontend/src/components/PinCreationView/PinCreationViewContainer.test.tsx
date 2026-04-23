@@ -10,7 +10,7 @@ import PinCreationViewContainer from "./PinCreationViewContainer";
 import en from "@/public/locales/en/PinCreation.json";
 import { act } from "react-dom/test-utils";
 import userEvent from "@testing-library/user-event";
-import { API_ROUTE_CREATE_PIN } from "@/lib/constants";
+import { API_URL_CREATE_PIN } from "@/lib/constants";
 import { FetchMock } from "jest-fetch-mock";
 import { ToastContainer } from "react-toastify";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
@@ -124,7 +124,7 @@ it("posts to API route when user clicks submit", async () => {
     const mockedFetch = fetch as FetchMock; // necessary to avoid type errors
 
     expect(mockedFetch).toHaveBeenLastCalledWith(
-      API_ROUTE_CREATE_PIN,
+      API_URL_CREATE_PIN,
       expect.objectContaining({
         method: "POST",
       }),
@@ -149,8 +149,8 @@ upon successful creation`, async () => {
   await dropImageFile();
 
   fetchMock.mockOnceIf(
-    `${API_ROUTE_CREATE_PIN}`,
-    MOCK_API_RESPONSES[API_ROUTE_CREATE_PIN],
+    `${API_URL_CREATE_PIN}`,
+    MOCK_API_RESPONSES[API_URL_CREATE_PIN],
     { status: 201 },
   );
 
@@ -193,7 +193,7 @@ it("displays error toast in case of KO response upon posting", async () => {
 
   await dropImageFile();
 
-  fetchMock.mockOnceIf(`${API_ROUTE_CREATE_PIN}`, "{}", {
+  fetchMock.mockOnceIf(`${API_URL_CREATE_PIN}`, "{}", {
     status: 400,
   });
 

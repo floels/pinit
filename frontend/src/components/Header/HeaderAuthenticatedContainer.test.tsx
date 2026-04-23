@@ -6,7 +6,7 @@ import en from "@/public/locales/en/HeaderAuthenticated.json";
 import HeaderAuthenticatedContainer from "./HeaderAuthenticatedContainer";
 import { MockLocalStorage } from "@/lib/testing-utils/misc";
 import {
-  API_ROUTE_MY_ACCOUNT_DETAILS,
+  API_URL_MY_ACCOUNT_DETAILS,
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
   USERNAME_LOCAL_STORAGE_KEY,
 } from "@/lib/constants";
@@ -28,7 +28,7 @@ jest.mock("@/components/Header/AccountOptionsFlyout", () => {
 localStorage = new MockLocalStorage();
 
 const defaultAccount =
-  MOCK_API_RESPONSES_SERIALIZED[API_ROUTE_MY_ACCOUNT_DETAILS];
+  MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
 
 const renderComponent = ({
   account = defaultAccount,
