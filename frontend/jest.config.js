@@ -13,7 +13,7 @@ const config = {
     "^.+\\.[jt]sx?$": ["ts-jest", { tsconfig: "./tsconfig.test.json" }],
   },
   moduleNameMapper: {
-    "^.+\\.module\\.css$": "<rootDir>/__mocks__/styleMock.js",
+    "^.+\\.module\\.css$": "identity-obj-proxy",
     "^@/public/(.*)$": "<rootDir>/public/$1",
     "^@/(.*)$": "<rootDir>/src/$1",
   },
