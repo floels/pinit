@@ -29,6 +29,12 @@
       "rules": {
         "no-global-assign": "off"
       }
+    },
+    {
+      "files": ["jest.config.js"],
+      "env": {
+        "node": true
+      }
     }
   ]
 }

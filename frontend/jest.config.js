@@ -1,13 +1,5 @@
-// See https://nextjs.org/docs/pages/building-your-application/testing/jest
-import type { Config } from "jest";
-import nextJest from "next/jest.js";
-
-const createJestConfig = nextJest({
-  dir: "./",
-});
-
-const config: Config = {
-  // https://github.com/jefflau/jest-fetch-mock#to-setup-for-all-tests
+/** @type {import('jest').Config} */
+const config = {
   setupFiles: ["./setupJest.js"],
   setupFilesAfterEnv: ["./setupJestAfterEnv.js"],
   testEnvironment: "jest-environment-jsdom",
@@ -17,10 +9,14 @@ const config: Config = {
     "<rootDir>/src/lib/customErrors.ts",
     "<rootDir>/src/lib/testing-utils/",
   ],
+  transform: {
+    "^.+\\.[jt]sx?$": ["ts-jest", { tsconfig: "./tsconfig.test.json" }],
+  },
   moduleNameMapper: {
+    "^.+\\.module\\.css$": "identity-obj-proxy",
     "^@/public/(.*)$": "<rootDir>/public/$1",
     "^@/(.*)$": "<rootDir>/src/$1",
   },
 };
 
-export default createJestConfig(config);
+module.exports = config;

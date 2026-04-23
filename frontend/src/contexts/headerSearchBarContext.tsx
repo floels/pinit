@@ -57,7 +57,7 @@ export const HeaderSearchBarContextProvider = ({
 
   // Initialize the input value to the search param if present:
   useEffect(() => {
-    if (pathname === "/en/search/pins") {
+    if (pathname === "/search/pins") {
       const searchTerm = searchParams.get("q");
       if (searchTerm) {
         dispatch({ type: "SET_INPUT_VALUE", payload: searchTerm });

@@ -18,11 +18,6 @@ const fifthFold = (
   <FifthFold heroRef={heroRef} onClickBackToTop={mockOnClickBackToTop} />
 );
 
-// Needed for the <LoginForm /> and <SignupForm /> components, which call useRouter():
-jest.mock("next/navigation", () => ({
-  useRouter: jest.fn(),
-}));
-
 it("scrolls hero ref into view upon rendering", () => {
   render(fifthFold);
 
