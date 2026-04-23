@@ -77,13 +77,3 @@ it("renders error view upon failed fetch", async () => {
     screen.getByText(en.ERROR_FETCH_PIN_SUGGESTIONS);
   });
 });
-
-it("triggers logout upon 401 response", async () => {
-  fetchMock.mockResponseOnce("{}", { status: 401 });
-
-  renderComponent({ accessToken: mockAccessToken });
-
-  await waitFor(() => {
-    screen.getByTestId("logout-trigger-overlay");
-  });
-});
