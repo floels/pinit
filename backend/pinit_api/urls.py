@@ -16,7 +16,7 @@ from .views import (
 
 urlpatterns = [
     path("doc/", TemplateView.as_view(template_name="redoc.html"), name="doc"),
-    # Mobile auth endpoints (tokens in response body)
+    # TODO: include 'mobile' in the URL path for all mobile auth endpoints (e.g. 'token/refresh/' -> 'token/mobile/refresh/')
     path("signup/", signup.sign_up_mobile, name="sign_up_mobile"),
     path(
         "token/obtain/",
@@ -33,7 +33,6 @@ urlpatterns = [
         token_refresh.RefreshTokenMobileView.as_view(),
         name="refresh_token",
     ),
-    # Web auth endpoints (refresh token in httpOnly cookie)
     path("signup/web/", signup.sign_up_web, name="sign_up_web"),
     path(
         "token/web/obtain/",
