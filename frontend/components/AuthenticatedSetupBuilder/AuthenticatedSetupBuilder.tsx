@@ -8,10 +8,14 @@ const AuthenticatedSetupBuilder = () => {
     useState(true);
   const { accessToken } = useAuthContext();
 
+  const handleFinishedFetchingRefreshToken = () => {
+    setIsFetchingRefreshedToken(false);
+  };
+
   if (isFetchingRefreshedToken) {
     return (
       <AccessTokenRefresher
-        handleFinishedFetching={() => setIsFetchingRefreshedToken(false)}
+        handleFinishedFetching={handleFinishedFetchingRefreshToken}
       />
     );
   }
