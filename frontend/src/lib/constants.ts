@@ -16,10 +16,9 @@ export const API_URL_SEARCH_SUGGESTIONS = `${API_BASE_URL}/search-suggestions/`;
 export const API_URL_CREATE_PIN = `${API_BASE_URL}/create-pin/`;
 export const API_URL_SAVE_PIN = `${API_BASE_URL}/save-pin/`;
 
-export const API_ENDPOINT_PIN_DETAILS = "pins";
-export const API_ENDPOINT_ACCOUNT_DETAILS = "accounts";
-export const API_ENDPOINT_BOARD_DETAILS = "boards";
-export const API_ENDPOINT_SEARCH_PINS = "search/";
+export const API_URL_PIN_DETAILS = `${API_BASE_URL}/pins`;
+export const API_URL_ACCOUNT_DETAILS = `${API_BASE_URL}/accounts`;
+export const API_URL_BOARD_DETAILS = `${API_BASE_URL}/boards`;
 
 // API error codes
 export const ERROR_CODE_UNAUTHORIZED = "unauthorized";

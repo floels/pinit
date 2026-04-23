@@ -1,7 +1,7 @@
 import { BoardWithBasicDetails } from "@/lib/types/frontendTypes";
 import BoardThumbnail from "./BoardThumbnail";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
-import { API_ENDPOINT_ACCOUNT_DETAILS } from "@/lib/constants";
+import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
@@ -15,7 +15,7 @@ const renderComponent = ({ board }: { board: BoardWithBasicDetails }) => {
 
 it("renders cover picture and two secondary pictures if all are provided", () => {
   const board =
-    MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_ACCOUNT_DETAILS].boards[0];
+    MOCK_API_RESPONSES_SERIALIZED[API_URL_ACCOUNT_DETAILS].boards[0];
 
   renderComponent({ board });
 
@@ -36,7 +36,7 @@ it("renders cover picture and two secondary pictures if all are provided", () =>
 it(`renders cover picture and two placeholders for secondary pictures
 if only one element in 'firstImageURLs'`, () => {
   const board =
-    MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_ACCOUNT_DETAILS].boards[0];
+    MOCK_API_RESPONSES_SERIALIZED[API_URL_ACCOUNT_DETAILS].boards[0];
 
   board.firstImageURLs = board.firstImageURLs.slice(0, 1);
 
@@ -51,7 +51,7 @@ if only one element in 'firstImageURLs'`, () => {
 
 it("renders three placeholders if 'firstImageURLs' is empty", () => {
   const board =
-    MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_ACCOUNT_DETAILS].boards[0];
+    MOCK_API_RESPONSES_SERIALIZED[API_URL_ACCOUNT_DETAILS].boards[0];
 
   board.firstImageURLs = [];
 

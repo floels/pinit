@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react";
 import AccountDetailsView from "./AccountDetailsView";
 import en from "@/public/locales/en/AccountDetails.json";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
-import { API_ENDPOINT_ACCOUNT_DETAILS } from "@/lib/constants";
+import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
 
-const account = MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_ACCOUNT_DETAILS];
+const account = MOCK_API_RESPONSES_SERIALIZED[API_URL_ACCOUNT_DETAILS];
 
 it("renders all relevant details", () => {
   render(<AccountDetailsView account={account} />);

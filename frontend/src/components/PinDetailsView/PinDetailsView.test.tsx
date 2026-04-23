@@ -3,10 +3,10 @@ import { MemoryRouter } from "react-router-dom";
 import PinDetailsView from "./PinDetailsView";
 import en from "@/public/locales/en/PinDetails.json";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
-import { API_ENDPOINT_PIN_DETAILS } from "@/lib/constants";
+import { API_URL_PIN_DETAILS } from "@/lib/constants";
 import { PinWithFullDetails } from "@/lib/types/frontendTypes";
 
-const defaultPin = MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_PIN_DETAILS];
+const defaultPin = MOCK_API_RESPONSES_SERIALIZED[API_URL_PIN_DETAILS];
 
 const renderComponent = ({
   pin = defaultPin,

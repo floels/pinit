@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { API_BASE_URL, API_ENDPOINT_ACCOUNT_DETAILS } from "@/lib/constants";
+import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
 import { throwIfKO } from "@/lib/utils/fetch";
 import { serializeAccountWithPublicDetails } from "@/lib/utils/serializers";
 import { Response404Error } from "@/lib/customErrors";
@@ -12,7 +12,7 @@ const AccountDetailsPage = () => {
   const { username } = useParams<{ username: string }>();
 
   const fetchAccountDetails = async () => {
-    const url = `${API_BASE_URL}/${API_ENDPOINT_ACCOUNT_DETAILS}/${username}/`;
+    const url = `${API_URL_ACCOUNT_DETAILS}/${username}/`;
 
     const response = await fetch(url);
 

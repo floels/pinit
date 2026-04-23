@@ -1,6 +1,6 @@
 import { useSearchParams, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { API_BASE_URL, API_ENDPOINT_SEARCH_PINS, API_URL_SEARCH } from "@/lib/constants";
+import { API_URL_SEARCH } from "@/lib/constants";
 import { throwIfKO } from "@/lib/utils/fetch";
 import { serializePinsWithAuthorDetails } from "@/lib/utils/serializers";
 import PinsBoardContainer from "@/components/PinsBoard/PinsBoardContainer";
@@ -12,7 +12,7 @@ const SearchPage = () => {
   const searchTerm = searchParams.get("q");
 
   const fetchSearchResults = async () => {
-    const url = `${API_BASE_URL}/${API_ENDPOINT_SEARCH_PINS}?q=${searchTerm}`;
+    const url = `${API_URL_SEARCH}?q=${searchTerm}`;
 
     const response = await fetch(url);
 

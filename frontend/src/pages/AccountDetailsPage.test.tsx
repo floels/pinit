@@ -6,7 +6,7 @@ import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
 } from "@/lib/testing-utils/mockAPIResponses";
-import { API_BASE_URL, API_ENDPOINT_ACCOUNT_DETAILS } from "@/lib/constants";
+import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
 import en from "@/public/locales/en/AccountDetails.json";
 
 const username = "johndoe";
@@ -25,23 +25,23 @@ beforeEach(() => {
 });
 
 it("fetches account details from the correct endpoint", () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ENDPOINT_ACCOUNT_DETAILS]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_ACCOUNT_DETAILS]);
 
   renderComponent();
 
   expect(fetch).toHaveBeenCalledWith(
-    `${API_BASE_URL}/${API_ENDPOINT_ACCOUNT_DETAILS}/${username}/`,
+    `${API_URL_ACCOUNT_DETAILS}/${username}/`,
   );
 });
 
 it("renders account details upon successful fetch", async () => {
-  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_ENDPOINT_ACCOUNT_DETAILS]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_ACCOUNT_DETAILS]);
 
   renderComponent();
 
   await waitFor(() => {
     screen.getByText(
-      MOCK_API_RESPONSES_JSON[API_ENDPOINT_ACCOUNT_DETAILS].display_name,
+      MOCK_API_RESPONSES_JSON[API_URL_ACCOUNT_DETAILS].display_name,
     );
   });
 });
