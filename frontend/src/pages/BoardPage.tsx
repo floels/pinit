@@ -27,14 +27,9 @@ const BoardPage = () => {
     return serializeBoardWithFullDetails(responseData);
   };
 
-  const shouldRetry = (_failureCount: number, error: unknown) => {
-    return !(error instanceof Response404Error);
-  };
-
   const { data: boardDetails, error, isLoading } = useQuery({
     queryKey: ["board", username, slug],
     queryFn: fetchBoardDetails,
-    retry: shouldRetry,
   });
 
   if (isLoading) {

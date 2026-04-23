@@ -27,14 +27,9 @@ const AccountDetailsPage = () => {
     return serializeAccountWithPublicDetails(responseData);
   };
 
-  const shouldRetry = (_failureCount: number, error: unknown) => {
-    return !(error instanceof Response404Error);
-  }
-
   const { data: accountDetails, error, isLoading } = useQuery({
     queryKey: ["account", username],
     queryFn: fetchAccountDetails,
-    retry: shouldRetry,
   });
 
   if (isLoading) {

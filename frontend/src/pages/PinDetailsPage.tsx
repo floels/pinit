@@ -27,14 +27,9 @@ const PinDetailsPage = () => {
     return serializePinWithFullDetails(responseData);
   };
 
-  const shouldRetry = (_failureCount: number, error: unknown) => {
-    return !(error instanceof Response404Error);
-  };
-
   const { data: pinDetails, error, isLoading } = useQuery({
     queryKey: ["pin", id],
     queryFn: fetchPinDetails,
-    retry: shouldRetry,
   });
 
   if (isLoading) {
