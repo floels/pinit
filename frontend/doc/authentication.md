@@ -1,8 +1,11 @@
-# Authentication
+# Authentication (web)
+
+> This document covers the authentication flow for the **web frontend** only.
+> The mobile app uses different token delivery mechanisms (no httpOnly cookies).
 
 ## Overview
 
-PinIt uses a **two-token** scheme:
+The web frontend uses a **two-token** scheme:
 
 | Token | Where stored | Accessible to JS | Lifetime |
 |---|---|---|---|
