@@ -2,6 +2,8 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..models import User
 from ..lib.constants import (
@@ -118,6 +120,14 @@ def obtain_demo_token_pair_web(request):
 
 @api_view(["POST"])
 def log_out_web(request):
+    refresh_token_str = request.COOKIES.get(REFRESH_TOKEN_COOKIE_NAME)
+
+    if refresh_token_str:
+        try:
+            RefreshToken(refresh_token_str).blacklist()
+        except TokenError:
+            pass
+
     response = Response(status=status.HTTP_200_OK)
     response.delete_cookie(REFRESH_TOKEN_COOKIE_NAME, path="/")
     return response
