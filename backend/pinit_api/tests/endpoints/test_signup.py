@@ -10,7 +10,7 @@ from pinit_api.serializers.user_serializers import (
     ERROR_CODE_INVALID_BIRTHDATE,
 )
 from pinit_api.tests.testing_utils.factories import AccountFactory
-from pinit_api.views.authentication import REFRESH_TOKEN_COOKIE_NAME
+from pinit_api.lib.constants import REFRESH_TOKEN_COOKIE_NAME
 
 
 class SignupTestsMixin:

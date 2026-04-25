@@ -9,7 +9,7 @@ from pinit_api.lib.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
 )
-from pinit_api.views.authentication import REFRESH_TOKEN_COOKIE_NAME
+from pinit_api.lib.constants import REFRESH_TOKEN_COOKIE_NAME
 
 
 class AuthenticationTests(TestCase):

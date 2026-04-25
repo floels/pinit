@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.views import TokenViewBase
 
-from .authentication import (
+from ..lib.constants import (
     ERROR_CODE_INVALID_REFRESH_TOKEN,
     ERROR_CODE_MISSING_REFRESH_TOKEN,
     REFRESH_TOKEN_COOKIE_NAME,
