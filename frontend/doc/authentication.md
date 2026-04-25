@@ -64,7 +64,7 @@ Once `isAuthInitialized` is true, `AuthBootstrap` also mounts `AccountDetailsFet
 
 ### 2. Login
 
-After the login API sets the httpOnly cookie, the frontend immediately calls the refresh endpoint to obtain an access token and sets it in context. No page reload is needed.
+After the login API sets the HTTP-only cookie, the frontend immediately calls the refresh endpoint to obtain an access token and sets it in context. No page reload is needed.
 
 ```mermaid
 sequenceDiagram
