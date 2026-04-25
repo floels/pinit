@@ -10,7 +10,7 @@ The web frontend uses a **two-token** scheme:
 | Token | Where stored | Accessible to JS | Lifetime |
 |---|---|---|---|
 | **Access token** | React context (in-memory) | Yes — passed as `Authorization: Bearer …` header | 24 hours |
-| **Refresh token** | httpOnly cookie | No | 24 hours |
+| **Refresh token** | httpOnly cookie | No | 30 days |
 
 Keeping the access token in memory (not localStorage) limits XSS exposure. Keeping the refresh token in an httpOnly cookie prevents it from being read by any script.
 

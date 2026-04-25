@@ -1,51 +1,49 @@
-# Pinit
+# PinIt
 
 A Pinterest-like platform for discovering, creating, and organizing pins on boards.
 
 ## Stack
 
-| Layer    | Tech                                      |
-|----------|-------------------------------------------|
-| Frontend | Next.js 14, React 18, TypeScript, pnpm    |
-| Backend  | Django 5, Django REST Framework, Python 3 |
-| Database | PostgreSQL 13                             |
-| Storage  | AWS S3 (pin images)                       |
+| Layer    | Tech                                             |
+|----------|--------------------------------------------------|
+| Frontend | Vite, React 18, React Router 7, TypeScript, pnpm |
+| Backend  | Django 5, Django REST Framework, Python 3        |
+| Database | PostgreSQL 13                                    |
+| Storage  | AWS S3 (pin images)                             |
+
+## Structure
+
+```
+pinit/
+├── backend/    # Django REST API
+├── frontend/   # Vite + React SPA
+└── e2e-web/    # Playwright end-to-end tests
+```
 
 ## Running locally
 
-The recommended way is Docker Compose, which starts the database, backend, and frontend together:
+Start the database, backend, and frontend together with Docker Compose. No setup required — pin image uploads are disabled without S3 credentials, but the rest of the app works:
 
 ```bash
-cp .env.example .env   # fill in S3 credentials if needed
-docker compose up
+make up
 ```
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api
 
-### Without Docker
+To enable S3 image uploads, add your credentials before starting:
 
 ```bash
-# Backend
-cd backend
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-
-# Frontend (separate terminal)
-cd frontend
-pnpm install
-pnpm dev
+cp .env.example .env   # fill in S3_PINS_BUCKET_UPLOADER_* values
+make up
 ```
 
-## Project structure
+## Testing
 
+```bash
+make test-backend    # Django unit tests
+make test-frontend   # Jest unit tests
+make test-e2e        # Playwright E2E tests
 ```
-pinit/
-├── backend/    # Django REST API
-└── frontend/   # Next.js app
-```
 
-## License
-
-Apache 2.0 — see [LICENSE](LICENSE).
+See each folder's `README` for details.

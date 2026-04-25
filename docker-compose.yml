@@ -25,6 +25,8 @@ services:
       - db
     environment:
       DJANGO_SETTINGS_MODULE: pinit.settings.local
+      S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID: ${S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID:-}
+      S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY: ${S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY:-}
 
   frontend:
     build:
