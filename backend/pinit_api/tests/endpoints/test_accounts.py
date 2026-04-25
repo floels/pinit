@@ -1,5 +1,3 @@
-from django.utils import timezone
-from datetime import timedelta
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
