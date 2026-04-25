@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/authContext";
 import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
+import { useFetchWithAuth } from "@/lib/hooks/useFetchWithAuth";
 import { serializePinsWithAuthorDetails } from "@/lib/utils/serializers";
 import { throwIfKO } from "@/lib/utils/fetch";
 import LandingPageContent from "@/components/LandingPageContent/LandingPageContent";
@@ -10,11 +11,10 @@ import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 
 const HomePage = () => {
   const { accessToken } = useAuthContext();
+  const fetchWithAuth = useFetchWithAuth();
 
   const fetchPinSuggestions = async () => {
-    const response = await fetch(API_URL_PIN_SUGGESTIONS, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const response = await fetchWithAuth(API_URL_PIN_SUGGESTIONS);
 
     throwIfKO(response);
 

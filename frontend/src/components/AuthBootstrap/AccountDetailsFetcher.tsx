@@ -5,8 +5,7 @@ import {
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
   USERNAME_LOCAL_STORAGE_KEY,
 } from "@/lib/constants";
-import { Response401Error } from "@/lib/customErrors";
-import { useLogOut } from "@/lib/hooks/useLogOut";
+import { useFetchWithAuth } from "@/lib/hooks/useFetchWithAuth";
 import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";
 import { throwIfKO } from "@/lib/utils/fetch";
 import { serializeAccountWithPrivateDetails } from "@/lib/utils/serializers";
@@ -14,20 +13,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 const AccountDetailsFetcher = () => {
-  const logOut = useLogOut();
+  const fetchWithAuth = useFetchWithAuth();
   const { setAccount } = useAccountContext();
   const { accessToken } = useAuthContext();
 
   const fetchAccountDetails = async () => {
-    const response = await fetch(API_URL_MY_ACCOUNT_DETAILS, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (response.status === 401) {
-      throw new Response401Error();
-    }
+    const response = await fetchWithAuth(API_URL_MY_ACCOUNT_DETAILS);
 
     throwIfKO(response);
 
@@ -57,17 +48,11 @@ const AccountDetailsFetcher = () => {
     );
   };
 
-  const { data, error } = useQuery({
+  const { data } = useQuery({
     queryKey: ["fetchMyAccountDetails", accessToken],
     queryFn: fetchAccountDetails,
     retry: false,
   });
-
-  useEffect(() => {
-    if (error instanceof Response401Error) {
-      logOut();
-    }
-  }, [error]);
 
   useEffect(() => {
     if (data) {

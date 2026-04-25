@@ -51,9 +51,14 @@ it("fetches pin suggestions from the correct endpoint when authenticated", () =>
 
   renderComponent({ accessToken: mockAccessToken });
 
-  expect(fetch).toHaveBeenCalledWith(API_URL_PIN_SUGGESTIONS, {
-    headers: { Authorization: `Bearer ${mockAccessToken}` },
-  });
+  expect(fetch).toHaveBeenCalledWith(
+    API_URL_PIN_SUGGESTIONS,
+    expect.objectContaining({
+      headers: expect.objectContaining({
+        Authorization: `Bearer ${mockAccessToken}`,
+      }),
+    }),
+  );
 });
 
 it("renders pins upon successful fetch", async () => {
