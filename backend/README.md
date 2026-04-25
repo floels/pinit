@@ -36,15 +36,32 @@ From the repo root:
 make up
 ```
 
+From this directory (requires a running PostgreSQL instance on port 5432):
+
+```bash
+pip install -r requirements.txt
+DJANGO_SETTINGS_MODULE=pinit.settings.local python manage.py migrate
+DJANGO_SETTINGS_MODULE=pinit.settings.local python manage.py runserver
+```
+
 The API is available at http://localhost:8000/api.
 
 ## Running tests
+
+From the repo root:
 
 ```bash
 make test-backend
 ```
 
-This spins up a dedicated Docker test environment, runs migrations, executes the test suite, and tears down the containers.
+From this directory:
+
+```bash
+docker compose -f docker-compose.test.yml up -d
+docker compose -f docker-compose.test.yml exec web python manage.py migrate
+docker compose -f docker-compose.test.yml exec web python manage.py test
+docker compose -f docker-compose.test.yml down
+```
 
 ## S3 credentials
 
