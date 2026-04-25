@@ -46,8 +46,4 @@ make test-frontend   # Jest unit tests
 make test-e2e        # Playwright E2E tests
 ```
 
-See each folder's README for details.
-
-## License
-
-Apache 2.0 — see [LICENSE](LICENSE).
+See each folder's `README` for details.

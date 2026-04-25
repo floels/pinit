@@ -1,6 +1,6 @@
 # E2E tests
 
-Playwright end-to-end tests for the PinIt web frontend.
+Playwright end-to-end tests for the PinIt web frontend and API.
 
 ## Stack
 
@@ -27,9 +27,7 @@ make test-e2e
 From this directory:
 
 ```bash
-pnpm test            # headless Chromium
-pnpm test:ui         # Playwright UI mode
-pnpm test:report     # open the last HTML report
+pnpm test
 ```
 
 ## How it works
@@ -41,6 +39,6 @@ pnpm test:report     # open the last HTML report
 3. Runs Django migrations
 4. Seeds the database with test data via `manage.py seed_e2e_database`
 
-The Playwright config (`playwright.config.ts`) also starts the frontend dev server automatically if one is not already running on port 3000.
+The Playwright config (`playwright.config.ts`) also starts the frontend dev server automatically if one is not already running on port `3000`.
 
 Docker must be running on the host before invoking any of the commands above.

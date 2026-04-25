@@ -6,60 +6,28 @@ Django REST API serving the PinIt platform.
 
 - Python 3.12, Django 5, Django REST Framework
 - PostgreSQL 13
-- AWS S3 via django-storages (pin images)
-- djangorestframework-simplejwt (JWT authentication)
+- AWS S3 via `django-storages` for asset storage
+- `djangorestframework-simplejwt` for JWT authentication
 
-## Structure
-
-```
-backend/
-├── pinit/                # Django project config
-│   ├── settings/
-│   │   ├── base.py       # Shared settings
-│   │   ├── local.py      # Local development
-│   │   ├── e2e.py        # E2E tests (separate DB, Moto for S3)
-│   │   └── aws_staging.py  # AWS staging (Elastic Beanstalk + RDS + S3)
-│   └── urls.py           # Root URL configuration
-└── pinit_api/            # Main application
-    ├── models.py
-    ├── views/            # One file per resource (accounts, pins, boards, auth…)
-    ├── serializers/
-    ├── tests/
-    └── migrations/
-```
 
 ## Running locally
 
-Full stack (DB + backend + frontend), from the repo root:
+To run the API and the database only:
 
 ```bash
-make up
+make up-backend   # from the repo root
+make up           # from this directory (`backend/`)
 ```
 
-Backend and DB only — from the repo root or from this directory:
+The API will then be served at `http://localhost:8000/api`.
 
-```bash
-make up-backend   # repo root
-make up           # this directory
-```
-
-Without Docker (requires a running PostgreSQL instance on port 5432):
-
-```bash
-pip install -r requirements.txt
-DJANGO_SETTINGS_MODULE=pinit.settings.local python manage.py migrate
-DJANGO_SETTINGS_MODULE=pinit.settings.local python manage.py runserver
-```
-
-The API is available at http://localhost:8000/api.
+To run the frontend as well, run `make up` from the repo root.
 
 ## Running tests
 
-From the repo root or from this directory:
-
 ```bash
-make test-backend   # repo root
-make test           # this directory
+make test-backend   # from repo root
+make test           # from this directory (`backend/`)
 ```
 
 ## S3 credentials
