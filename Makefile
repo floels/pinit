@@ -10,7 +10,7 @@ test-backend:
 	$(MAKE) -C backend test
 
 test-frontend:
-	cd frontend && pnpm install && pnpm test
+	pnpm --dir frontend install && pnpm --dir frontend test
 
 test-e2e:
-	cd e2e-tests-web && pnpm install && pnpm test
+	pnpm --dir e2e-tests-web install && pnpm --dir e2e-tests-web test
