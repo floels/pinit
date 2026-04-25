@@ -1,6 +1,5 @@
 import os
-import boto3
-from django.conf import settings
+from django.core.files.storage import default_storage
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import generics, status, serializers
@@ -33,35 +32,20 @@ class CreatePinView(generics.CreateAPIView):
 
         pin = Pin.objects.create(title=title, description=description, author=account)
 
-        _, uploaded_file_extension = os.path.splitext(uploaded_file.name)
-
-        file_key_s3 = self.compute_file_key_s3(pin.unique_id, uploaded_file_extension)
+        _, extension = os.path.splitext(uploaded_file.name)
+        file_key = f"pins/pin_{pin.unique_id}{extension}"
 
         try:
-            self.upload_file_to_s3(uploaded_file, file_key_s3)
+            saved_name = default_storage.save(file_key, uploaded_file)
         except:
             pin.delete()
             response_data = {"errors": [{"code": ERROR_CODE_PIN_CREATION_FAILED}]}
             return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        pin.image_url = self.compute_file_url_s3(file_key_s3)
+        pin.image_url = default_storage.url(saved_name)
         pin.save()
 
         pin_serializer = PinBaseReadSerializer(pin)
 
         return Response(pin_serializer.data, status=status.HTTP_201_CREATED)
 
-    def compute_file_key_s3(self, pin_id, extension):
-        return f"pins/pin_{pin_id}{extension}"
-
-    def upload_file_to_s3(self, file, file_name):
-        s3_client = boto3.client(
-            "s3",
-            aws_access_key_id=settings.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY,
-        )
-
-        s3_client.upload_fileobj(file, settings.S3_PINS_BUCKET_NAME, file_name)
-
-    def compute_file_url_s3(self, file_key_s3):
-        return f"https://{settings.S3_PINS_BUCKET_URL}/{file_key_s3}"

@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  db_e2e:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: postgres_e2e
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  moto:
+    image: motoserver/moto:latest
+    ports:
+      - "5555:5000"
+
+  backend_e2e:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db_e2e:
+        condition: service_healthy
+      moto:
+        condition: service_started
+    environment:
+      DJANGO_SETTINGS_MODULE: pinit.settings.e2e
+      S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID: testing
+      S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY: testing
+
+volumes: {}

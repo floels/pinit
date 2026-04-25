@@ -1,8 +1,10 @@
 from .base import *
 
-SECRET_KEY = "local-secret-key"
+SECRET_KEY = "e2e-test-secret-key"
 
 DEBUG = True
+
+ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
@@ -10,13 +12,14 @@ CORS_ALLOW_CREDENTIALS = True
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "HOST": "db",
+        "HOST": "db_e2e",
         "PORT": "5432",
-        "NAME": "postgres",
+        "NAME": "postgres_e2e",
         "USER": "postgres",
         "PASSWORD": "postgres",
     }
 }
 
-AWS_STORAGE_BUCKET_NAME = "pinit-staging"
-AWS_S3_CUSTOM_DOMAIN = "pinit-staging.s3.eu-west-3.amazonaws.com"
+AWS_STORAGE_BUCKET_NAME = "e2e-test-pins"
+AWS_S3_CUSTOM_DOMAIN = "localhost:5555/e2e-test-pins"
+AWS_S3_ENDPOINT_URL = "http://moto:5000"

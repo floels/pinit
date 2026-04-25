@@ -2,6 +2,7 @@ import boto3
 from io import BytesIO
 from moto import mock_s3
 from unittest import mock
+from django.test import override_settings
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from ..testing_utils import AccountFactory
@@ -13,16 +14,25 @@ from pinit_api.lib.constants import (
 
 S3_BUCKET_NAME = "pinit-staging"
 S3_BUCKET_REGION = "eu-north-1"
+S3_CUSTOM_DOMAIN = "pinit-staging.s3.eu-west-3.amazonaws.com"
 
 
-# Inspired by https://docs.getmoto.org/en/latest/docs/getting_started.html#class-decorator
-@mock_s3
-@mock.patch(
-    "pinit_api.views.pin_creation.settings.S3_PINS_BUCKET_URL",
-    new="pinit-staging.s3.eu-west-3.amazonaws.com",
+@override_settings(
+    AWS_STORAGE_BUCKET_NAME=S3_BUCKET_NAME,
+    AWS_S3_REGION_NAME=S3_BUCKET_REGION,
+    AWS_S3_CUSTOM_DOMAIN=S3_CUSTOM_DOMAIN,
+    AWS_QUERYSTRING_AUTH=False,
+    AWS_S3_ENDPOINT_URL=None,
+    STORAGES={
+        "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    },
 )
 class PinCreationTests(APITestCase):
     def setUp(self):
+        self.s3_mock = mock_s3()
+        self.s3_mock.start()
+
         self.account = AccountFactory()
         self.user = self.account.owner
 
@@ -40,6 +50,10 @@ class PinCreationTests(APITestCase):
             "description": "Description",
             "image_file": self.pin_image_file,
         }
+
+    def tearDown(self):
+        self.s3_mock.stop()
+        super().tearDown()
 
     def create_s3_bucket(self):
         s3_client = boto3.client("s3", region_name=S3_BUCKET_REGION)
@@ -88,7 +102,7 @@ class PinCreationTests(APITestCase):
         self.assertEqual(created_pin.author.username, self.account.username)
         self.assertEqual(
             created_pin.image_url,
-            f"https://pinit-staging.s3.eu-west-3.amazonaws.com/{image_file_key_in_s3}",
+            f"https://{S3_CUSTOM_DOMAIN}/{image_file_key_in_s3}",
         )
 
     def check_file_content_in_s3(self, file_key="", expected_content=None):
@@ -101,10 +115,10 @@ class PinCreationTests(APITestCase):
         self.assertEqual(file_content, expected_content)
 
     def test_create_pin_s3_upload_fails(self):
-        with mock.patch("boto3.client") as mock_s3_client:
-            mock_s3_client.return_value.upload_fileobj.side_effect = Exception(
-                "S3 upload failed"
-            )
+        with mock.patch(
+            "pinit_api.views.pin_creation.default_storage.save",
+            side_effect=Exception("S3 upload failed"),
+        ):
 
             response = self.post()
 

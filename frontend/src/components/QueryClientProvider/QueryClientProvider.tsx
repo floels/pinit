@@ -5,7 +5,10 @@ import {
 import { useState } from "react";
 import { Response404Error } from "@/lib/customErrors";
 
-const isNot404 = (error: unknown) => !(error instanceof Response404Error);
+const shouldRetry = (failureCount: number, error: unknown) => {
+  if (error instanceof Response404Error) return false;
+  return failureCount < 3;
+};
 
 type QueryClientProviderProps = {
   children: React.ReactNode;
@@ -15,7 +18,7 @@ const QueryClientProvider = ({ children }: QueryClientProviderProps) => {
   const [queryClient] = useState(
     () =>
       new QueryClient({
-        defaultOptions: { queries: { retry: isNot404 } },
+        defaultOptions: { queries: { retry: shouldRetry } },
       }),
   );
 
