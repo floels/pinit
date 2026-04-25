@@ -5,7 +5,10 @@ import {
 import { useState } from "react";
 import { Response404Error } from "@/lib/customErrors";
 
-const isNot404 = (error: unknown) => !(error instanceof Response404Error);
+const isNot404 = (failureCount: number, error: unknown) => {
+  if (error instanceof Response404Error) return false;
+  return failureCount < 3;
+};
 
 type QueryClientProviderProps = {
   children: React.ReactNode;

@@ -1,0 +1,15 @@
+{
+  "name": "pinit-e2e-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.35.1",
+    "@types/node": "^18.15.11",
+    "typescript": "^5.4.5"
+  }
+}

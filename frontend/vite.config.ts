@@ -13,4 +13,8 @@ export default defineConfig({
     port: 3000,
     host: "0.0.0.0",
   },
+  define: {
+    "process.env.ENVIRONMENT": JSON.stringify(process.env.ENVIRONMENT),
+    "process.env.BACKEND_URL": JSON.stringify(process.env.BACKEND_URL),
+  },
 });

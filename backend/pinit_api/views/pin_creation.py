@@ -57,8 +57,10 @@ class CreatePinView(generics.CreateAPIView):
     def upload_file_to_s3(self, file, file_name):
         s3_client = boto3.client(
             "s3",
+            endpoint_url=getattr(settings, "S3_ENDPOINT_URL", None),
             aws_access_key_id=settings.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID,
             aws_secret_access_key=settings.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY,
+            region_name="us-east-1",
         )
 
         s3_client.upload_fileobj(file, settings.S3_PINS_BUCKET_NAME, file_name)
