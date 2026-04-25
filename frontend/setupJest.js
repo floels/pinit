@@ -1,20 +1,20 @@
-import { TextEncoder, TextDecoder } from "util";
-import { enableMocks } from "jest-fetch-mock";
+const { TextEncoder, TextDecoder } = require("util");
+const { enableMocks } = require("jest-fetch-mock");
 
 // react-router-dom v7 uses TextEncoder/TextDecoder which jsdom doesn't provide
 globalThis.TextEncoder = TextEncoder;
 globalThis.TextDecoder = TextDecoder;
-import Common from "./public/locales/en/Common.json";
-import HeaderUnauthenticated from "./public/locales/en/HeaderUnauthenticated.json";
-import HeaderAuthenticated from "./public/locales/en/HeaderAuthenticated.json";
-import LandingPageContent from "./public/locales/en/LandingPageContent.json";
-import HomePageContent from "./public/locales/en/HomePageContent.json";
-import PinsSearch from "./public/locales/en/PinsSearch.json";
-import PinsBoard from "./public/locales/en/PinsBoard.json";
-import PinDetails from "./public/locales/en/PinDetails.json";
-import AccountDetails from "./public/locales/en/AccountDetails.json";
-import BoardDetails from "./public/locales/en/BoardDetails.json";
-import PinCreation from "./public/locales/en/PinCreation.json";
+const Common = require("./public/locales/en/Common.json");
+const HeaderUnauthenticated = require("./public/locales/en/HeaderUnauthenticated.json");
+const HeaderAuthenticated = require("./public/locales/en/HeaderAuthenticated.json");
+const LandingPageContent = require("./public/locales/en/LandingPageContent.json");
+const HomePageContent = require("./public/locales/en/HomePageContent.json");
+const PinsSearch = require("./public/locales/en/PinsSearch.json");
+const PinsBoard = require("./public/locales/en/PinsBoard.json");
+const PinDetails = require("./public/locales/en/PinDetails.json");
+const AccountDetails = require("./public/locales/en/AccountDetails.json");
+const BoardDetails = require("./public/locales/en/BoardDetails.json");
+const PinCreation = require("./public/locales/en/PinCreation.json");
 
 // https://github.com/jefflau/jest-fetch-mock#to-setup-for-all-tests
 enableMocks();
