@@ -48,7 +48,7 @@ const LandingPageContent = () => {
   // This will be needed to scroll back to the top of the page in the `useEffect` hook of the <FithFold /> child component,
   // Otherwise, for some reason, browsers scroll down to the <FifthFold /> component and focus on the first input of the
   // <SignupForm /> it renders on page load.
-  const heroRef = useRef(null);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   const [currentFold, setCurrentFold] = useState(1);
 

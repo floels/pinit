@@ -8,7 +8,7 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import PinCreationViewContainer from "./PinCreationViewContainer";
 import en from "@/public/locales/en/PinCreation.json";
-import { act } from "react-dom/test-utils";
+import { act } from "react";
 import userEvent from "@testing-library/user-event";
 import { API_URL_CREATE_PIN } from "@/lib/constants";
 import { FetchMock } from "jest-fetch-mock";
