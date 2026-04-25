@@ -44,6 +44,53 @@ paths:
                 $ref: '#/components/schemas/AccountWithPrivateDetails'
         '401':
           description: Failed authentication
+  /api/boards/{username}/{slug}/:
+    get:
+      operationId: boards/<username>/<slug>/
+      description: Get the details for the board identified by 'username' and 'slug'.
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: slug
+          schema:
+            type: string
+          required: true
+      tags:
+        - Boards
+      security:
+        - null
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardWithFullDetails'
+        '404':
+          description: No account or board found for the provided username and slug
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - account_not_found
+                            - board_not_found
+                          description: |-
+                            Error code. One of:
+                            * `account_not_found`: No account found for this username
+                            * `board_not_found`: No board found for this slug
   /api/create-pin/:
     post:
       operationId: create-pin/
@@ -253,7 +300,8 @@ paths:
   /api/signup/:
     post:
       operationId: signup/
-      description: Create a new account.
+      description: |-
+        Create a new account (mobile). Returns access and refresh tokens in the response body.
       tags:
       - Sign-up and authentication
       requestBody:
@@ -285,20 +333,76 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+        '400':
+          description: Failed signup
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
-                  access_token:
-                    type: string
-                    description: Access token
-                    example: eyJhbGciO...QLvrbXC7wonzMg
-                  refresh_token:
-                    type: string
-                    description: Refresh token
-                    example: eyJhbGciO...pQiTWpYL8LS0H1
-                  access_token_expiration_utc:
-                    type: string
-                    description: Access token expiration date (ISO 8601 format, UTC)
-                    example: '2024-03-01T11:36:57+00:00'
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          enum:
+                            - invalid_email
+                            - invalid_password
+                            - invalid_birthdate
+                            - email_already_signed_up
+                          type: string
+                          description: |-
+                            Error code. One of:
+                            * `invalid_email`: invalid email
+                            * `invalid_password`: invalid password
+                            * `invalid_birthdate`: invalid birth date
+                            * `email_already_signed_up`: email is already signed up
+  /api/signup/web/:
+    post:
+      operationId: signup/web/
+      description: |-
+        Create a new account (web). Returns the access token in the response body.
+        The refresh token is set as an HttpOnly `refreshToken` cookie.
+      tags:
+      - Sign-up and authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email
+                password:
+                  type: string
+                  description: Password
+                birthdate:
+                  type: string
+                  format: date
+                  description: Birth date
+              required:
+                - birthdate
+                - email
+                - password
+      security:
+      - null
+      responses:
+        '201':
+          description: Success
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=eyJhbGciO...; Path=/; HttpOnly; SameSite=Strict
+              description: HttpOnly cookie containing the refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
         '400':
           description: Failed signup
           content:
@@ -328,7 +432,7 @@ paths:
     post:
       operationId: token/obtain/
       description: |-
-        Obtain a pair of access and refresh JW authentication tokens.
+        Obtain a pair of access and refresh JWT authentication tokens (mobile).
       tags:
       - Sign-up and authentication
       requestBody:
@@ -352,20 +456,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
-                    description: Access token
-                    example: eyJhbGciO...QLvrbXC7wonzMg
-                  refresh_token:
-                    type: string
-                    description: Refresh token
-                    example: eyJhbGciO...pQiTWpYL8LS0H1
-                  access_token_expiration_utc:
-                    type: string
-                    description: Access token expiration date (ISO 8601 format, UTC)
-                    example: '2024-03-01T11:36:57+00:00'
+                $ref: '#/components/schemas/TokenPairResponse'
         '401':
           description: Failed authentication
           content:
@@ -387,10 +478,112 @@ paths:
                             Error code. One of:
                             * `invalid_email`: invalid email
                             * `invalid_password`: invalid password
+  /api/token/obtain-demo/:
+    get:
+      operationId: token/obtain-demo/
+      description: |-
+        Obtain authentication tokens for the demo account (mobile).
+      tags:
+      - Sign-up and authentication
+      security:
+      - null
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+        '401':
+          description: Demo account not found
+  /api/token/web/obtain/:
+    post:
+      operationId: token/web/obtain/
+      description: |-
+        Obtain authentication tokens (web). Returns the access token in the response body.
+        The refresh token is set as an HttpOnly `refreshToken` cookie.
+      tags:
+      - Sign-up and authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      security:
+      - null
+      responses:
+        '200':
+          description: Success
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=eyJhbGciO...; Path=/; HttpOnly; SameSite=Strict
+              description: HttpOnly cookie containing the refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
+        '401':
+          description: Failed authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          enum:
+                            - invalid_email
+                            - invalid_password
+                          type: string
+                          description: |-
+                            Error code. One of:
+                            * `invalid_email`: invalid email
+                            * `invalid_password`: invalid password
+  /api/token/web/obtain-demo/:
+    get:
+      operationId: token/web/obtain-demo/
+      description: |-
+        Obtain authentication tokens for the demo account (web).
+        The refresh token is set as an HttpOnly `refreshToken` cookie.
+      tags:
+      - Sign-up and authentication
+      security:
+      - null
+      responses:
+        '200':
+          description: Success
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=eyJhbGciO...; Path=/; HttpOnly; SameSite=Strict
+              description: HttpOnly cookie containing the refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
+        '401':
+          description: Demo account not found
   /api/token/refresh/:
     post:
       operationId: token/refresh/
-      description: Obtain a new access token, using a refresh token.
+      description: |-
+        Obtain a new access token using a refresh token (mobile). The refresh token is passed in the request body.
       tags:
         - Sign-up and authentication
       requestBody:
@@ -410,16 +603,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
-                    description: Refreshed access token
-                    example: eyJhbGciO...QLvrbXC7wonzMg
-                  access_token_expiration_utc:
-                    type: string
-                    description: Refreshed access token expiration date (ISO 8601 format, UTC)
-                    example: '2024-03-02T11:36:57+00:00'
+                $ref: '#/components/schemas/AccessTokenResponse'
         '401':
           description: Failed refresh
           content:
@@ -438,6 +622,63 @@ paths:
                           type: string
                           description: |-
                             Error code: `invalid_refresh_token`
+  /api/token/web/refresh/:
+    post:
+      operationId: token/web/refresh/
+      description: |-
+        Obtain a new access token (web). The refresh token is read from the `refreshToken` HttpOnly cookie.
+      tags:
+        - Sign-up and authentication
+      parameters:
+        - in: cookie
+          name: refreshToken
+          schema:
+            type: string
+          required: true
+          description: Refresh token cookie set during sign-up or token obtain
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
+        '401':
+          description: Failed refresh
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          enum:
+                            - invalid_refresh_token
+                          type: string
+                          description: |-
+                            Error code: `invalid_refresh_token`
+  /api/token/web/logout/:
+    post:
+      operationId: token/web/logout/
+      description: |-
+        Log out the current user (web) by clearing the `refreshToken` HttpOnly cookie.
+      tags:
+        - Sign-up and authentication
+      security:
+        - null
+      responses:
+        '200':
+          description: Success
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+              description: Clears the `refreshToken` cookie
 components:
   schemas:
     Account:
@@ -466,16 +707,43 @@ components:
           type: string
           description: Board unique ID
           example: "441312392807868"
-        title:
-          description: Board title
+        name:
+          description: Board name
           type: string
           example: "My food board"
+        slug:
+          description: Board slug
+          type: string
+          example: "my-food-board"
         first_image_urls:
           description: List of first image URLs
           type: array
           items:
             type: string
             format: uri
+    BoardWithFullDetails:
+      type: object
+      properties:
+        unique_id:
+          type: string
+          description: Board unique ID
+          example: "441312392807868"
+        name:
+          type: string
+          description: Board name
+          example: "My food board"
+        slug:
+          type: string
+          description: Board slug
+          example: "my-food-board"
+        author:
+          description: Board author
+          $ref: '#/components/schemas/Account'
+        pins:
+          type: array
+          items:
+            $ref: '#/components/schemas/PinWithAuthorDetails'
+          description: List of pins saved in the board, ordered by most recently saved
     AccountWithBoards:
       allOf:
         - $ref: '#/components/schemas/Account'
@@ -569,6 +837,32 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PinWithAuthorDetails'
+    TokenPairResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Access token
+          example: eyJhbGciO...QLvrbXC7wonzMg
+        refresh_token:
+          type: string
+          description: Refresh token
+          example: eyJhbGciO...pQiTWpYL8LS0H1
+        access_token_expiration_utc:
+          type: string
+          description: Access token expiration date (ISO 8601 format, UTC)
+          example: '2024-03-01T11:36:57+00:00'
+    AccessTokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: Access token
+          example: eyJhbGciO...QLvrbXC7wonzMg
+        access_token_expiration_utc:
+          type: string
+          description: Access token expiration date (ISO 8601 format, UTC)
+          example: '2024-03-01T11:36:57+00:00'
   securitySchemes:
     jwtAuth:
       type: http
