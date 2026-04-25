@@ -24,6 +24,11 @@ localStorage = new MockLocalStorage();
 const mockSetAccount = jest.fn();
 const MOCK_ACCESS_TOKEN = "mock.access.token";
 
+beforeEach(() => {
+  mockLogOut.mockClear();
+  mockSetAccount.mockClear();
+});
+
 const renderComponent = () => {
   render(
     <AuthContext.Provider
@@ -83,14 +88,32 @@ it("sends the access token as Authorization header", async () => {
   });
 });
 
-it("triggers logout upon 401 response", async () => {
-  fetchMock.mockOnceIf(API_URL_MY_ACCOUNT_DETAILS, "{}", {
-    status: 401,
-  });
+it("triggers logout upon 401 response when refresh also fails", async () => {
+  fetchMock
+    .mockResponseOnce("{}", { status: 401 }) // fetch account details → 401
+    .mockResponseOnce("{}", { status: 401 }); // refresh attempt → 401
 
   renderComponent();
 
   await waitFor(() => {
     expect(mockLogOut).toHaveBeenCalledTimes(1);
   });
+});
+
+it("retries and sets account upon 401 response when refresh succeeds", async () => {
+  fetchMock
+    .mockResponseOnce("{}", { status: 401 }) // fetch account details → 401
+    .mockResponseOnce(JSON.stringify({ access_token: "new.access.token" }), {
+      status: 200,
+    }) // refresh → new token
+    .mockResponseOnce(MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS]); // retry → success
+
+  renderComponent();
+
+  await waitFor(() => {
+    expect(mockSetAccount).toHaveBeenCalledWith(
+      MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS],
+    );
+  });
+  expect(mockLogOut).not.toHaveBeenCalled();
 });

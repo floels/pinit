@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { API_URL_CREATE_PIN } from "@/lib/constants";
-import { useAuthContext } from "@/contexts/authContext";
+import { useFetchWithAuth } from "@/lib/hooks/useFetchWithAuth";
 import { toast } from "react-toastify";
 import SuccessToastMessage from "./SuccessToastMessage";
 import PinCreationView from "./PinCreationView";
@@ -11,7 +11,7 @@ const SUCCESS_TOAST_MIN_WIDTH = "380px";
 
 const PinCreationViewContainer = () => {
   const { t } = useTranslation("PinCreation");
-  const { accessToken } = useAuthContext();
+  const fetchWithAuth = useFetchWithAuth();
 
   const [pinImageFile, setPinImageFile] = useState<File | null>(null);
   const [imagePreviewURL, setImagePreviewURL] = useState<string | null>(null);
@@ -92,9 +92,8 @@ const PinCreationViewContainer = () => {
   };
 
   const postFormData = async (formData: FormData) => {
-    const response = await fetch(API_URL_CREATE_PIN, {
+    const response = await fetchWithAuth(API_URL_CREATE_PIN, {
       method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
       body: formData,
     });
 

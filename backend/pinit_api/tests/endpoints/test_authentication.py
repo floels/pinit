@@ -173,8 +173,9 @@ class ObtainDemoTokenWebTests(AuthenticationTests):
 class LogoutTests(AuthenticationTests):
     def setUp(self):
         super().setUp()
-        refresh_token_object = RefreshToken.for_user(self.user)
-        self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = str(refresh_token_object)
+        self.refresh_token_object = RefreshToken.for_user(self.user)
+        self.refresh_token_str = str(self.refresh_token_object)
+        self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = self.refresh_token_str
 
     def test_logout_clears_refresh_token_cookie(self):
         response = self.client.post("/api/token/web/logout/")
@@ -182,3 +183,25 @@ class LogoutTests(AuthenticationTests):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(REFRESH_TOKEN_COOKIE_NAME, response.cookies)
         self.assertEqual(response.cookies[REFRESH_TOKEN_COOKIE_NAME]["max-age"], 0)
+
+    def test_logout_blacklists_refresh_token(self):
+        self.client.post("/api/token/web/logout/")
+
+        self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = self.refresh_token_str
+        response = self.client.post("/api/token/web/refresh/")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            response.json()["errors"],
+            [{"code": "invalid_refresh_token"}],
+        )
+
+    def test_logout_with_no_cookie_succeeds(self):
+        del self.client.cookies[REFRESH_TOKEN_COOKIE_NAME]
+        response = self.client.post("/api/token/web/logout/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_logout_with_invalid_token_succeeds(self):
+        self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = "invalid.token.value"
+        response = self.client.post("/api/token/web/logout/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
