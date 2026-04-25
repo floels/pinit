@@ -24,7 +24,7 @@ test("publishes a pin and shows a success toast with a link to it", async ({
   );
   await fileInput.setInputFiles(PIN_IMAGE_PATH);
 
-  await page.click(`text=Publish`);
+  await page.click("text=Publish");
 
   // Backend creates the pin, uploads the image to moto, and returns the unique_id.
   // The frontend renders a success toast with a link to /pin/<unique_id>.
