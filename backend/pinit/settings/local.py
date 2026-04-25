@@ -1,5 +1,4 @@
 from .base import *
-from datetime import timedelta
 
 SECRET_KEY = "local-secret-key"
 
@@ -17,11 +16,6 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "postgres",
     }
-}
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
 }
 
 S3_PINS_BUCKET_NAME = "pinit-staging"

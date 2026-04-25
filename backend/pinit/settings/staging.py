@@ -1,6 +1,5 @@
 from .base import *
 from decouple import config
-from datetime import timedelta
 
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 
@@ -20,11 +19,6 @@ DATABASES = {
         "USER": config("POSTGRES_USER"),
         "PASSWORD": config("POSTGRES_PASSWORD"),
     }
-}
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
 }
 
 S3_PINS_BUCKET_NAME = "pinit-staging"
