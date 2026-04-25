@@ -1,4 +1,4 @@
-# Pinit
+# PinIt
 
 A Pinterest-like platform for discovering, creating, and organizing pins on boards.
 

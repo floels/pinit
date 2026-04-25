@@ -1,6 +1,6 @@
 # E2E tests
 
-Playwright end-to-end tests for the Pinit web frontend.
+Playwright end-to-end tests for the PinIt web frontend.
 
 ## Stack
 

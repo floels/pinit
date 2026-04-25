@@ -1,6 +1,6 @@
 # Backend
 
-Django REST API serving the Pinit platform.
+Django REST API serving the PinIt platform.
 
 ## Stack
 

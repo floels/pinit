@@ -1,6 +1,6 @@
 # Frontend
 
-Vite + React SPA for the Pinit platform.
+Vite + React SPA for the PinIt platform.
 
 ## Stack
 
