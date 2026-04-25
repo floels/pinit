@@ -3,24 +3,25 @@ import userEvent from "@testing-library/user-event";
 import SignupFormContainer from "./SignupFormContainer";
 import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
-import { API_URL_SIGN_UP } from "@/lib/constants";
+import { API_URL_REFRESH_TOKEN, API_URL_SIGN_UP } from "@/lib/constants";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
+import { AuthContextProvider } from "@/contexts/authContext";
 
 const handleClickAlreadyHaveAccount = () => {}; // NB: this behavior will be tested in <HeaderUnauthenticatedClient />
 
-const mockReload = jest.fn();
-Object.defineProperty(window, "location", {
-  configurable: true,
-  value: { ...window.location, reload: mockReload },
-});
-
 const renderComponent = () => {
   render(
-    <SignupFormContainer
-      handleClickAlreadyHaveAccount={handleClickAlreadyHaveAccount}
-    />,
+    <AuthContextProvider>
+      <SignupFormContainer
+        handleClickAlreadyHaveAccount={handleClickAlreadyHaveAccount}
+      />
+    </AuthContextProvider>,
   );
 };
+
+beforeEach(() => {
+  fetchMock.resetMocks();
+});
 
 it("displays relevant input errors", async () => {
   renderComponent();
@@ -87,7 +88,7 @@ it("displays relevant input errors", async () => {
   ).toBeNull();
 });
 
-it("reloads the page upon successful response", async () => {
+it("refreshes the access token upon successful response", async () => {
   renderComponent();
 
   const emailInput = screen.getByLabelText(en.SignupForm.EMAIL);
@@ -104,10 +105,17 @@ it("reloads the page upon successful response", async () => {
     MOCK_API_RESPONSES[API_URL_SIGN_UP],
     { status: 201 },
   );
+  fetchMock.mockOnceIf(
+    API_URL_REFRESH_TOKEN,
+    MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN],
+  );
 
   await userEvent.click(submitButton);
 
-  expect(mockReload).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledWith(
+    API_URL_REFRESH_TOKEN,
+    expect.objectContaining({ method: "POST", credentials: "include" }),
+  );
 });
 
 it("displays relevant error when receiving KO responses", async () => {

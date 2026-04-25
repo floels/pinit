@@ -6,14 +6,10 @@ import enCommon from "@/public/locales/en/Common.json";
 import {
   API_URL_OBTAIN_DEMO_TOKEN,
   API_URL_OBTAIN_TOKEN,
+  API_URL_REFRESH_TOKEN,
 } from "@/lib/constants";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
-
-const mockReload = jest.fn();
-Object.defineProperty(window, "location", {
-  configurable: true,
-  value: { ...window.location, reload: mockReload },
-});
+import { AuthContextProvider } from "@/contexts/authContext";
 
 const typeInEmailInput = async (text: string) => {
   const emailInput = screen.getByLabelText(en.LoginForm.EMAIL);
@@ -43,12 +39,14 @@ const handleClickNoAccountYet = () => {}; // NB: this behavior will be tested in
 
 const renderComponent = () => {
   render(
-    <LoginFormContainer handleClickNoAccountYet={handleClickNoAccountYet} />,
+    <AuthContextProvider>
+      <LoginFormContainer handleClickNoAccountYet={handleClickNoAccountYet} />
+    </AuthContextProvider>,
   );
 };
 
 beforeEach(() => {
-  mockReload.mockClear();
+  fetchMock.resetMocks();
 });
 
 it("displays relevant input errors", async () => {
@@ -82,7 +80,7 @@ it("displays relevant input errors", async () => {
   ).toBeNull();
 });
 
-it("reloads the page upon successful response", async () => {
+it("refreshes the access token upon successful response", async () => {
   renderComponent();
 
   await typeInEmailInput("test@example.com");
@@ -92,24 +90,38 @@ it("reloads the page upon successful response", async () => {
     API_URL_OBTAIN_TOKEN,
     MOCK_API_RESPONSES[API_URL_OBTAIN_TOKEN],
   );
+  fetchMock.mockOnceIf(
+    API_URL_REFRESH_TOKEN,
+    MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN],
+  );
 
   await submit();
 
-  expect(mockReload).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledWith(
+    API_URL_REFRESH_TOKEN,
+    expect.objectContaining({ method: "POST", credentials: "include" }),
+  );
 });
 
-it("reloads the page upon successful response for demo login", async () => {
+it("refreshes the access token upon successful response for demo login", async () => {
   renderComponent();
 
   fetchMock.mockOnceIf(
     API_URL_OBTAIN_DEMO_TOKEN,
     MOCK_API_RESPONSES[API_URL_OBTAIN_TOKEN],
   );
+  fetchMock.mockOnceIf(
+    API_URL_REFRESH_TOKEN,
+    MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN],
+  );
 
   const demoLoginButton = screen.getByText(en.LoginForm.LOG_IN_AS_DEMO);
   await userEvent.click(demoLoginButton);
 
-  expect(mockReload).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledWith(
+    API_URL_REFRESH_TOKEN,
+    expect.objectContaining({ method: "POST", credentials: "include" }),
+  );
 });
 
 it("displays relevant errors when receiving KO responses", async () => {

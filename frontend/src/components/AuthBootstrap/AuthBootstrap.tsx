@@ -2,7 +2,7 @@ import { useAuthContext } from "@/contexts/authContext";
 import AccessTokenRefresher from "./AccessTokenRefresher";
 import AccountDetailsFetcher from "./AccountDetailsFetcher";
 
-const AuthenticatedSetupBuilder = () => {
+const AuthBootstrap = () => {
   const { accessToken, isAuthInitialized } = useAuthContext();
 
   if (!isAuthInitialized) {
@@ -16,4 +16,4 @@ const AuthenticatedSetupBuilder = () => {
   return <AccountDetailsFetcher />;
 };
 
-export default AuthenticatedSetupBuilder;
+export default AuthBootstrap;

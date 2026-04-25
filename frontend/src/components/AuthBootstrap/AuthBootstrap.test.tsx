@@ -1,6 +1,6 @@
 import { withQueryClient } from "@/lib/testing-utils/misc";
 import { render, waitFor } from "@testing-library/react";
-import AuthenticatedSetupBuilder from "./AuthenticatedSetupBuilder";
+import AuthBootstrap from "./AuthBootstrap";
 import {
   API_URL_MY_ACCOUNT_DETAILS,
   API_URL_REFRESH_TOKEN,
@@ -21,7 +21,7 @@ beforeEach(() => {
 const renderComponent = () => {
   render(
     <AuthContextProvider>
-      {withQueryClient(<AuthenticatedSetupBuilder />)}
+      {withQueryClient(<AuthBootstrap />)}
     </AuthContextProvider>,
   );
 };
