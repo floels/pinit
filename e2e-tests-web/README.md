@@ -9,7 +9,7 @@ Playwright end-to-end tests for the PinIt web frontend and API.
 ## Structure
 
 ```
-e2e-web/
+e2e-tests-web/
 ├── global.setup.ts     # Starts Docker services, runs migrations, seeds the DB
 ├── fixtures/           # Playwright fixture extensions
 ├── flows/              # Multi-step test flows (authentication, signup, …)

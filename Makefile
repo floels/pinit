@@ -13,4 +13,4 @@ test-frontend:
 	cd frontend && pnpm install && pnpm test
 
 test-e2e:
-	cd e2e-web && pnpm install && pnpm test
+	cd e2e-tests-web && pnpm install && pnpm test
