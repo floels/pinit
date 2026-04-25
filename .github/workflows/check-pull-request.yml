@@ -23,15 +23,12 @@ jobs:
           filters: |
             backend:
               - 'backend/**'
-              - '!backend/**/*.md'
               - '.github/workflows/check-pull-request.yml'
             frontend:
               - 'frontend/**'
-              - '!frontend/**/*.md'
               - '.github/workflows/check-pull-request.yml'
             e2e:
               - 'e2e-tests-web/**'
-              - '!e2e-tests-web/**/*.md'
               - '.github/workflows/check-pull-request.yml'
 
   backend-checks:
