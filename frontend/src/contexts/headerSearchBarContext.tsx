@@ -29,8 +29,8 @@ const initialState = {
 };
 
 export const HeaderSearchBarContext = createContext<
-  HeaderSearchBarContextType | undefined
->(undefined);
+  HeaderSearchBarContextType | null
+>(null);
 
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -75,7 +75,7 @@ export const HeaderSearchBarContextProvider = ({
 export const useHeaderSearchBarContext = () => {
   const context = useContext(HeaderSearchBarContext);
 
-  if (context === undefined) {
+  if (context === null) {
     throw new Error(
       "useHeaderSearchBarContext must be used within a HeaderSearchBarProvider",
     );
