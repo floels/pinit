@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import PinImageDropzone from "./PinImageDropzone";
 import en from "@/public/locales/en/PinCreation.json";
-import { act } from "react-dom/test-utils";
+import { act } from "react";
 
 const mockOnFileDropped = jest.fn();
 

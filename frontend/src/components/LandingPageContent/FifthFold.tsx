@@ -8,7 +8,7 @@ import LoginFormContainer from "../LoginForm/LoginFormContainer";
 import FifthFoldPicturesBackground from "./FifthFoldPicturesBackground";
 
 type FifthFoldProps = {
-  heroRef: RefObject<HTMLDivElement>;
+  heroRef: RefObject<HTMLDivElement | null>;
   onClickBackToTop: () => void;
 };
 
