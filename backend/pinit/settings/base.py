@@ -98,6 +98,19 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+AWS_S3_ACCESS_KEY_ID = config("S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID")
+AWS_S3_SECRET_ACCESS_KEY = config("S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY")
+AWS_QUERYSTRING_AUTH = False
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
@@ -112,8 +125,3 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 50,
 }
 
-# AWS
-S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID = config("S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID")
-S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY = config(
-    "S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY"
-)

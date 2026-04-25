@@ -8,20 +8,20 @@ class Command(BaseCommand):
     help = "Creates the E2E S3 bucket in the moto mock server."
 
     def handle(self, *args, **options):
-        endpoint_url = getattr(settings, "S3_ENDPOINT_URL", None)
+        endpoint_url = getattr(settings, "AWS_S3_ENDPOINT_URL", None)
         if not endpoint_url:
-            self.stdout.write(self.style.WARNING("S3_ENDPOINT_URL not configured — skipping moto setup."))
+            self.stdout.write(self.style.WARNING("AWS_S3_ENDPOINT_URL not configured — skipping moto setup."))
             return
 
         s3 = boto3.client(
             "s3",
             endpoint_url=endpoint_url,
-            aws_access_key_id=settings.S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY,
+            aws_access_key_id=settings.AWS_S3_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_S3_SECRET_ACCESS_KEY,
             region_name="us-east-1",
         )
 
-        bucket = settings.S3_PINS_BUCKET_NAME
+        bucket = settings.AWS_STORAGE_BUCKET_NAME
 
         try:
             s3.create_bucket(Bucket=bucket)

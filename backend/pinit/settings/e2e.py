@@ -20,6 +20,6 @@ DATABASES = {
     }
 }
 
-S3_PINS_BUCKET_NAME = "e2e-test-pins"
-S3_PINS_BUCKET_URL = "localhost:5555/e2e-test-pins"
-S3_ENDPOINT_URL = "http://moto:5000"
+AWS_STORAGE_BUCKET_NAME = "e2e-test-pins"
+AWS_S3_CUSTOM_DOMAIN = "localhost:5555/e2e-test-pins"
+AWS_S3_ENDPOINT_URL = "http://moto:5000"
