@@ -7,6 +7,7 @@ import {
   API_URL_OBTAIN_DEMO_TOKEN,
 } from "../../lib/constants";
 import { isValidEmail, isValidPassword } from "../../lib/utils/validation";
+import { useLogIn } from "../../lib/hooks/useLogIn";
 import LoginForm, { FormErrors } from "./LoginForm";
 
 type LoginFormContainerProps = {
@@ -32,6 +33,8 @@ const computeFormErrors = (values: { email: string; password: string }) => {
 const LoginFormContainer = ({
   handleClickNoAccountYet,
 }: LoginFormContainerProps) => {
+  const logIn = useLogIn();
+
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -81,7 +84,7 @@ const LoginFormContainer = ({
       setIsLoading(false);
     }
 
-    window.location.reload();
+    await logIn();
   };
 
   const fetchTokensAndThrow = async ({

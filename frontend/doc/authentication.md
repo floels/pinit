@@ -12,7 +12,7 @@ The web frontend uses a **two-token** scheme:
 | **Access token** | React context (in-memory) | Yes — passed as `Authorization: Bearer …` header | 24 hours |
 | **Refresh token** | httpOnly cookie | No | 30 days |
 
-Keeping the access token in memory (not localStorage) limits XSS exposure. Keeping the refresh token in an httpOnly cookie prevents it from being read by any script.
+Keeping the access token in memory (not localStorage) limits XSS exposure. Keeping the refresh token in an HTTP-only cookie prevents it from being read by any script.
 
 ---
 
@@ -33,7 +33,7 @@ isAuthInitialized: boolean   — false until the startup token refresh completes
 
 ### 1. App startup
 
-Every time the app loads, `AuthenticatedSetupBuilder` (rendered by `Layout`) kicks off a token refresh. `Layout` withholds `<Outlet />` until that check is complete to avoid a content flash.
+Every time the app loads, `AuthBootstrap` (rendered by `Layout`) kicks off a token refresh. `Layout` withholds `<Outlet />` until that check is complete to avoid a content flash.
 
 ```mermaid
 sequenceDiagram
@@ -58,28 +58,30 @@ sequenceDiagram
     end
 ```
 
-Once `isAuthInitialized` is true, `AuthenticatedSetupBuilder` also mounts `AccountDetailsFetcher` (if a token was obtained), which fetches `/accounts/me/` and stores the result in `AccountContext` and `localStorage`.
+Once `isAuthInitialized` is true, `AuthBootstrap` also mounts `AccountDetailsFetcher` (if a token was obtained), which fetches `/accounts/me/` and stores the result in `AccountContext` and `localStorage`.
 
 ---
 
 ### 2. Login
 
-Login does **not** manually set the access token. Instead it relies on the startup flow running again after a page reload:
+After the login API sets the httpOnly cookie, the frontend immediately calls the refresh endpoint to obtain an access token and sets it in context. No page reload is needed.
 
 ```mermaid
 sequenceDiagram
     participant User
     participant LoginForm
     participant Backend
-    participant Browser
+    participant AuthContext
 
     User->>LoginForm: submit email + password
     LoginForm->>Backend: POST /token/web/obtain/<br/>{ email, password }
 
     alt credentials valid
         Backend-->>LoginForm: 200 — sets httpOnly refresh token cookie
-        LoginForm->>Browser: window.location.reload()
-        note over Browser: startup flow runs again,<br/>AccessTokenRefresher picks up<br/>the new cookie → sets accessToken
+        LoginForm->>Backend: POST /token/web/refresh/
+        Backend-->>LoginForm: 200 { access_token }
+        LoginForm->>AuthContext: setAccessToken(token)
+        note over AuthContext: AuthBootstrap mounts AccountDetailsFetcher,<br/>header switches to authenticated state
     else invalid credentials
         Backend-->>LoginForm: 400 { errors: [{ code }] }
         LoginForm-->>User: show field error
@@ -120,7 +122,7 @@ stateDiagram-v2
     Initializing --> Unauthenticated: refresh fails (no cookie / expired)
     Initializing --> Authenticated: refresh succeeds
 
-    Unauthenticated --> Authenticated: login → reload → refresh succeeds
+    Unauthenticated --> Authenticated: login/signup → refresh succeeds
     Authenticated --> Unauthenticated: logout
     Authenticated --> Unauthenticated: AccountDetailsFetcher receives 401
 ```
@@ -132,7 +134,7 @@ stateDiagram-v2
 ```
 AuthContextProvider          — holds accessToken, isAuthInitialized
 └── Layout
-    ├── AuthenticatedSetupBuilder
+    ├── AuthBootstrap
     │   ├── AccessTokenRefresher   (while !isAuthInitialized)
     │   └── AccountDetailsFetcher  (once authenticated)
     └── <Outlet />                 (gated on isAuthInitialized)
@@ -148,9 +150,10 @@ AuthContextProvider          — holds accessToken, isAuthInitialized
 | File | Role |
 |---|---|
 | `src/contexts/authContext.tsx` | `AuthContext` — `accessToken`, `isAuthInitialized` |
-| `src/components/AuthenticatedSetupBuilder/AuthenticatedSetupBuilder.tsx` | Orchestrates startup: refresh then account fetch |
-| `src/components/AuthenticatedSetupBuilder/AccessTokenRefresher.tsx` | Calls refresh endpoint, sets `isAuthInitialized` |
-| `src/components/AuthenticatedSetupBuilder/AccountDetailsFetcher.tsx` | Fetches `/accounts/me/`, populates `AccountContext` |
+| `src/components/AuthBootstrap/AuthBootstrap.tsx` | Orchestrates startup: refresh then account fetch |
+| `src/components/AuthBootstrap/AccessTokenRefresher.tsx` | Calls refresh endpoint, sets `isAuthInitialized` |
+| `src/components/AuthBootstrap/AccountDetailsFetcher.tsx` | Fetches `/accounts/me/`, populates `AccountContext` |
+| `src/lib/hooks/useLogIn.ts` | Calls refresh endpoint after login/signup, sets access token |
 | `src/lib/hooks/useLogOut.ts` | Calls logout endpoint, clears token, redirects |
-| `src/components/LoginForm/LoginFormContainer.tsx` | Login form — reloads page on success |
+| `src/components/LoginForm/LoginFormContainer.tsx` | Login form — calls `useLogIn` on success |
 | `src/pages/Layout.tsx` | Gates `<Outlet />` on `isAuthInitialized` |

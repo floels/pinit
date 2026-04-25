@@ -12,6 +12,7 @@ import {
   isValidEmail,
   isValidPassword,
 } from "../../lib/utils/validation";
+import { useLogIn } from "../../lib/hooks/useLogIn";
 import SignupForm, { FormErrors } from "./SignupForm";
 import { ResponseKOError } from "@/lib/customErrors";
 
@@ -46,6 +47,8 @@ const computeFormErrors = (values: {
 const SignupFormContainer = ({
   handleClickAlreadyHaveAccount,
 }: SignupFormContainerProps) => {
+  const logIn = useLogIn();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -89,7 +92,7 @@ const SignupFormContainer = ({
       return;
     }
 
-    window.location.reload();
+    await logIn();
   };
 
   const fetchSignup = async () => {
