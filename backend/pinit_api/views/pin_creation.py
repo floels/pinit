@@ -1,20 +1,18 @@
-import os
+import re
 from django.core.files.storage import default_storage
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import generics, status, serializers
-from pinit_api.models import Pin, Account
+from rest_framework import generics, status
+from pinit_api.models import Pin
 from pinit_api.lib.constants import (
-    ERROR_CODE_PIN_CREATION_FAILED,
     ERROR_CODE_MISSING_PIN_IMAGE_FILE,
+    ERROR_CODE_INVALID_PIN_IMAGE_FILE_KEY,
 )
 from pinit_api.serializers.pin_serializers import PinBaseReadSerializer
 
-
-class CreatePinRequestSerializer(serializers.Serializer):
-    title = serializers.CharField(required=False)
-    description = serializers.CharField(required=False)
-    image_file = serializers.FileField()
+VALID_IMAGE_FILE_KEY_PATTERN = re.compile(
+    r"^pins/pin_image_[0-9a-f]{32}\.(jpg|png)$"
+)
 
 
 class CreatePinView(generics.CreateAPIView):
@@ -24,28 +22,29 @@ class CreatePinView(generics.CreateAPIView):
         account = request.user.account
         title = request.data.get("title")
         description = request.data.get("description")
-        uploaded_file = request.FILES.get("image_file")
+        image_file_key = request.data.get("image_file_key")
 
-        if not uploaded_file:
-            response_data = {"errors": [{"code": ERROR_CODE_MISSING_PIN_IMAGE_FILE}]}
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        if not image_file_key:
+            return Response(
+                {"errors": [{"code": ERROR_CODE_MISSING_PIN_IMAGE_FILE}]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        pin = Pin.objects.create(title=title, description=description, author=account)
+        if not VALID_IMAGE_FILE_KEY_PATTERN.match(image_file_key):
+            return Response(
+                {"errors": [{"code": ERROR_CODE_INVALID_PIN_IMAGE_FILE_KEY}]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        _, extension = os.path.splitext(uploaded_file.name)
-        file_key = f"pins/pin_{pin.unique_id}{extension}"
+        image_url = default_storage.url(image_file_key)
 
-        try:
-            saved_name = default_storage.save(file_key, uploaded_file)
-        except:
-            pin.delete()
-            response_data = {"errors": [{"code": ERROR_CODE_PIN_CREATION_FAILED}]}
-            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        pin.image_url = default_storage.url(saved_name)
-        pin.save()
+        pin = Pin.objects.create(
+            title=title,
+            description=description,
+            author=account,
+            image_url=image_url,
+        )
 
         pin_serializer = PinBaseReadSerializer(pin)
 
         return Response(pin_serializer.data, status=status.HTTP_201_CREATED)
-

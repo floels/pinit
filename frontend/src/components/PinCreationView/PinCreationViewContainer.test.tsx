@@ -10,7 +10,7 @@ import PinCreationViewContainer from "./PinCreationViewContainer";
 import en from "@/public/locales/en/PinCreation.json";
 import { act } from "react";
 import userEvent from "@testing-library/user-event";
-import { API_URL_CREATE_PIN } from "@/lib/constants";
+import { API_URL_CREATE_PIN, API_URL_PIN_IMAGE_UPLOAD_URL } from "@/lib/constants";
 import { FetchMock } from "jest-fetch-mock";
 import { ToastContainer } from "react-toastify";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
@@ -46,8 +46,16 @@ const renderComponent = () => {
   );
 };
 
+const setupMocksForSuccessfulFlow = () => {
+  fetchMock.mockOnce(MOCK_API_RESPONSES[API_URL_PIN_IMAGE_UPLOAD_URL], {
+    status: 200,
+  });
+  fetchMock.mockOnce("ok", { status: 200 }); // S3 PUT
+  fetchMock.mockOnce(MOCK_API_RESPONSES[API_URL_CREATE_PIN], { status: 201 });
+};
+
 beforeEach(() => {
-  fetchMock.mockClear();
+  fetchMock.resetMocks();
 });
 
 it("renders header, have input fields disabled, and not render submit button initially", () => {
@@ -104,7 +112,7 @@ it("renders dropzone again and hides submit button upon click on 'delete image'"
   });
 });
 
-it("posts to API route when user clicks submit", async () => {
+it("makes correct API calls when user clicks submit", async () => {
   renderComponent();
 
   await dropImageFile();
@@ -117,52 +125,68 @@ it("posts to API route when user clicks submit", async () => {
   );
   await userEvent.type(descriptionTextArea, "Pin description");
 
+  setupMocksForSuccessfulFlow();
+
   const submitButton = screen.getByTestId("pin-creation-submit-button");
   await userEvent.click(submitButton);
 
   await waitFor(() => {
-    const mockedFetch = fetch as FetchMock; // necessary to avoid type errors
+    const mockedFetch = fetch as FetchMock;
 
-    expect(mockedFetch).toHaveBeenLastCalledWith(
-      API_URL_CREATE_PIN,
-      expect.objectContaining({
-        method: "POST",
-      }),
-    );
+    expect(mockedFetch).toHaveBeenCalledTimes(3);
 
-    const formData = mockedFetch.mock.calls[0][1]?.body as FormData;
+    // Step 1: GET presigned upload URL
+    const [presignedUrlCall, presignedUrlOptions] = mockedFetch.mock.calls[0];
+    expect(String(presignedUrlCall)).toContain(API_URL_PIN_IMAGE_UPLOAD_URL);
+    expect(String(presignedUrlCall)).toContain("file_extension=.png");
+    expect(presignedUrlOptions?.headers).toMatchObject({
+      Authorization: expect.stringContaining("Bearer"),
+    });
 
-    const formDataObject = Object.fromEntries(formData.entries());
+    // Step 2: PUT image directly to S3
+    const [, s3PutOptions] = mockedFetch.mock.calls[1];
+    expect(s3PutOptions?.method).toBe("PUT");
+    expect(s3PutOptions?.headers).toMatchObject({
+      "Content-Type": "image/png",
+    });
+    expect(s3PutOptions?.body).toBe(mockImageFile);
 
-    expect(formDataObject).toMatchObject({
+    // Step 3: POST pin metadata to backend
+    const [createPinUrl, createPinOptions] = mockedFetch.mock.calls[2];
+    expect(createPinUrl).toBe(API_URL_CREATE_PIN);
+    expect(createPinOptions?.method).toBe("POST");
+
+    const body = JSON.parse(createPinOptions?.body as string);
+    expect(body).toMatchObject({
       title: "Pin title",
       description: "Pin description",
-      image_file: expect.objectContaining({ name: "MockImage.png" }),
+      image_file_key:
+        "pins/pin_image_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4.png",
     });
   });
 });
 
-it(`displays success toast with proper link and resets form 
+it(`displays success toast with proper link and resets form
 upon successful creation`, async () => {
   renderComponent();
 
   await dropImageFile();
 
-  fetchMock.mockOnceIf(
-    `${API_URL_CREATE_PIN}`,
-    MOCK_API_RESPONSES[API_URL_CREATE_PIN],
-    { status: 201 },
-  );
+  setupMocksForSuccessfulFlow();
 
   const submitButton = screen.getByTestId("pin-creation-submit-button");
   await userEvent.click(submitButton);
 
-  const successMessage = screen.getByTestId("success-toast-message");
-  const pinLink = within(successMessage).getByRole("link") as HTMLAnchorElement;
-  expect(pinLink.href).toMatch(/\/pin\/000000000000000001$/);
+  await waitFor(() => {
+    const successMessage = screen.getByTestId("success-toast-message");
+    const pinLink = within(successMessage).getByRole(
+      "link",
+    ) as HTMLAnchorElement;
+    expect(pinLink.href).toMatch(/\/pin\/000000000000000001$/);
+  });
 
   // Check form was reset:
-  screen.getByText(en.DROPZONE_INSTRUCTION);
+  await waitFor(() => screen.getByText(en.DROPZONE_INSTRUCTION));
   expectInputFieldsToBeDisabled();
   expect(screen.queryByTestId("pin-creation-submit-button")).toBeNull();
 });
@@ -193,9 +217,7 @@ it("displays error toast in case of KO response upon posting", async () => {
 
   await dropImageFile();
 
-  fetchMock.mockOnceIf(`${API_URL_CREATE_PIN}`, "{}", {
-    status: 400,
-  });
+  fetchMock.mockOnce("{}", { status: 400 });
 
   const submitButton = screen.getByTestId("pin-creation-submit-button");
   await userEvent.click(submitButton);

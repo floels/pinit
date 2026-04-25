@@ -5,6 +5,7 @@ import {
   API_URL_MY_ACCOUNT_DETAILS,
   API_URL_OBTAIN_TOKEN,
   API_URL_PIN_DETAILS,
+  API_URL_PIN_IMAGE_UPLOAD_URL,
   API_URL_PIN_SUGGESTIONS,
   API_URL_REFRESH_TOKEN,
   API_URL_SAVE_PIN,
@@ -85,6 +86,11 @@ export const MOCK_API_RESPONSES_JSON = {
       "foo suggestion 5",
       "foo suggestion 6",
     ],
+  },
+  [API_URL_PIN_IMAGE_UPLOAD_URL]: {
+    upload_url:
+      "https://fake-s3-bucket.s3.amazonaws.com/pins/pin_image_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4.png?X-Amz-Signature=fake",
+    image_file_key: "pins/pin_image_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4.png",
   },
   [API_URL_CREATE_PIN]: {
     unique_id: "000000000000000001",

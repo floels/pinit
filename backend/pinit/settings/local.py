@@ -19,4 +19,5 @@ DATABASES = {
 }
 
 AWS_STORAGE_BUCKET_NAME = "pinit-staging"
+AWS_S3_REGION_NAME = "eu-west-3"
 AWS_S3_CUSTOM_DOMAIN = "pinit-staging.s3.eu-west-3.amazonaws.com"
