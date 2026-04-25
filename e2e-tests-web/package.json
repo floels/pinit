@@ -1,8 +1,9 @@
 {
-  "name": "pinit-e2e-web",
+  "name": "pinit-e2e-tests-web",
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "type-check": "tsc --noEmit",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report"
