@@ -6,7 +6,37 @@ on:
       - main
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '!backend/**/*.md'
+              - '.github/workflows/check-pull-request.yml'
+            frontend:
+              - 'frontend/**'
+              - '!frontend/**/*.md'
+              - '.github/workflows/check-pull-request.yml'
+            e2e:
+              - 'e2e-tests-web/**'
+              - '!e2e-tests-web/**/*.md'
+              - '.github/workflows/check-pull-request.yml'
+
   backend-checks:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     environment:
       name: test
@@ -30,6 +60,8 @@ jobs:
         run: docker compose -f docker-compose.test.yml down
 
   frontend-checks:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -64,6 +96,8 @@ jobs:
         run: pnpm jest
 
   e2e-checks:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.e2e == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
