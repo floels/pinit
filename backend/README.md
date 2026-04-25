@@ -18,7 +18,7 @@ backend/
 │   │   ├── base.py       # Shared settings
 │   │   ├── local.py      # Local development
 │   │   ├── e2e.py        # E2E tests (separate DB, Moto for S3)
-│   │   └── staging.py    # AWS staging (Elastic Beanstalk + RDS + S3)
+│   │   └── aws_staging.py  # AWS staging (Elastic Beanstalk + RDS + S3)
 │   └── urls.py           # Root URL configuration
 └── pinit_api/            # Main application
     ├── models.py
