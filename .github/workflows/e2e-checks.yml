@@ -1,0 +1,32 @@
+name: E2E Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  e2e-type-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: e2e-tests-web
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Type-check
+        run: pnpm type-check

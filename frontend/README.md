@@ -35,13 +35,8 @@ frontend/
 pnpm dev           # dev server on port 3000
 pnpm build         # production build → dist/
 pnpm lint          # ESLint
+pnpm type-check    # TypeScript type-check (no emit)
 pnpm test          # Jest unit tests
-```
-
-Type-check without emitting:
-
-```bash
-pnpm exec tsc -p tsconfig.app.json --noEmit
 ```
 
 ## Environment variables
