@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/authContext";
 import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
@@ -9,6 +10,7 @@ import ErrorView from "@/components/ErrorView/ErrorView";
 import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 
 const HomePage = () => {
+  const { t } = useTranslation("HomePageContent");
   const { accessToken } = useAuthContext();
 
   const fetchPinSuggestions = async () => {
@@ -38,7 +40,7 @@ const HomePage = () => {
   }
 
   if (error) {
-    return <ErrorView errorMessageKey="HomePageContent.ERROR_FETCH_PIN_SUGGESTIONS" />;
+    return <ErrorView message={t("ERROR_FETCH_PIN_SUGGESTIONS")} />;
   }
 
   return (

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
@@ -9,6 +10,7 @@ import ErrorView from "@/components/ErrorView/ErrorView";
 import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 
 const AccountDetailsPage = () => {
+  const { t } = useTranslation("AccountDetails");
   const { username } = useParams<{ username: string }>();
 
   const fetchAccountDetails = async () => {
@@ -37,12 +39,12 @@ const AccountDetailsPage = () => {
   }
 
   if (error) {
-    const errorMessageKey =
+    const errorMessage =
       error instanceof Response404Error
-        ? "AccountDetails.ERROR_ACCOUNT_NOT_FOUND"
-        : "AccountDetails.ERROR_FETCH_ACCOUNT_DETAILS";
-    
-        return <ErrorView errorMessageKey={errorMessageKey} />;
+        ? t("ERROR_ACCOUNT_NOT_FOUND")
+        : t("ERROR_FETCH_ACCOUNT_DETAILS");
+
+    return <ErrorView message={errorMessage} />;
   }
 
   return <AccountDetailsView account={accountDetails!} />;

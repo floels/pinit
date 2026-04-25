@@ -1,9 +1,8 @@
-import en from "@/public/locales/en/Common.json";
 import ErrorView from "./ErrorView";
 import { render, screen } from "@testing-library/react";
 
-it("translates error message", () => {
-  render(<ErrorView errorMessageKey="Common.UNFORESEEN_ERROR" />);
+it("renders error message", () => {
+  render(<ErrorView message="Something went wrong." />);
 
-  screen.getByText(en.UNFORESEEN_ERROR);
+  screen.getByText("Something went wrong.");
 });

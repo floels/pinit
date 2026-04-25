@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { API_URL_PIN_DETAILS } from "@/lib/constants";
@@ -9,6 +10,7 @@ import ErrorView from "@/components/ErrorView/ErrorView";
 import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 
 const PinDetailsPage = () => {
+  const { t } = useTranslation("PinDetails");
   const { id } = useParams<{ id: string }>();
 
   const fetchPinDetails = async () => {
@@ -37,12 +39,12 @@ const PinDetailsPage = () => {
   }
 
   if (error) {
-    const errorMessageKey =
+    const errorMessage =
       error instanceof Response404Error
-        ? "PinDetails.ERROR_PIN_NOT_FOUND"
-        : "PinDetails.ERROR_FETCH_PIN_DETAILS";
+        ? t("ERROR_PIN_NOT_FOUND")
+        : t("ERROR_FETCH_PIN_DETAILS");
 
-    return <ErrorView errorMessageKey={errorMessageKey} />;
+    return <ErrorView message={errorMessage} />;
   }
 
   return <PinDetailsView pin={pinDetails!} />;
