@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 export const useViewportWidth = () => {
-  const [width, setWidth] = useState<number | undefined>(undefined); // NB: we need
+  const [width, setWidth] = useState<number | undefined>(); // NB: we need
   // to initialize `width` to `undefined` because the `window` object is not available
   // during the initial SSR pass.
 
