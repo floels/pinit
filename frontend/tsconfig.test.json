@@ -6,7 +6,8 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "jsx": "react-jsx",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["jest"]
   },
   "include": ["src"]
 }
