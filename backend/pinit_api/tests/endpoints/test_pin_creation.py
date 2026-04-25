@@ -1,6 +1,6 @@
 import boto3
 from io import BytesIO
-from moto import mock_s3
+from moto import mock_aws
 from unittest import mock
 from django.test import override_settings
 from rest_framework.test import APITestCase, APIClient
@@ -30,7 +30,7 @@ S3_CUSTOM_DOMAIN = "pinit-staging.s3.eu-west-3.amazonaws.com"
 )
 class PinCreationTests(APITestCase):
     def setUp(self):
-        self.s3_mock = mock_s3()
+        self.s3_mock = mock_aws()
         self.s3_mock.start()
 
         self.account = AccountFactory()
