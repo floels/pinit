@@ -5,7 +5,6 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "baseUrl": ".",
     "paths": {
       "@/public/*": ["./public/*"],
       "@/*": ["./src/*"]
