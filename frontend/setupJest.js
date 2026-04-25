@@ -1,9 +1,9 @@
-const { TextEncoder, TextDecoder } = require("util");
+const util = require("util");
 const { enableMocks } = require("jest-fetch-mock");
 
 // react-router-dom v7 uses TextEncoder/TextDecoder which jsdom doesn't provide
-globalThis.TextEncoder = TextEncoder;
-globalThis.TextDecoder = TextDecoder;
+globalThis.TextEncoder = util.TextEncoder;
+globalThis.TextDecoder = util.TextDecoder;
 const Common = require("./public/locales/en/Common.json");
 const HeaderUnauthenticated = require("./public/locales/en/HeaderUnauthenticated.json");
 const HeaderAuthenticated = require("./public/locales/en/HeaderAuthenticated.json");
