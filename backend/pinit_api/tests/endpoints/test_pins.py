@@ -29,8 +29,10 @@ class GetPinDetailsTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        response_data = response.json()
+
         self.check_response_data_against_pin_object(
-            response_data=response.json(), pin=self.pin
+            response_data=response_data, pin=self.pin
         )
 
     def get(self, unique_id=""):
