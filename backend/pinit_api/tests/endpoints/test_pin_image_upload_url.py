@@ -1,6 +1,6 @@
 import re
 import boto3
-from moto import mock_s3
+from moto import mock_aws
 from django.test import override_settings
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
@@ -27,7 +27,7 @@ IMAGE_FILE_KEY_PATTERN = re.compile(r"^pins/pin_image_[0-9a-f]{32}\.(jpg|png)$")
 )
 class PinImageUploadUrlTests(APITestCase):
     def setUp(self):
-        self.s3_mock = mock_s3()
+        self.s3_mock = mock_aws()
         self.s3_mock.start()
 
         self.account = AccountFactory()
