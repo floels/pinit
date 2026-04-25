@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { API_URL_SEARCH } from "@/lib/constants";
@@ -8,6 +9,7 @@ import ErrorView from "@/components/ErrorView/ErrorView";
 import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 
 const SearchPage = () => {
+  const { t } = useTranslation("PinsSearch");
   const [searchParams] = useSearchParams();
   const searchTerm = searchParams.get("q");
 
@@ -38,7 +40,7 @@ const SearchPage = () => {
   }
 
   if (error) {
-    return <ErrorView errorMessageKey="PinsSearch.ERROR_FETCH_SEARCH_RESULTS" />;
+    return <ErrorView message={t("ERROR_FETCH_SEARCH_RESULTS")} />;
   }
 
   return (

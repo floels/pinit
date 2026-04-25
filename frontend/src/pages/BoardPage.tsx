@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { API_URL_BOARD_DETAILS } from "@/lib/constants";
@@ -9,6 +10,7 @@ import ErrorView from "@/components/ErrorView/ErrorView";
 import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 
 const BoardPage = () => {
+  const { t } = useTranslation("BoardDetails");
   const { username, slug } = useParams<{ username: string; slug: string }>();
 
   const fetchBoardDetails = async () => {
@@ -37,12 +39,12 @@ const BoardPage = () => {
   }
 
   if (error) {
-    const errorMessageKey =
+    const errorMessage =
       error instanceof Response404Error
-        ? "BoardDetails.ERROR_BOARD_NOT_FOUND"
-        : "BoardDetails.ERROR_FETCH_BOARD_DETAILS";
+        ? t("ERROR_BOARD_NOT_FOUND")
+        : t("ERROR_FETCH_BOARD_DETAILS");
 
-    return <ErrorView errorMessageKey={errorMessageKey} />;
+    return <ErrorView message={errorMessage} />;
   }
 
   return <BoardDetailsView board={boardDetails!} />;
