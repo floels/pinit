@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  backend-tests:
+  backend-checks:
     runs-on: ubuntu-latest
     environment:
       name: test

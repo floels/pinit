@@ -25,7 +25,7 @@ pinit/
 Start the database, backend, and frontend together with Docker Compose. No setup required — pin image uploads are disabled without S3 credentials, but the rest of the app works:
 
 ```bash
-docker compose up
+make up
 ```
 
 - Frontend: http://localhost:3000
@@ -35,33 +35,18 @@ To enable S3 image uploads, add your credentials before starting:
 
 ```bash
 cp .env.example .env   # fill in S3_PINS_BUCKET_UPLOADER_* values
-docker compose up
+make up
 ```
 
 ## Testing
 
-### Django unit tests
-
 ```bash
-docker compose -f backend/docker-compose.test.yml up -d
-docker compose -f backend/docker-compose.test.yml exec web python manage.py migrate
-docker compose -f backend/docker-compose.test.yml exec web python manage.py test
-docker compose -f backend/docker-compose.test.yml down
+make test-backend    # Django unit tests
+make test-frontend   # Jest unit tests
+make test-e2e        # Playwright E2E tests
 ```
 
-### Jest unit tests
-
-```bash
-cd frontend && pnpm install && pnpm test
-```
-
-### Playwright E2E tests
-
-```bash
-cd e2e-web && pnpm install && pnpm test
-```
-
-The test runner automatically starts the required Docker services, runs migrations, and seeds the database.
+See each folder's README for details.
 
 ## License
 
