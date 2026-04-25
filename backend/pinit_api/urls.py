@@ -7,6 +7,7 @@ from .views import (
     token_refresh,
     accounts,
     pin_creation,
+    pin_image_upload_url,
     pin_suggestions,
     pins,
     search_suggestions,
@@ -80,6 +81,11 @@ urlpatterns = [
         "boards/<str:username>/<str:slug>/",
         boards.GetBoardDetailsView.as_view(),
         name="get_board_details",
+    ),
+    path(
+        "pin-image-upload-url/",
+        pin_image_upload_url.GetPinImageUploadUrlView.as_view(),
+        name="get_pin_image_upload_url",
     ),
     path("create-pin/", pin_creation.CreatePinView.as_view(), name="create_pin"),
     path(

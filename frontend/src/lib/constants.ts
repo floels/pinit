@@ -13,6 +13,7 @@ export const API_URL_MY_ACCOUNT_DETAILS = `${API_BASE_URL}/accounts/me/`;
 export const API_URL_PIN_SUGGESTIONS = `${API_BASE_URL}/pin-suggestions/`;
 export const API_URL_SEARCH = `${API_BASE_URL}/search/`;
 export const API_URL_SEARCH_SUGGESTIONS = `${API_BASE_URL}/search-suggestions/`;
+export const API_URL_PIN_IMAGE_UPLOAD_URL = `${API_BASE_URL}/pin-image-upload-url/`;
 export const API_URL_CREATE_PIN = `${API_BASE_URL}/create-pin/`;
 export const API_URL_SAVE_PIN = `${API_BASE_URL}/save-pin/`;
 
