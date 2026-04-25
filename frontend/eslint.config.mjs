@@ -21,7 +21,7 @@ export default [
     },
   },
   {
-    files: ["**/*.test.{ts,tsx}", "setupJest.js", "setupJestAfterEnv.js"],
+    files: ["**/*.test.{ts,tsx}"],
     languageOptions: {
       sourceType: "module",
       globals: { ...globals.jest },
@@ -29,10 +29,14 @@ export default [
     rules: { "no-global-assign": "off" },
   },
   {
-    files: ["jest.config.js"],
+    files: ["jest.config.js", "setupJest.js", "setupJestAfterEnv.js"],
     languageOptions: {
       sourceType: "commonjs",
-      globals: { ...globals.node },
+      globals: { ...globals.node, ...globals.jest },
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+      "no-global-assign": "off",
     },
   },
 ];
