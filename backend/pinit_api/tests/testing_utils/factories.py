@@ -57,6 +57,14 @@ class PinFactory(factory.django.DjangoModelFactory):
     author = factory.SubFactory(AccountFactory)
 
 
+class BusinessAccountFactory(AccountFactory):
+    type = "business"
+    business_name = factory.Faker("company")
+    first_name = None
+    last_name = None
+    initial = factory.LazyAttribute(lambda a: a.business_name[0].upper())
+
+
 class BoardFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Board

@@ -4,6 +4,7 @@ from django.conf import settings
 
 from pinit_api.models import Pin
 from ..testing_utils import UserFactory, PinFactory, JWTAuthenticationMixin
+from pinit_api.lib.constants import ERROR_CODE_UNAUTHORIZED
 
 NUMBER_EXISTING_PINS = 150
 PAGINATION_PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
@@ -90,4 +91,20 @@ class GetPinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
 
         self.check_response_item_against_pin_object(
             response_item=first_response_item, pin=most_recent_pin_second_page
+        )
+
+
+class GetPinSuggestionsUnauthenticatedTests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_get_pin_suggestions_unauthenticated(self):
+        response = self.client.get("/api/pin-suggestions/")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response_data = response.json()
+
+        self.assertEqual(
+            response_data["errors"], [{"code": ERROR_CODE_UNAUTHORIZED}]
         )

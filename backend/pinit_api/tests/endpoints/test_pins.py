@@ -31,6 +31,10 @@ class GetPinDetailsTests(APITestCase):
 
         response_data = response.json()
 
+        self.check_response_data_against_pin_object(
+            response_data=response_data, pin=self.pin
+        )
+
     def get(self, unique_id=""):
         return self.client.get(f"/api/pins/{unique_id}/")
 

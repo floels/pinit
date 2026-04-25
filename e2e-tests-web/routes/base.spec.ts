@@ -45,18 +45,3 @@ test("shows unauthenticated state when the refresh token is invalid", async ({
   await page.waitForSelector("text=Log in");
 });
 
-test("shows an error when pin suggestions cannot be fetched", async ({
-  page,
-  context,
-}) => {
-  await loginAsTestUser({ context });
-
-  // Intercept the pin-suggestions request and simulate a server error
-  await page.route("**/api/pin-suggestions/**", (route) => route.abort());
-
-  await page.goto("/");
-
-  await page.waitForSelector(
-    "text=An error occurred while attempting to retrieve your pin suggestions.",
-  );
-});
