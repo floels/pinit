@@ -30,10 +30,16 @@ backend/
 
 ## Running locally
 
-From the repo root:
+From the repo root — full stack (DB + backend + frontend):
 
 ```bash
 make up
+```
+
+Backend and DB only (no frontend):
+
+```bash
+make up-backend
 ```
 
 From this directory (requires a running PostgreSQL instance on port 5432):

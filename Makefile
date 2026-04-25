@@ -1,7 +1,10 @@
-.PHONY: up test-backend test-frontend test-e2e
+.PHONY: up up-backend test-backend test-frontend test-e2e
 
 up:
 	docker compose up --build
+
+up-backend:
+	docker compose up --build backend
 
 test-backend:
 	docker compose -f backend/docker-compose.test.yml up -d
