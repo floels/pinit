@@ -2,7 +2,7 @@ version: '3'
 
 services:
   db_e2e:
-    image: postgres:13
+    image: postgres:17
     environment:
       POSTGRES_DB: postgres_e2e
       POSTGRES_USER: postgres
