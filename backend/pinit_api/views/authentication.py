@@ -9,13 +9,11 @@ from ..models import User
 from ..lib.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
+    REFRESH_TOKEN_COOKIE_NAME,
 )
 from ..lib.utils import get_tokens_data
 
-ERROR_CODE_INVALID_REFRESH_TOKEN = "invalid_refresh_token"
-ERROR_CODE_MISSING_REFRESH_TOKEN = "missing_refresh_token"
 DEMO_USER_EMAIL = "demo@pinit.com"
-REFRESH_TOKEN_COOKIE_NAME = "refreshToken"
 
 
 def get_user_from_credentials(email, password):

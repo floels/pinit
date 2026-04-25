@@ -1,5 +1,5 @@
 from rest_framework_simplejwt.tokens import RefreshToken
-from pinit_api.views.authentication import (
+from pinit_api.lib.constants import (
     ERROR_CODE_INVALID_REFRESH_TOKEN,
     ERROR_CODE_MISSING_REFRESH_TOKEN,
     REFRESH_TOKEN_COOKIE_NAME,
