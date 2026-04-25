@@ -30,19 +30,20 @@ backend/
 
 ## Running locally
 
-From the repo root — full stack (DB + backend + frontend):
+Full stack (DB + backend + frontend), from the repo root:
 
 ```bash
 make up
 ```
 
-Backend and DB only (no frontend):
+Backend and DB only — from the repo root or from this directory:
 
 ```bash
-make up-backend
+make up-backend   # repo root
+make up           # this directory
 ```
 
-From this directory (requires a running PostgreSQL instance on port 5432):
+Without Docker (requires a running PostgreSQL instance on port 5432):
 
 ```bash
 pip install -r requirements.txt
@@ -54,19 +55,11 @@ The API is available at http://localhost:8000/api.
 
 ## Running tests
 
-From the repo root:
+From the repo root or from this directory:
 
 ```bash
-make test-backend
-```
-
-From this directory:
-
-```bash
-docker compose -f docker-compose.test.yml up -d
-docker compose -f docker-compose.test.yml exec web python manage.py migrate
-docker compose -f docker-compose.test.yml exec web python manage.py test
-docker compose -f docker-compose.test.yml down
+make test-backend   # repo root
+make test           # this directory
 ```
 
 ## S3 credentials

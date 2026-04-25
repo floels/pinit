@@ -4,13 +4,10 @@ up:
 	docker compose up --build
 
 up-backend:
-	docker compose up --build backend
+	$(MAKE) -C backend up
 
 test-backend:
-	docker compose -f backend/docker-compose.test.yml up -d
-	docker compose -f backend/docker-compose.test.yml exec -T web python manage.py migrate
-	docker compose -f backend/docker-compose.test.yml exec -T web python manage.py test
-	docker compose -f backend/docker-compose.test.yml down
+	$(MAKE) -C backend test
 
 test-frontend:
 	cd frontend && pnpm install && pnpm test
