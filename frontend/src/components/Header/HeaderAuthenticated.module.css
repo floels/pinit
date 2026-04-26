@@ -101,6 +101,12 @@
   display: block;
 }
 
+.accountOptionsButtonWrapper .tooltip {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 .accountOptionsButton {
   cursor: pointer;
   border: none;
