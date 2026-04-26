@@ -31,3 +31,17 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"Bucket '{bucket}' already exists — skipping."))
             else:
                 raise
+
+        s3.put_bucket_cors(
+            Bucket=bucket,
+            CORSConfiguration={
+                "CORSRules": [
+                    {
+                        "AllowedOrigins": ["*"],
+                        "AllowedMethods": ["PUT", "GET"],
+                        "AllowedHeaders": ["*"],
+                    }
+                ]
+            },
+        )
+        self.stdout.write(self.style.SUCCESS(f"Configured CORS on bucket '{bucket}'."))

@@ -44,6 +44,11 @@ class GetPinImageUploadUrlView(APIView):
             ExpiresIn=PRESIGNED_URL_EXPIRATION_SECONDS,
         )
 
+        private_endpoint = getattr(settings, "AWS_S3_ENDPOINT_URL", None)
+        public_endpoint = getattr(settings, "AWS_S3_PUBLIC_ENDPOINT_URL", None)
+        if private_endpoint and public_endpoint:
+            upload_url = upload_url.replace(private_endpoint, public_endpoint)
+
         return Response(
             {"upload_url": upload_url, "image_file_key": image_file_key},
             status=status.HTTP_200_OK,
