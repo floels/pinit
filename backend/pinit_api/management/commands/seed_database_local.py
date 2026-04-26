@@ -78,7 +78,7 @@ class Command(BaseCommand):
             try:
                 AccountFactory.create(profile_picture_url=None)
                 number_created_accounts += 1
-            except:
+            except Exception:
                 pass
 
         return number_created_accounts
@@ -92,39 +92,19 @@ class Command(BaseCommand):
             "profile_picture_urls.json",
         )
 
-        number_accounts_updated = 0
+        with open(file_path) as f:
+            picture_urls = json.load(f)
 
-        with open(file_path, "r") as picture_urls_file:
-            picture_urls = json.load(picture_urls_file)
+        accounts_to_update = []
+        for account in Account.objects.all():
+            if self.should_be_updated(account=account, update_limit=80_000_000):
+                # statistically, 80% of the 'user_XXX' accounts
+                account.profile_picture_url = random.choice(picture_urls)
+                accounts_to_update.append(account)
 
-            for account in Account.objects.all():
-                if self.should_be_updated(account=account, update_limit=80_000_000):
-                    # statistically, 80% of the 'user_XXX' acccounts, since 'XXX' has 8 digits
-                    self.set_random_profile_picture(
-                        picture_urls=picture_urls, account=account
-                    )
+        Account.objects.bulk_update(accounts_to_update, ["profile_picture_url"])
 
-                    number_accounts_updated += 1
-
-        return number_accounts_updated
-
-    def should_be_updated(self, account=None, update_limit=0):
-        if self.is_test_account(account):
-            account_number = self.get_test_account_number(account)
-            return account_number < update_limit
-
-    def is_test_account(self, account):
-        return account.username.startswith("user_") and account.username[5:].isdigit()
-
-    def get_test_account_number(self, account=None):
-        return int(account.username[5:])
-
-    def set_random_profile_picture(self, picture_urls=None, account=None):
-        random_url = random.choice(picture_urls)
-
-        account.profile_picture_url = random_url
-
-        account.save()
+        return len(accounts_to_update)
 
     def set_background_pictures(self):
         file_path = os.path.join(
@@ -135,63 +115,60 @@ class Command(BaseCommand):
             "background_picture_urls.json",
         )
 
-        number_accounts_updated = 0
+        with open(file_path) as f:
+            picture_urls = json.load(f)
 
-        with open(file_path, "r") as picture_urls_file:
-            picture_urls = json.load(picture_urls_file)
+        accounts_to_update = []
+        for account in Account.objects.all():
+            if self.should_be_updated(account=account, update_limit=50_000_000):
+                # statistically, 50% of the 'user_XXX' accounts
+                account.background_picture_url = random.choice(picture_urls)
+                accounts_to_update.append(account)
 
-            for account in Account.objects.all():
-                if self.should_be_updated(account=account, update_limit=50_000_000):
-                    # statistically, 50% of the 'user_XXX' acccounts, since 'XXX' has 8 digits
-                    self.set_random_background_picture(
-                        picture_urls=picture_urls, account=account
-                    )
+        Account.objects.bulk_update(accounts_to_update, ["background_picture_url"])
 
-                    number_accounts_updated += 1
+        return len(accounts_to_update)
 
-        return number_accounts_updated
+    def should_be_updated(self, account=None, update_limit=0):
+        if self.is_test_account(account):
+            account_number = self.get_test_account_number(account)
+            return account_number < update_limit
+        return False
 
-    def set_random_background_picture(self, picture_urls=None, account=None):
-        random_url = random.choice(picture_urls)
+    def is_test_account(self, account):
+        return account.username.startswith("user_") and account.username[5:].isdigit()
 
-        account.background_picture_url = random_url
-
-        account.save()
+    def get_test_account_number(self, account=None):
+        return int(account.username[5:])
 
     def create_pins(self):
         file_path = os.path.join(
             settings.BASE_DIR, "..", "pinit_api", "fixtures", "pin_image_urls.json"
         )
 
-        with open(file_path, "r") as image_urls_file:
-            image_urls = json.load(image_urls_file)
+        accounts = list(Account.objects.all())
 
-            number_created_pins = 0
+        with open(file_path) as f:
+            image_urls = json.load(f)
 
-            while number_created_pins < NUMBER_PINS_TO_CREATE:
-                PinFactory.create(
-                    image_url=random.choice(image_urls),
-                    author=Account.objects.order_by("?").first(),
-                )
-                number_created_pins += 1
+        for _ in range(NUMBER_PINS_TO_CREATE):
+            PinFactory.create(
+                image_url=random.choice(image_urls),
+                author=random.choice(accounts),
+            )
 
-            return number_created_pins
+        return NUMBER_PINS_TO_CREATE
 
     def create_boards(self):
-        number_created_boards = 0
+        accounts = list(Account.objects.all())
 
-        while number_created_boards < NUMBER_BOARDS_TO_CREATE:
-            BoardFactory.create(
-                author=Account.objects.order_by("?").first(),
-            )
-            number_created_boards += 1
+        for _ in range(NUMBER_BOARDS_TO_CREATE):
+            BoardFactory.create(author=random.choice(accounts))
 
-        return number_created_boards
+        return NUMBER_BOARDS_TO_CREATE
 
     def save_pins_in_boards(self):
-        all_pins = list(
-            Pin.objects.all()
-        )  # Convert to list for efficient random sampling
+        all_pins = list(Pin.objects.all())
         all_boards = Board.objects.all()
 
         for board in all_boards:

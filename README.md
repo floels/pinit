@@ -31,6 +31,12 @@ make up
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api
 
+To populate the database with realistic test data on first run:
+
+```bash
+make seed
+```
+
 To enable S3 image uploads, add your credentials before starting:
 
 ```bash
