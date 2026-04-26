@@ -1,10 +1,13 @@
-.PHONY: up up-backend test-backend test-frontend test-e2e
+.PHONY: up up-backend seed test-backend test-frontend test-e2e
 
 up:
 	docker compose up --build
 
 up-backend:
 	$(MAKE) -C backend up
+
+seed:
+	docker compose exec backend python manage.py seed_database_local
 
 test-backend:
 	$(MAKE) -C backend test

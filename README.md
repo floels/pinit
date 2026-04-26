@@ -34,7 +34,7 @@ make up
 To populate the database with realistic test data on first run:
 
 ```bash
-docker compose exec backend python manage.py seed_database_local
+make seed
 ```
 
 To enable S3 image uploads, add your credentials before starting:
