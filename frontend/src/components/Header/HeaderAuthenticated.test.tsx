@@ -4,7 +4,7 @@ import HeaderAuthenticated from "./HeaderAuthenticated";
 import en from "@/public/locales/en/HeaderAuthenticated.json";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
 
-const renderComponent = (pathname = "/en") => {
+const renderComponent = (pathname = "/") => {
   const props = {
     username: "johndoe",
     profilePictureURL: null,
@@ -23,7 +23,7 @@ const renderComponent = (pathname = "/en") => {
 };
 
 it("when on home route, should mark home link as active and not mark create link as active", () => {
-  renderComponent("/en");
+  renderComponent("/");
 
   const homeLink = screen.getByText(en.NAV_ITEM_HOME);
   expect(homeLink).toHaveClass("navigationItemActive");
@@ -33,7 +33,7 @@ it("when on home route, should mark home link as active and not mark create link
 });
 
 it("when on pin creation route, should mark create link as active and not mark home link as active", () => {
-  renderComponent("/en/pin-creation-tool");
+  renderComponent("/pin-creation-tool");
 
   const homeLink = screen.getByText(en.NAV_ITEM_HOME);
   expect(homeLink).not.toHaveClass("navigationItemActive");
