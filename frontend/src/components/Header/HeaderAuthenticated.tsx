@@ -92,7 +92,7 @@ const HeaderAuthenticated = ({
           <button
             className={styles.accountOptionsButton}
             data-testid="account-options-button"
-            onClick={handleClickAccountOptionsButton}
+            onClick={(e) => { e.stopPropagation(); handleClickAccountOptionsButton(); }}
           >
             <FontAwesomeIcon icon={faAngleDown} />
           </button>
