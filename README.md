@@ -37,6 +37,12 @@ To populate the database with realistic test data on first run:
 make seed
 ```
 
+To access the Django admin at http://localhost:8000/admin, create a superuser once the containers are running:
+
+```bash
+docker compose exec backend python manage.py createsuperuser
+```
+
 To enable S3 image uploads, add your credentials before starting:
 
 ```bash
