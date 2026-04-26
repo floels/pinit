@@ -10,7 +10,8 @@ NUMBER_ACCOUNTS_TO_CREATE = 100
 NUMBER_PINS_TO_CREATE = 1000
 NUMBER_BOARDS_TO_CREATE = 100
 
-EMAIL_ADDRESS_DEMO_USER = "pinit@demo.com"
+EMAIL_ADDRESS_DEMO_USER = "demo@pinit.com"
+USERNAME_DEMO_USER = "demo"
 
 
 class Command(BaseCommand):
@@ -22,6 +23,9 @@ class Command(BaseCommand):
         self.write_success("Successfully seeded database!")
 
     def seed_database(self):
+        self.write_warning("Creating demo user...")
+        self.create_demo_user()
+
         self.write_warning("Deleting existing users...")
         self.delete_existing_users()
         self.print_number_remaining_items()
@@ -55,6 +59,16 @@ class Command(BaseCommand):
 
     def write_success(self, message):
         self.stdout.write(self.style.SUCCESS(message))
+
+    def create_demo_user(self):
+        user, created = User.objects.get_or_create(email=EMAIL_ADDRESS_DEMO_USER)
+        if created:
+            user.set_unusable_password()
+            user.save()
+            Account.objects.create(owner=user, username=USERNAME_DEMO_USER)
+            self.write_success("Created demo user.")
+        else:
+            self.write_success("Demo user already exists.")
 
     def delete_existing_users(self):
         User.objects.filter(is_admin=False).exclude(

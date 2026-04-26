@@ -1,6 +1,9 @@
-# Claude Code
+# VS Code
+.vscode/
+
+# Claude Code and MCP configuration files
 .claude/
-.mcp.json
+.playwright-mcp/
 
 # Environment
 .env
