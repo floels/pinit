@@ -1,7 +1,10 @@
-.PHONY: up up-backend seed test-backend test-frontend test-e2e
+.PHONY: up up-detached up-backend seed test-backend test-frontend test-e2e
 
 up:
 	docker compose up --build
+
+up-detached:
+	docker compose up --build --detach
 
 up-backend:
 	$(MAKE) -C backend up
