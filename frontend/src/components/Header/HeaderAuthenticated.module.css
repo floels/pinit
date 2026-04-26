@@ -13,7 +13,7 @@
 .logoContainer {
   height: 48px;
   width: 48px;
-  min-width: 48px; /* otherwise the element gets squashed against 
+  min-width: 48px; /* otherwise the element gets squashed against
   the first nav link on its right on small screens */
   border-radius: 50%;
   display: flex;
@@ -74,9 +74,17 @@
   background-color: var(--color-background-secondary);
 }
 
+.profileLinkWrapper,
+.accountOptionsButtonWrapper {
+  position: relative;
+}
+
 .tooltip {
+  display: none;
   position: absolute;
-  top: 72px;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
   padding: 8px;
   border-radius: 8px;
   background-color: var(--color-gray-500);
@@ -84,10 +92,13 @@
   font-size: var(--font-size-100);
   box-shadow: var(--box-shadow-elevation-floating);
   z-index: 10; /* so it appears above the page content */
+  pointer-events: none;
+  white-space: nowrap;
 }
 
-.profileLinkTooltip {
-  right: 20px;
+.profileLinkWrapper:hover .tooltip,
+.accountOptionsButtonWrapper:hover .tooltip {
+  display: block;
 }
 
 .accountOptionsButton {
@@ -109,8 +120,4 @@
 
 .accountOptionsButton:hover {
   background-color: var(--color-background-secondary);
-}
-
-.accountOptionsButtonTooltip {
-  right: 2px;
 }

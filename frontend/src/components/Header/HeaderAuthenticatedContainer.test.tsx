@@ -1,8 +1,7 @@
 import React from "react";
 import userEvent from "@testing-library/user-event";
-import { screen, fireEvent, render, waitFor } from "@testing-library/react";
+import { screen, render, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import en from "@/public/locales/en/HeaderAuthenticated.json";
 import HeaderAuthenticatedContainer from "./HeaderAuthenticatedContainer";
 import { MockLocalStorage } from "@/lib/testing-utils/misc";
 import {
@@ -48,34 +47,6 @@ const renderComponent = ({
 
 beforeEach(() => {
   localStorage.clear();
-});
-
-it("displays tooltip for profile link upon hover", () => {
-  renderComponent();
-
-  const profileLink = screen.getByTestId("profile-link");
-
-  expect(screen.queryByText(en.YOUR_PROFILE)).toBeNull();
-
-  fireEvent.mouseEnter(profileLink);
-  screen.getByText(en.YOUR_PROFILE);
-
-  fireEvent.mouseLeave(profileLink);
-  expect(screen.queryByText(en.YOUR_PROFILE)).toBeNull();
-});
-
-it("displays tooltip for account options button upon hover", () => {
-  renderComponent();
-
-  const accountOptionsButton = screen.getByTestId("account-options-button");
-
-  expect(screen.queryByText(en.ACCOUNT_OPTIONS)).toBeNull();
-
-  fireEvent.mouseEnter(accountOptionsButton);
-  screen.getByText(en.ACCOUNT_OPTIONS);
-
-  fireEvent.mouseLeave(accountOptionsButton);
-  expect(screen.queryByText(en.ACCOUNT_OPTIONS)).toBeNull();
 });
 
 it("displays account options flyout upon click on corresponding button, and close upon hitting Escape key", async () => {

@@ -6,40 +6,22 @@ import HeaderSearchBarContainer from "./HeaderSearchBarContainer";
 import styles from "./HeaderAuthenticated.module.css";
 import { useTranslation } from "react-i18next";
 import AccountOptionsFlyoutContainer from "./AccountOptionsFlyoutContainer";
-import { forwardRef } from "react";
 
 type HeaderAuthenticatedProps = {
   username: string | null;
   profilePictureURL: string | null;
-  isProfileLinkHovered: boolean;
-  isAccountOptionsButtonHovered: boolean;
   isAccountOptionsFlyoutOpen: boolean;
-  handleMouseEnterProfileLink: () => void;
-  handleMouseLeaveProfileLink: () => void;
   handleClickAccountOptionsButton: () => void;
-  handleMouseEnterAccountOptionsButton: () => void;
-  handleMouseLeaveAccountOptionsButton: () => void;
   handleClickOutOfAccountOptionsFlyout: () => void;
 };
 
-const HeaderAuthenticated = forwardRef<
-  HTMLButtonElement,
-  HeaderAuthenticatedProps
->((props, ref) => {
-  const {
-    username,
-    profilePictureURL,
-    isProfileLinkHovered,
-    isAccountOptionsButtonHovered,
-    isAccountOptionsFlyoutOpen,
-    handleMouseEnterProfileLink,
-    handleMouseLeaveProfileLink,
-    handleClickAccountOptionsButton,
-    handleMouseEnterAccountOptionsButton,
-    handleMouseLeaveAccountOptionsButton,
-    handleClickOutOfAccountOptionsFlyout,
-  } = props;
-
+const HeaderAuthenticated = ({
+  username,
+  profilePictureURL,
+  isAccountOptionsFlyoutOpen,
+  handleClickAccountOptionsButton,
+  handleClickOutOfAccountOptionsFlyout,
+}: HeaderAuthenticatedProps) => {
   const { pathname } = useLocation();
 
   const { t } = useTranslation("HeaderAuthenticated");
@@ -95,38 +77,27 @@ const HeaderAuthenticated = forwardRef<
           key={`header-search-bar-pathname-${pathname}`}
         />
         {username && (
-          <Link
-            to={`/${username}`}
-            className={styles.profileLink}
-            data-testid="profile-link"
-            onMouseEnter={handleMouseEnterProfileLink}
-            onMouseLeave={handleMouseLeaveProfileLink}
-          >
-            {profileLinkBadge}
-          </Link>
-        )}
-        {isProfileLinkHovered && (
-          <div className={`${styles.tooltip} ${styles.profileLinkTooltip}`}>
-            {t("YOUR_PROFILE")}
+          <div className={styles.profileLinkWrapper}>
+            <Link
+              to={`/${username}`}
+              className={styles.profileLink}
+              data-testid="profile-link"
+            >
+              {profileLinkBadge}
+            </Link>
+            <div className={styles.tooltip}>{t("YOUR_PROFILE")}</div>
           </div>
         )}
-        <button
-          className={styles.accountOptionsButton}
-          data-testid="account-options-button"
-          onClick={handleClickAccountOptionsButton}
-          onMouseEnter={handleMouseEnterAccountOptionsButton}
-          onMouseLeave={handleMouseLeaveAccountOptionsButton}
-          ref={ref}
-        >
-          <FontAwesomeIcon icon={faAngleDown} />
-        </button>
-        {isAccountOptionsButtonHovered && (
-          <div
-            className={`${styles.tooltip} ${styles.accountOptionsButtonTooltip}`}
+        <div className={styles.accountOptionsButtonWrapper}>
+          <button
+            className={styles.accountOptionsButton}
+            data-testid="account-options-button"
+            onClick={handleClickAccountOptionsButton}
           >
-            {t("ACCOUNT_OPTIONS")}
-          </div>
-        )}
+            <FontAwesomeIcon icon={faAngleDown} />
+          </button>
+          <div className={styles.tooltip}>{t("ACCOUNT_OPTIONS")}</div>
+        </div>
       </div>
       {isAccountOptionsFlyoutOpen && (
         <AccountOptionsFlyoutContainer
@@ -137,8 +108,6 @@ const HeaderAuthenticated = forwardRef<
       )}
     </nav>
   );
-});
-
-HeaderAuthenticated.displayName = "HeaderAuthenticated";
+};
 
 export default HeaderAuthenticated;

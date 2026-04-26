@@ -3,29 +3,20 @@ import { MemoryRouter } from "react-router-dom";
 import HeaderAuthenticated from "./HeaderAuthenticated";
 import en from "@/public/locales/en/HeaderAuthenticated.json";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
-import { createRef } from "react";
 
 const renderComponent = (pathname = "/en") => {
   const props = {
     username: "johndoe",
     profilePictureURL: null,
-    isProfileLinkHovered: false,
-    isAccountOptionsButtonHovered: false,
     isAccountOptionsFlyoutOpen: false,
-    handleMouseEnterProfileLink: jest.fn(),
-    handleMouseLeaveProfileLink: jest.fn(),
     handleClickAccountOptionsButton: jest.fn(),
-    handleMouseEnterAccountOptionsButton: jest.fn(),
-    handleMouseLeaveAccountOptionsButton: jest.fn(),
     handleClickOutOfAccountOptionsFlyout: jest.fn(),
   };
-
-  const mockRef = createRef<HTMLButtonElement>();
 
   render(
     <MemoryRouter initialEntries={[pathname]}>
       <HeaderSearchBarContextProvider>
-        <HeaderAuthenticated ref={mockRef} {...props} />
+        <HeaderAuthenticated {...props} />
       </HeaderSearchBarContextProvider>
     </MemoryRouter>,
   );
