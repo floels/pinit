@@ -1,3 +1,4 @@
+import { MouseEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,7 +12,7 @@ type HeaderAuthenticatedProps = {
   username: string | null;
   profilePictureURL: string | null;
   isAccountOptionsFlyoutOpen: boolean;
-  handleClickAccountOptionsButton: () => void;
+  handleClickAccountOptionsButton: (e: MouseEvent<HTMLButtonElement>) => void;
   handleClickOutOfAccountOptionsFlyout: () => void;
 };
 
@@ -92,7 +93,7 @@ const HeaderAuthenticated = ({
           <button
             className={styles.accountOptionsButton}
             data-testid="account-options-button"
-            onClick={(e) => { e.stopPropagation(); handleClickAccountOptionsButton(); }}
+            onClick={handleClickAccountOptionsButton}
           >
             <FontAwesomeIcon icon={faAngleDown} />
           </button>
