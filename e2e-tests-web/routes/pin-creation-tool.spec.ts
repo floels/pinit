@@ -10,23 +10,6 @@ test("redirects to landing page when the user is not logged in", async ({ page }
   await page.waitForSelector("text=Get your next");
 });
 
-test("marks Create nav item as active and Home as inactive when on pin creation route", async ({
-  page,
-  context,
-}) => {
-  await loginAsTestUser({ context });
-
-  await page.goto("/pin-creation-tool");
-
-  await page.waitForSelector("nav >> text=Create");
-
-  const homeLink = page.locator("nav a", { hasText: "Home" });
-  const createLink = page.locator("nav a", { hasText: "Create" });
-
-  await expect(createLink).toHaveClass(/navigationItemActive/);
-  await expect(homeLink).not.toHaveClass(/navigationItemActive/);
-});
-
 test("publishes a pin and shows a success toast with a link to it", async ({
   page,
   context,
@@ -35,6 +18,9 @@ test("publishes a pin and shows a success toast with a link to it", async ({
 
   await page.goto("/pin-creation-tool");
   await page.waitForSelector("div[data-testid='pin-image-dropzone']");
+
+  await expect(page.locator("nav a", { hasText: "Create" })).toHaveClass(/navigationItemActive/);
+  await expect(page.locator("nav a", { hasText: "Home" })).not.toHaveClass(/navigationItemActive/);
 
   const fileInput = page.locator(
     "div[data-testid='pin-image-dropzone'] > input[type='file']",
