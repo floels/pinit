@@ -14,11 +14,7 @@ test("user can log in and then log out", async ({ page }) => {
   // refreshToken cookie and surfaces an access token → authenticated header
   await page.waitForSelector("nav >> text=Home");
 
-  // Use programmatic click to avoid the hover tooltip (sibling div with z-index:10)
-  // overlapping the button and intercepting Playwright's synthesized click.
-  await page.evaluate(() => {
-    (document.querySelector('[data-testid="account-options-button"]') as HTMLButtonElement)?.click();
-  });
+  await page.click('[data-testid="account-options-button"]');
   await page.waitForSelector('[data-testid="account-options-flyout"]');
   await page.click('[data-testid="account-options-flyout-log-out-button"]');
 
