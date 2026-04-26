@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import path from "path";
 import { loginAsTestUser } from "../utils";
 
@@ -8,6 +8,23 @@ test("redirects to landing page when the user is not logged in", async ({ page }
   await page.goto("/pin-creation-tool");
 
   await page.waitForSelector("text=Get your next");
+});
+
+test("marks Create nav item as active and Home as inactive when on pin creation route", async ({
+  page,
+  context,
+}) => {
+  await loginAsTestUser({ context });
+
+  await page.goto("/pin-creation-tool");
+
+  await page.waitForSelector("nav >> text=Create");
+
+  const homeLink = page.locator("nav a", { hasText: "Home" });
+  const createLink = page.locator("nav a", { hasText: "Create" });
+
+  await expect(createLink).toHaveClass(/navigationItemActive/);
+  await expect(homeLink).not.toHaveClass(/navigationItemActive/);
 });
 
 test("publishes a pin and shows a success toast with a link to it", async ({
