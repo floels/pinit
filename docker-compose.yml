@@ -12,21 +12,34 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  moto:
+    image: motoserver/moto:latest
+
+  s3_cors_proxy:
+    image: nginx:alpine
+    ports:
+      - "5555:80"
+    volumes:
+      - ./nginx/s3-cors-proxy.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - moto
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py setup_moto_e2e && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
     depends_on:
       - db
+      - moto
     environment:
       DJANGO_SETTINGS_MODULE: pinit.settings.local
-      S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID: ${S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID:-}
-      S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY: ${S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY:-}
+      S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID: testing
+      S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY: testing
 
   frontend:
     build:
