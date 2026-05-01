@@ -13,14 +13,14 @@ ALLOWED_HOSTS = ["*"]
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "HOST": "pinit-staging.c3eo8qy8w69x.eu-north-1.rds.amazonaws.com",
-        "NAME": "pinit_staging",
+        "HOST": config("POSTGRES_HOST"),
+        "NAME": config("POSTGRES_DB", default="pinit_staging"),
         "PORT": "5432",
         "USER": config("POSTGRES_USER"),
         "PASSWORD": config("POSTGRES_PASSWORD"),
     }
 }
 
-AWS_STORAGE_BUCKET_NAME = "pinit-staging"
-AWS_S3_REGION_NAME = "eu-west-3"
-AWS_S3_CUSTOM_DOMAIN = "pinit-staging.s3.eu-west-3.amazonaws.com"
+AWS_STORAGE_BUCKET_NAME = config("S3_PINS_BUCKET_NAME", default="pinit-staging-pins")
+AWS_S3_REGION_NAME = config("S3_PINS_BUCKET_REGION", default="eu-north-1")
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
