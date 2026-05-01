@@ -13,7 +13,7 @@ type SavePinFlyoutContainerProps = {
     boardIndex: number;
   }) => () => void;
   handleClickOutOfSaveFlyout: () => void;
-  openerRef: React.RefObject<HTMLButtonElement>;
+  openerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 const SavePinFlyoutContainer = ({

@@ -4,7 +4,7 @@ import AccountOptionsFlyout from "./AccountOptionsFlyout";
 
 type AccountOptionsFlyoutContainerProps = {
   handleClickOutOfAccountOptionsFlyout: () => void;
-  openerRef: React.RefObject<HTMLButtonElement>;
+  openerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 const AccountOptionsFlyoutContainer = ({
