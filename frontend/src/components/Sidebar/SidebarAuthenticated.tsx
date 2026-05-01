@@ -30,9 +30,12 @@ const SidebarAuthenticated = () => {
   return (
     <nav className={styles.sidebar}>
       <div className={styles.top}>
-        <Link to="/" className={styles.logoButton}>
-          <img src="/images/logo.svg" alt="PinIt logo" width={24} height={24} />
-        </Link>
+        <div className={styles.navItemWrapper}>
+          <Link to="/" className={styles.logoButton}>
+            <img src="/images/logo.svg" alt="PinIt logo" width={24} height={24} />
+          </Link>
+          <span className={styles.tooltip}>{t("NAV_ITEM_HOME")}</span>
+        </div>
         <div className={styles.navItemWrapper}>
           <Link
             to="/"
