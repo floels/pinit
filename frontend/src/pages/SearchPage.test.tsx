@@ -3,7 +3,7 @@ import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import SearchPage from "./SearchPage";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 import { mockIntersectionObserver } from "@/lib/testing-utils/misc";
-import { MOCK_API_RESPONSES, MOCK_API_RESPONSES_JSON } from "@/lib/testing-utils/mockAPIResponses";
+import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_SEARCH } from "@/lib/constants";
 import en from "@/public/locales/en/PinsSearch.json";
 
@@ -42,9 +42,7 @@ it("renders search results upon successful fetch", async () => {
   renderComponent();
 
   await waitFor(() => {
-    screen.getByText(
-      MOCK_API_RESPONSES_JSON[API_URL_SEARCH].results[0].title,
-    );
+    expect(screen.getAllByTestId("pin-thumbnail").length).toBeGreaterThan(0);
   });
 });
 

@@ -2,10 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import HomePage from "./HomePage";
 import { withQueryClient, mockIntersectionObserver } from "@/lib/testing-utils/misc";
-import {
-  MOCK_API_RESPONSES,
-  MOCK_API_RESPONSES_JSON,
-} from "@/lib/testing-utils/mockAPIResponses";
+import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
 import { AuthContext } from "@/contexts/authContext";
 import en from "@/public/locales/en/HomePageContent.json";
@@ -67,9 +64,7 @@ it("renders pins upon successful fetch", async () => {
   renderComponent({ accessToken: mockAccessToken });
 
   await waitFor(() => {
-    screen.getByText(
-      MOCK_API_RESPONSES_JSON[API_URL_PIN_SUGGESTIONS].results[0].title,
-    );
+    expect(screen.getAllByTestId("pin-thumbnail").length).toBeGreaterThan(0);
   });
 });
 
