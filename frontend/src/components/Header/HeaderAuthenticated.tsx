@@ -29,18 +29,6 @@ const HeaderAuthenticated = ({
 
   const accountOptionsButtonRef = useRef<HTMLButtonElement>(null);
 
-  let classHomeLink = styles.navigationItem;
-
-  if (pathname === "/") {
-    classHomeLink = `${classHomeLink} ${styles.navigationItemActive}`;
-  }
-
-  let classCreateLink = styles.navigationItem;
-
-  if (pathname === "/pin-creation-tool") {
-    classCreateLink = `${classCreateLink} ${styles.navigationItemActive}`;
-  }
-
   const profileLinkBadge = profilePictureURL ? (
     <img
       src={profilePictureURL}
@@ -59,20 +47,6 @@ const HeaderAuthenticated = ({
   return (
     <nav className={styles.container}>
       <div className={styles.headerItemsContainer}>
-        <Link to="/" className={styles.logoContainer}>
-          <img
-            src="/images/logo.svg"
-            alt="PinIt logo"
-            width={24}
-            height={24}
-          />
-        </Link>
-        <Link to="/" className={classHomeLink}>
-          {t("NAV_ITEM_HOME")}
-        </Link>
-        <Link to="/pin-creation-tool" className={classCreateLink}>
-          {t("NAV_ITEM_CREATE")}
-        </Link>
         {/* Trick: we render <HeaderSearchBar /> with a key containing the current pathname.
             This way, the component will be re-rendered on each route transition, and its value
             will be cleared. */}

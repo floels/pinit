@@ -10,39 +10,6 @@
   height: 100%;
 }
 
-.logoContainer {
-  height: 48px;
-  width: 48px;
-  min-width: 48px; /* otherwise the element gets squashed against
-  the first nav link on its right on small screens */
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.logoContainer:hover {
-  background-color: var(--color-background-secondary);
-}
-
-.navigationItem {
-  height: 48px;
-  padding: 0 16px;
-  color: var(--color-text-default);
-  font-size: var(--font-size-300);
-  font-weight: var(--font-weight-semibold);
-  border-radius: 24px;
-  text-decoration: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.navigationItem.navigationItemActive {
-  background-color: var(--color-background-selected);
-  color: var(--color-text-inverse);
-}
-
 .profileLink {
   height: 48px;
   width: 48px;
