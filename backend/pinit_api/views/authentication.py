@@ -13,9 +13,6 @@ from ..lib.constants import (
 )
 from ..lib.utils import get_tokens_data
 
-DEMO_USER_EMAIL = "demo@pinit.com"
-
-
 def get_user_from_credentials(email, password):
     """Returns (user, error_response). Exactly one of the two is None."""
     try:
@@ -60,20 +57,6 @@ def obtain_token_pair_mobile(request):
     return Response(get_tokens_data(user))
 
 
-@api_view(["GET"])
-def obtain_demo_token_pair_mobile(request):
-    try:
-        user = User.objects.get(email=DEMO_USER_EMAIL)
-
-    except User.DoesNotExist:
-        return Response(
-            {"errors": [{"code": ERROR_CODE_INVALID_EMAIL}]},
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
-
-    return Response(get_tokens_data(user))
-
-
 @api_view(["POST"])
 def obtain_token_pair_web(request):
     user, error = get_user_from_credentials(
@@ -82,28 +65,6 @@ def obtain_token_pair_web(request):
 
     if error:
         return error
-
-    tokens_data = get_tokens_data(user)
-    response = Response(
-        {
-            "access_token": tokens_data["access_token"],
-            "access_token_expiration_utc": tokens_data["access_token_expiration_utc"],
-        }
-    )
-    set_refresh_token_cookie(response, tokens_data["refresh_token"])
-    return response
-
-
-@api_view(["GET"])
-def obtain_demo_token_pair_web(request):
-    try:
-        user = User.objects.get(email=DEMO_USER_EMAIL)
-
-    except User.DoesNotExist:
-        return Response(
-            {"errors": [{"code": ERROR_CODE_INVALID_EMAIL}]},
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
 
     tokens_data = get_tokens_data(user)
     response = Response(

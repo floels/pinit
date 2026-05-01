@@ -25,11 +25,6 @@ urlpatterns = [
         name="obtain_token",
     ),
     path(
-        "token/obtain-demo/",
-        authentication.obtain_demo_token_pair_mobile,
-        name="obtain_demo_token",
-    ),
-    path(
         "token/refresh/",
         token_refresh.RefreshTokenMobileView.as_view(),
         name="refresh_token",
@@ -39,11 +34,6 @@ urlpatterns = [
         "token/web/obtain/",
         authentication.obtain_token_pair_web,
         name="web_obtain_token",
-    ),
-    path(
-        "token/web/obtain-demo/",
-        authentication.obtain_demo_token_pair_web,
-        name="web_obtain_demo_token",
     ),
     path(
         "token/web/refresh/",
