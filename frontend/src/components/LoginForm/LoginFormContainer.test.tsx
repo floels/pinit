@@ -4,7 +4,6 @@ import LoginFormContainer from "./LoginFormContainer";
 import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
 import {
-  API_URL_OBTAIN_DEMO_TOKEN,
   API_URL_OBTAIN_TOKEN,
   API_URL_REFRESH_TOKEN,
 } from "@/lib/constants";
@@ -96,27 +95,6 @@ it("refreshes the access token upon successful response", async () => {
   );
 
   await submit();
-
-  expect(fetch).toHaveBeenCalledWith(
-    API_URL_REFRESH_TOKEN,
-    expect.objectContaining({ method: "POST", credentials: "include" }),
-  );
-});
-
-it("refreshes the access token upon successful response for demo login", async () => {
-  renderComponent();
-
-  fetchMock.mockOnceIf(
-    API_URL_OBTAIN_DEMO_TOKEN,
-    MOCK_API_RESPONSES[API_URL_OBTAIN_TOKEN],
-  );
-  fetchMock.mockOnceIf(
-    API_URL_REFRESH_TOKEN,
-    MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN],
-  );
-
-  const demoLoginButton = screen.getByText(en.LoginForm.LOG_IN_AS_DEMO);
-  await userEvent.click(demoLoginButton);
 
   expect(fetch).toHaveBeenCalledWith(
     API_URL_REFRESH_TOKEN,

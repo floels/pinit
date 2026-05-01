@@ -62,17 +62,6 @@
   font-weight: var(--font-weight-semibold);
 }
 
-.loginAsDemo {
-  margin-top: 10px;
-  cursor: pointer;
-  border: none;
-  background-color: transparent;
-}
-
-.loginAsDemo:hover {
-  text-decoration: underline;
-}
-
 .loadingOverlay {
   background-color: var(--color-background-light-transparent-overlay);
   position: absolute;

@@ -11,7 +11,6 @@
     "INVALID_PASSWORD_LOGIN": "The password you entered is incorrect. Try again.",
     "LOG_IN": "Log in",
     "NO_ACCOUNT_YET_CTA": "Not on PinIt yet? Sign up",
-    "LOG_IN_AS_DEMO": "Log in as demo user",
     "EMAIL": "Email",
     "PASSWORD": "Password"
   },
