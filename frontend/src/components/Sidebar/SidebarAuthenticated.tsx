@@ -1,7 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse } from "@fortawesome/free-solid-svg-icons";
-import { faSquarePlus } from "@fortawesome/free-regular-svg-icons";
+import { faHouse, faSquarePlus } from "@fortawesome/free-regular-svg-icons";
 import { useTranslation } from "react-i18next";
 import styles from "./SidebarAuthenticated.module.css";
 
