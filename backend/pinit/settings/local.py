@@ -18,6 +18,7 @@ DATABASES = {
     }
 }
 
-AWS_STORAGE_BUCKET_NAME = "pinit-staging"
-AWS_S3_REGION_NAME = "eu-west-3"
-AWS_S3_CUSTOM_DOMAIN = "pinit-staging.s3.eu-west-3.amazonaws.com"
+AWS_STORAGE_BUCKET_NAME = "local-pins"
+AWS_S3_CUSTOM_DOMAIN = "localhost:5555/local-pins"
+AWS_S3_ENDPOINT_URL = "http://moto:5000"
+AWS_S3_PUBLIC_ENDPOINT_URL = "http://localhost:5555"
