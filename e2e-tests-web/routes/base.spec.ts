@@ -21,6 +21,9 @@ test("shows authenticated header and pin suggestions when logged in", async ({
   await page.waitForSelector('[data-testid="pin-thumbnail"]');
   const thumbnails = await page.$$('[data-testid="pin-thumbnail"]');
   expect(thumbnails.length).toBeGreaterThan(0);
+
+  await expect(page.locator("nav a", { hasText: "Home" })).toHaveClass(/navigationItemActive/);
+  await expect(page.locator("nav a", { hasText: "Create" })).not.toHaveClass(/navigationItemActive/);
 });
 
 test("shows unauthenticated state when the refresh token is invalid", async ({

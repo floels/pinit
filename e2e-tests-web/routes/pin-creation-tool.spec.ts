@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import path from "path";
 import { loginAsTestUser } from "../utils";
 
@@ -18,6 +18,9 @@ test("publishes a pin and shows a success toast with a link to it", async ({
 
   await page.goto("/pin-creation-tool");
   await page.waitForSelector("div[data-testid='pin-image-dropzone']");
+
+  await expect(page.locator("nav a", { hasText: "Create" })).toHaveClass(/navigationItemActive/);
+  await expect(page.locator("nav a", { hasText: "Home" })).not.toHaveClass(/navigationItemActive/);
 
   const fileInput = page.locator(
     "div[data-testid='pin-image-dropzone'] > input[type='file']",

@@ -29,13 +29,13 @@ const HeaderAuthenticated = ({
 
   let classHomeLink = styles.navigationItem;
 
-  if (pathname === "/en") {
+  if (pathname === "/") {
     classHomeLink = `${classHomeLink} ${styles.navigationItemActive}`;
   }
 
   let classCreateLink = styles.navigationItem;
 
-  if (pathname === "/en/pin-creation-tool") {
+  if (pathname === "/pin-creation-tool") {
     classCreateLink = `${classCreateLink} ${styles.navigationItemActive}`;
   }
 
