@@ -14,4 +14,4 @@ EXPOSE 80
 
 ENV DJANGO_SETTINGS_MODULE=pinit.settings.aws_staging
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
+CMD ["gunicorn", "--workers=3", "--bind=0.0.0.0:80", "pinit.wsgi:application"]

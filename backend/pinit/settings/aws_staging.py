@@ -3,7 +3,7 @@ from decouple import config
 
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 
-DEBUG = True
+DEBUG = False
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
