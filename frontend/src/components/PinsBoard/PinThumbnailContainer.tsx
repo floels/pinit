@@ -44,7 +44,6 @@ const PinThumbnailContainer = ({
 
   const handleClickSave = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault(); // otherwise we'll navigate to pin details
-    event.stopPropagation(); // prevent bubbling to document listener registered on flyout mount, which would immediately close the flyout
 
     setIsSaveFlyoutOpen(true);
   };

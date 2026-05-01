@@ -1,3 +1,4 @@
+import { createRef } from "react";
 import { render, screen } from "@testing-library/react";
 import AccountOptionsFlyoutContainer from "./AccountOptionsFlyoutContainer";
 import userEvent from "@testing-library/user-event";
@@ -19,6 +20,7 @@ const renderComponent = () => {
         handleClickOutOfAccountOptionsFlyout={
           mockHandleClickOutOfAccountOptionsFlyout
         }
+        openerRef={createRef<HTMLButtonElement>()}
       />
       <div data-testid="trigger-click-out" />
     </>,

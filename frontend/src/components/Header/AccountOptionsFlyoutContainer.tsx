@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import LogoutTrigger from "../LogoutTrigger/LogoutTrigger";
 import AccountOptionsFlyout from "./AccountOptionsFlyout";
 
 type AccountOptionsFlyoutContainerProps = {
   handleClickOutOfAccountOptionsFlyout: () => void;
+  openerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 const AccountOptionsFlyoutContainer = ({
   handleClickOutOfAccountOptionsFlyout,
+  openerRef,
 }: AccountOptionsFlyoutContainerProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -20,7 +22,8 @@ const AccountOptionsFlyoutContainer = ({
   const handleClickDocument = (event: MouseEvent) => {
     const target = event.target as Node;
 
-    const userClickedOut = !ref.current?.contains(target);
+    const userClickedOut =
+      !ref.current?.contains(target) && !openerRef.current?.contains(target);
 
     if (userClickedOut) {
       handleClickOutOfAccountOptionsFlyout();
