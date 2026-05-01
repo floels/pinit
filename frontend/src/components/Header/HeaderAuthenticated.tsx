@@ -1,4 +1,4 @@
-import { MouseEvent } from "react";
+import { useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,7 +12,7 @@ type HeaderAuthenticatedProps = {
   username: string | null;
   profilePictureURL: string | null;
   isAccountOptionsFlyoutOpen: boolean;
-  handleClickAccountOptionsButton: (e: MouseEvent<HTMLButtonElement>) => void;
+  handleClickAccountOptionsButton: () => void;
   handleClickOutOfAccountOptionsFlyout: () => void;
 };
 
@@ -26,6 +26,8 @@ const HeaderAuthenticated = ({
   const { pathname } = useLocation();
 
   const { t } = useTranslation("HeaderAuthenticated");
+
+  const accountOptionsButtonRef = useRef<HTMLButtonElement>(null);
 
   let classHomeLink = styles.navigationItem;
 
@@ -91,6 +93,7 @@ const HeaderAuthenticated = ({
         )}
         <div className={styles.accountOptionsButtonWrapper}>
           <button
+            ref={accountOptionsButtonRef}
             className={styles.accountOptionsButton}
             data-testid="account-options-button"
             onClick={handleClickAccountOptionsButton}
@@ -105,6 +108,7 @@ const HeaderAuthenticated = ({
           handleClickOutOfAccountOptionsFlyout={
             handleClickOutOfAccountOptionsFlyout
           }
+          openerRef={accountOptionsButtonRef}
         />
       )}
     </nav>

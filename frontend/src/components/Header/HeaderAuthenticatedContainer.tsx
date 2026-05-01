@@ -1,4 +1,4 @@
-import { useEffect, useState, MouseEvent } from "react";
+import { useEffect, useState } from "react";
 import HeaderAuthenticated from "./HeaderAuthenticated";
 import {
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
@@ -16,13 +16,7 @@ const HeaderAuthenticatedContainer = () => {
 
   const accountContext = useAccountContext();
 
-  // stopPropagation prevents the click from bubbling to the document-level listener
-  // registered by AccountOptionsFlyoutContainer, which would immediately close the
-  // flyout we just opened (React 18 flushes effects synchronously for trusted clicks).
-  const handleClickAccountOptionsButton = (
-    e: MouseEvent<HTMLButtonElement>,
-  ) => {
-    e.stopPropagation();
+  const handleClickAccountOptionsButton = () => {
     setIsAccountOptionsFlyoutOpen(!isAccountOptionsFlyoutOpen);
   };
 

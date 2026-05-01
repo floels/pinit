@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styles from "./PinThumbnail.module.css";
@@ -49,6 +50,8 @@ const PinThumbnail = ({
 }: PinThumbnailProps) => {
   const { t } = useTranslation("PinsBoard");
 
+  const saveButtonRef = useRef<HTMLButtonElement>(null);
+
   const hasSaved = indexBoardWhereJustSaved !== null;
 
   let imageOverlay;
@@ -76,6 +79,7 @@ const PinThumbnail = ({
       <div className={styles.hoverOverlay}>
         <div className={styles.hoverOverlayContentNotSaved}>
           <button
+            ref={saveButtonRef}
             className={styles.saveButton}
             onClick={handleClickSave}
             data-testid="pin-thumbnail-save-button"
@@ -142,6 +146,7 @@ const PinThumbnail = ({
           isSaving={isSaving}
           getClickHandlerForBoard={getClickHandlerForBoard}
           handleClickOutOfSaveFlyout={handleClickOutOfSaveFlyout}
+          openerRef={saveButtonRef}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
+import React, { useEffect, useRef } from "react";
 import { BoardWithBasicDetails } from "@/lib/types/frontendTypes";
 import SavePinFlyout from "./SavePinFlyout";
-import { useEffect, useRef } from "react";
 
 type SavePinFlyoutContainerProps = {
   isInFirstColumn: boolean;
@@ -13,6 +13,7 @@ type SavePinFlyoutContainerProps = {
     boardIndex: number;
   }) => () => void;
   handleClickOutOfSaveFlyout: () => void;
+  openerRef: React.RefObject<HTMLButtonElement>;
 };
 
 const SavePinFlyoutContainer = ({
@@ -22,13 +23,15 @@ const SavePinFlyoutContainer = ({
   isSaving,
   getClickHandlerForBoard,
   handleClickOutOfSaveFlyout,
+  openerRef,
 }: SavePinFlyoutContainerProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const handleClickDocument = (event: MouseEvent) => {
     const target = event.target as Node;
 
-    const userClickedOut = !ref.current?.contains(target);
+    const userClickedOut =
+      !ref.current?.contains(target) && !openerRef.current?.contains(target);
 
     if (userClickedOut) {
       handleClickOutOfSaveFlyout();
