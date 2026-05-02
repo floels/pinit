@@ -7,10 +7,12 @@ import HeaderSearchBarContainer from "./HeaderSearchBarContainer";
 import styles from "./HeaderAuthenticated.module.css";
 import { useTranslation } from "react-i18next";
 import AccountOptionsFlyoutContainer from "./AccountOptionsFlyoutContainer";
+import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";
 
 type HeaderAuthenticatedProps = {
   username: string | null;
   profilePictureURL: string | null;
+  account: AccountWithPrivateDetails | null;
   isAccountOptionsFlyoutOpen: boolean;
   handleClickAccountOptionsButton: () => void;
   handleClickOutOfAccountOptionsFlyout: () => void;
@@ -19,6 +21,7 @@ type HeaderAuthenticatedProps = {
 const HeaderAuthenticated = ({
   username,
   profilePictureURL,
+  account,
   isAccountOptionsFlyoutOpen,
   handleClickAccountOptionsButton,
   handleClickOutOfAccountOptionsFlyout,
@@ -77,8 +80,13 @@ const HeaderAuthenticated = ({
           <div className={styles.tooltip}>{t("ACCOUNT_OPTIONS")}</div>
         </div>
       </div>
-      {isAccountOptionsFlyoutOpen && (
+      {isAccountOptionsFlyoutOpen && account && (
         <AccountOptionsFlyoutContainer
+          displayName={account.displayName}
+          initial={account.initial}
+          profilePictureURL={account.profilePictureURL}
+          accountType={account.type}
+          ownerEmail={account.ownerEmail}
           handleClickOutOfAccountOptionsFlyout={
             handleClickOutOfAccountOptionsFlyout
           }

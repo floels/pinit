@@ -1,13 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
 import LogoutTrigger from "../LogoutTrigger/LogoutTrigger";
 import AccountOptionsFlyout from "./AccountOptionsFlyout";
+import { TypesOfAccount } from "@/lib/types/frontendTypes";
 
 type AccountOptionsFlyoutContainerProps = {
+  displayName: string;
+  initial: string;
+  profilePictureURL: string | null;
+  accountType: TypesOfAccount;
+  ownerEmail: string;
   handleClickOutOfAccountOptionsFlyout: () => void;
   openerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 const AccountOptionsFlyoutContainer = ({
+  displayName,
+  initial,
+  profilePictureURL,
+  accountType,
+  ownerEmail,
   handleClickOutOfAccountOptionsFlyout,
   openerRef,
 }: AccountOptionsFlyoutContainerProps) => {
@@ -43,7 +54,15 @@ const AccountOptionsFlyoutContainer = ({
   }
 
   return (
-    <AccountOptionsFlyout ref={ref} handleClickLogOut={handleClickLogOut} />
+    <AccountOptionsFlyout
+      ref={ref}
+      displayName={displayName}
+      initial={initial}
+      profilePictureURL={profilePictureURL}
+      accountType={accountType}
+      ownerEmail={ownerEmail}
+      handleClickLogOut={handleClickLogOut}
+    />
   );
 };
 

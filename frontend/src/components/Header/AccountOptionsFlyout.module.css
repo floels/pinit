@@ -1,5 +1,5 @@
 .container {
-  min-width: 250px;
+  min-width: 280px;
   position: absolute;
   top: 60px;
   right: 2px;
@@ -9,6 +9,81 @@
   box-sizing: border-box;
   background-color: var(--color-white);
   z-index: 10; /* so it appears above page content */
+}
+
+.currentlyInLabel {
+  padding: 8px;
+  font-size: var(--font-size-100);
+  color: var(--color-text-subtle);
+}
+
+.accountCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+}
+
+.profilePicture {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.profilePictureFallback {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--color-background-secondary);
+  color: var(--color-text-default);
+}
+
+.accountInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.displayName {
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountTypeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-200);
+}
+
+.checkIcon {
+  font-size: 12px;
+}
+
+.ownerEmail {
+  font-size: var(--font-size-200);
+  color: var(--color-text-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.separator {
+  border: none;
+  border-top: 1px solid var(--color-background-secondary);
+  margin: 8px 0;
 }
 
 .logoutButton {
@@ -25,34 +100,4 @@
 
 .logoutButton:hover {
   background-color: var(--color-background-secondary);
-}
-
-.otherAccountsContainer {
-  margin-top: 16px;
-}
-
-.moreOptionsContainer {
-  margin-top: 16px;
-}
-
-.moreOptionsLabel {
-  padding: 8px;
-  font-size: var(--font-size-100);
-}
-
-.spinnerContainer {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
-  color: var(--color-text-subtle);
-}
-
-.errorContainer {
-  padding: 8px;
-  font-size: var(--font-size-200);
-}
-
-.errorIcon {
-  margin-right: 8px;
-  color: var(--color-text-warning);
 }

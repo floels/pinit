@@ -2,6 +2,7 @@ import { createRef } from "react";
 import { render, screen } from "@testing-library/react";
 import AccountOptionsFlyoutContainer from "./AccountOptionsFlyoutContainer";
 import userEvent from "@testing-library/user-event";
+import { TypesOfAccount } from "@/lib/types/frontendTypes";
 
 jest.mock("@/components/LogoutTrigger/LogoutTrigger", () => {
   const MockedLogoutTrigger = () => <div data-testid="mock-logout-trigger" />;
@@ -17,6 +18,11 @@ const renderComponent = () => {
   render(
     <>
       <AccountOptionsFlyoutContainer
+        displayName="John Doe"
+        initial="J"
+        profilePictureURL={null}
+        accountType={TypesOfAccount.PERSONAL}
+        ownerEmail="john.doe@example.com"
         handleClickOutOfAccountOptionsFlyout={
           mockHandleClickOutOfAccountOptionsFlyout
         }

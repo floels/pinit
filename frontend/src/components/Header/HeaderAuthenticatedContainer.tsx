@@ -59,6 +59,7 @@ const HeaderAuthenticatedContainer = () => {
     <HeaderAuthenticated
       username={username}
       profilePictureURL={profilePictureURL}
+      account={accountContext.account}
       isAccountOptionsFlyoutOpen={isAccountOptionsFlyoutOpen}
       handleClickAccountOptionsButton={handleClickAccountOptionsButton}
       handleClickOutOfAccountOptionsFlyout={
