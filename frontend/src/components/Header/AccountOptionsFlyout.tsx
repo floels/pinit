@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import styles from "./AccountOptionsFlyout.module.css";
 import { forwardRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { TypesOfAccount } from "@/lib/types/frontendTypes";
 
 type AccountOptionsFlyoutProps = {
@@ -50,10 +50,7 @@ const AccountOptionsFlyout = forwardRef<
         {profilePicture}
         <div className={styles.accountInfo}>
           <div className={styles.displayName}>{displayName}</div>
-          <div className={styles.accountTypeRow}>
-            <span>{accountTypeLabel}</span>
-            <FontAwesomeIcon icon={faCheck} className={styles.checkIcon} />
-          </div>
+          <div className={styles.accountTypeRow}>{accountTypeLabel}</div>
           <div className={styles.ownerEmail}>{ownerEmail}</div>
         </div>
       </div>
