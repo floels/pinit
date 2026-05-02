@@ -20,6 +20,5 @@ DATABASES = {
 
 AWS_STORAGE_BUCKET_NAME = "local-pins"
 AWS_S3_CUSTOM_DOMAIN = "localhost:5555/local-pins"
-AWS_S3_SECURE_URLS = False
 AWS_S3_ENDPOINT_URL = "http://moto:5000"
 AWS_S3_PUBLIC_ENDPOINT_URL = "http://localhost:5555"
