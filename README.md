@@ -15,9 +15,10 @@ A Pinterest-like platform for discovering, creating, and organizing pins on boar
 
 ```
 pinit/
-├── backend/    # Django REST API
-├── frontend/   # Vite + React SPA
-└── e2e-tests-web/    # Playwright end-to-end tests
+├── backend/        # Django REST API
+├── frontend/       # Vite + React SPA
+├── e2e-tests-web/  # Playwright end-to-end tests
+└── infra/          # Terraform + Kubernetes manifests for AWS deployment
 ```
 
 ## Running locally
