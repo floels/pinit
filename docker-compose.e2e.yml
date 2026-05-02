@@ -17,15 +17,8 @@ services:
 
   moto:
     image: motoserver/moto:latest
-
-  s3_cors_proxy:
-    image: nginx:alpine
     ports:
-      - "5555:80"
-    volumes:
-      - ./nginx/s3-cors-proxy.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - moto
+      - "5555:5000"
 
   backend_e2e:
     build:
