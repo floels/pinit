@@ -25,5 +25,4 @@ AWS_S3_ENDPOINT_URL = "http://moto:5000"
 # but the browser needs the host-accessible address to PUT the image.
 AWS_S3_PUBLIC_ENDPOINT_URL = "http://localhost:5555"
 # The moto mock server only speaks HTTP, so override the default "https:" here.
-# django-storages 1.14+ uses AWS_S3_URL_PROTOCOL instead of the old AWS_S3_SECURE_URLS.
 AWS_S3_URL_PROTOCOL = "http:"

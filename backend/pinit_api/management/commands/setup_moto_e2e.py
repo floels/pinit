@@ -47,8 +47,6 @@ class Command(BaseCommand):
         )
         self.stdout.write(self.style.SUCCESS(f"Configured CORS on bucket '{bucket}'."))
 
-        # Without this policy, objects are private by default and GET requests
-        # return 403, so pin images cannot be displayed in the browser.
         s3.put_bucket_policy(
             Bucket=bucket,
             Policy=json.dumps({
