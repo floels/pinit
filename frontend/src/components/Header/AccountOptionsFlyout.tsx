@@ -57,7 +57,6 @@ const AccountOptionsFlyout = forwardRef<
           <div className={styles.ownerEmail}>{ownerEmail}</div>
         </div>
       </div>
-      <hr className={styles.separator} />
       <button
         onClick={handleClickLogOut}
         className={styles.logoutButton}
