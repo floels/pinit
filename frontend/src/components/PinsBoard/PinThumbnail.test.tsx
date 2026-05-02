@@ -28,20 +28,9 @@ const renderComponent = () => {
   );
 };
 
-it("renders all required elements", () => {
+it("renders the pin image", () => {
   renderComponent();
 
   const pinImage = screen.getByAltText(pin.title);
   expect(pinImage).toHaveAttribute("src", pin.imageURL);
-
-  screen.getByText(pin.title);
-
-  screen.getByTestId("pin-author-details");
-
-  const authorProfilePicture = screen.getByAltText(
-    "Profile picture of John Doe",
-  );
-  expect(authorProfilePicture.getAttribute("src")).toBe(pin.author.profilePictureURL);
-
-  screen.getByText(pin.author.displayName);
 });

@@ -31,8 +31,6 @@ type PinThumbnailProps = {
   handleClickOutOfSaveFlyout: () => void;
 };
 
-const AUTHOR_PROFILE_PICTURE_SIZE_PX = 32;
-
 const PinThumbnail = ({
   pin,
   isInFirstColumn,
@@ -116,27 +114,6 @@ const PinThumbnail = ({
           className={styles.image}
         />
         {shouldShowImageOverlay && imageOverlay}
-      </Link>
-      {pin.title && (
-        <Link to={`/pin/${pin.id}`} className={styles.title}>
-          {pin.title}
-        </Link>
-      )}
-      <Link
-        className={styles.authorDetails}
-        data-testid="pin-author-details"
-        to={`/${pin.author.username}`}
-      >
-        {pin.author.profilePictureURL && (
-          <img
-            className={styles.authorProfilePicture}
-            width={AUTHOR_PROFILE_PICTURE_SIZE_PX}
-            height={AUTHOR_PROFILE_PICTURE_SIZE_PX}
-            src={pin.author.profilePictureURL}
-            alt={`${t("ALT_PROFILE_PICTURE_OF")} ${pin.author.displayName}`}
-          />
-        )}
-        <span className={styles.authorName}>{pin.author.displayName}</span>
       </Link>
       {isSaveFlyoutOpen && (
         <SavePinFlyoutContainer
