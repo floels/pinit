@@ -1,30 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
 import LogoutTrigger from "../LogoutTrigger/LogoutTrigger";
 import AccountOptionsFlyout from "./AccountOptionsFlyout";
-import { TypesOfAccount } from "@/lib/types/frontendTypes";
+import { useAccountContext } from "@/contexts/accountContext";
 
 type AccountOptionsFlyoutContainerProps = {
-  displayName: string;
-  initial: string;
-  profilePictureURL: string | null;
-  accountType: TypesOfAccount;
-  ownerEmail: string;
   handleClickOutOfAccountOptionsFlyout: () => void;
   openerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 const AccountOptionsFlyoutContainer = ({
-  displayName,
-  initial,
-  profilePictureURL,
-  accountType,
-  ownerEmail,
   handleClickOutOfAccountOptionsFlyout,
   openerRef,
 }: AccountOptionsFlyoutContainerProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const [clickedLogOut, setClickedLogOut] = useState(false);
+
+  const { account } = useAccountContext();
 
   const handleClickLogOut = () => {
     setClickedLogOut(true);
@@ -53,14 +45,18 @@ const AccountOptionsFlyoutContainer = ({
     return <LogoutTrigger />;
   }
 
+  if (!account) {
+    return null;
+  }
+
   return (
     <AccountOptionsFlyout
       ref={ref}
-      displayName={displayName}
-      initial={initial}
-      profilePictureURL={profilePictureURL}
-      accountType={accountType}
-      ownerEmail={ownerEmail}
+      displayName={account.displayName}
+      initial={account.initial}
+      profilePictureURL={account.profilePictureURL}
+      accountType={account.type}
+      ownerEmail={account.ownerEmail}
       handleClickLogOut={handleClickLogOut}
     />
   );

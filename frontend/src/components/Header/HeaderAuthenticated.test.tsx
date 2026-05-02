@@ -7,7 +7,6 @@ const renderComponent = () => {
   const props = {
     username: "johndoe",
     profilePictureURL: null,
-    account: null,
     isAccountOptionsFlyoutOpen: false,
     handleClickAccountOptionsButton: jest.fn(),
     handleClickOutOfAccountOptionsFlyout: jest.fn(),
