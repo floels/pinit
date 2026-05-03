@@ -22,6 +22,7 @@ VALID_IMAGE_FILE_KEY = "pins/pin_image_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4.jpg"
     AWS_S3_CUSTOM_DOMAIN=S3_CUSTOM_DOMAIN,
     AWS_QUERYSTRING_AUTH=False,
     AWS_S3_ENDPOINT_URL=None,
+    AWS_S3_URL_PROTOCOL="https:",
     STORAGES={
         "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
