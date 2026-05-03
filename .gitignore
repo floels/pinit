@@ -28,3 +28,9 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars.local
