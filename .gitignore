@@ -23,6 +23,7 @@ build/
 node_modules/
 .swc/
 coverage/
+.vite/
 
 # OS
 .DS_Store

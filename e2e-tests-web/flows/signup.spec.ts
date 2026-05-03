@@ -20,11 +20,11 @@ test("user can sign up", async ({ page }) => {
 
   // After successful signup the page reloads; the refreshToken cookie is set
   // and AccessTokenRefresher obtains an access token → authenticated header
-  await page.waitForSelector("nav >> text=Home");
+  await page.waitForSelector('[data-testid="sidebar-home-link"]');
 
   // Navigating away and back keeps the session alive
   await page.goto("/");
-  await page.waitForSelector("nav >> text=Home");
+  await page.waitForSelector('[data-testid="sidebar-home-link"]');
 });
 
 test("shows an error when the email address is already registered", async ({ page }) => {

@@ -4,7 +4,6 @@ import {
   ERROR_CODE_INVALID_EMAIL,
   ERROR_CODE_FETCH_FAILED,
   API_URL_OBTAIN_TOKEN,
-  API_URL_OBTAIN_DEMO_TOKEN,
 } from "../../lib/constants";
 import { isValidEmail, isValidPassword } from "../../lib/utils/validation";
 import { useLogIn } from "../../lib/hooks/useLogIn";
@@ -63,20 +62,17 @@ const LoginFormContainer = ({
     fetchTokens();
   };
 
-  const fetchTokens = async ({ isDemo }: { isDemo?: boolean } = {}) => {
-    if (!isDemo) {
-      setShowFormErrors(true);
+  const fetchTokens = async () => {
+    setShowFormErrors(true);
 
-      if (formErrors.email || formErrors.password) {
-        // Invalid inputs: no need to make a request
-        return;
-      }
+    if (formErrors.email || formErrors.password) {
+      return;
     }
 
     setIsLoading(true);
 
     try {
-      await fetchTokensAndThrow({ isDemo });
+      await fetchTokensAndThrow();
     } catch (error) {
       updateFormErrorsFromFetchError({ error: error as Error });
       return;
@@ -87,11 +83,7 @@ const LoginFormContainer = ({
     await logIn();
   };
 
-  const fetchTokensAndThrow = async ({
-    isDemo,
-  }: {
-    isDemo: boolean | undefined;
-  }) => {
+  const fetchTokensAndThrow = async () => {
     const requestBody = JSON.stringify({
       email: credentials.email,
       password: credentials.password,
@@ -100,18 +92,12 @@ const LoginFormContainer = ({
     let response;
 
     try {
-      if (isDemo) {
-        response = await fetch(API_URL_OBTAIN_DEMO_TOKEN, {
-          credentials: "include",
-        });
-      } else {
-        response = await fetch(API_URL_OBTAIN_TOKEN, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: requestBody,
-          credentials: "include",
-        });
-      }
+      response = await fetch(API_URL_OBTAIN_TOKEN, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: requestBody,
+        credentials: "include",
+      });
     } catch {
       throw new Error(ERROR_CODE_FETCH_FAILED);
     }
@@ -146,10 +132,6 @@ const LoginFormContainer = ({
     }
   };
 
-  const handleClickLoginAsDemo = () => {
-    fetchTokens({ isDemo: true });
-  };
-
   return (
     <LoginForm
       credentials={credentials}
@@ -158,7 +140,6 @@ const LoginFormContainer = ({
       isLoading={isLoading}
       handleInputChange={handleInputChange}
       handleSubmit={handleSubmit}
-      handleClickLoginAsDemo={handleClickLoginAsDemo}
       handleClickNoAccountYet={handleClickNoAccountYet}
     />
   );

@@ -12,7 +12,7 @@ test("user can log in and then log out", async ({ page }) => {
 
   // After login the page reloads; AccessTokenRefresher picks up the new
   // refreshToken cookie and surfaces an access token → authenticated header
-  await page.waitForSelector("nav >> text=Home");
+  await page.waitForSelector('[data-testid="sidebar-home-link"]');
 
   await page.click('[data-testid="account-options-button"]');
   await page.waitForSelector('[data-testid="account-options-flyout"]');
@@ -35,19 +35,19 @@ test("access token is silently refreshed on page load when a session exists", as
   await loginAsTestUser({ context });
 
   await page.goto("/");
-  await page.waitForSelector("nav >> text=Home");
+  await page.waitForSelector('[data-testid="sidebar-home-link"]');
 });
 
 test("session persists across page refreshes", async ({ page, context }) => {
   await loginAsTestUser({ context });
 
   await page.goto("/");
-  await page.waitForSelector("nav >> text=Home");
+  await page.waitForSelector('[data-testid="sidebar-home-link"]');
 
   await page.reload();
 
   // AccessTokenRefresher re-runs on reload and exchanges the cookie again
-  await page.waitForSelector("nav >> text=Home");
+  await page.waitForSelector('[data-testid="sidebar-home-link"]');
 });
 
 test("shows an error for a wrong password", async ({ page }) => {

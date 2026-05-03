@@ -15,15 +15,16 @@ A Pinterest-like platform for discovering, creating, and organizing pins on boar
 
 ```
 pinit/
-├── backend/        # Django REST API
-├── frontend/       # Vite + React SPA
-├── e2e-tests-web/  # Playwright end-to-end tests
+├── backend/         # Django REST API
+├── frontend/        # Vite + React SPA
+├── e2e-tests-web/   # Playwright end-to-end tests
 └── infra/          # Terraform + Kubernetes manifests for AWS deployment
+└── nginx/           # CORS proxy config for local S3 mock
 ```
 
 ## Running locally
 
-Start the database, backend, and frontend together with Docker Compose. No setup required — pin image uploads are disabled without S3 credentials, but the rest of the app works:
+Start the database, backend, and frontend together with Docker Compose. No setup required:
 
 ```bash
 make up
@@ -42,13 +43,6 @@ To access the Django admin at http://localhost:8000/admin, create a superuser on
 
 ```bash
 docker compose exec backend python manage.py createsuperuser
-```
-
-To enable S3 image uploads, add your credentials before starting:
-
-```bash
-cp .env.example .env   # fill in S3_PINS_BUCKET_UPLOADER_* values
-make up
 ```
 
 ## Testing

@@ -5,7 +5,6 @@ export const API_BASE_URL =
 
 export const API_URL_SIGN_UP = `${API_BASE_URL}/signup/web/`;
 export const API_URL_OBTAIN_TOKEN = `${API_BASE_URL}/token/web/obtain/`;
-export const API_URL_OBTAIN_DEMO_TOKEN = `${API_BASE_URL}/token/web/obtain-demo/`;
 export const API_URL_REFRESH_TOKEN = `${API_BASE_URL}/token/web/refresh/`;
 export const API_URL_LOG_OUT = `${API_BASE_URL}/token/web/logout/`;
 

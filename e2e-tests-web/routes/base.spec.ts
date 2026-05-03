@@ -16,14 +16,14 @@ test("shows authenticated header and pin suggestions when logged in", async ({
 
   await page.goto("/");
 
-  await page.waitForSelector("nav >> text=Home");
+  await page.waitForSelector('[data-testid="sidebar-home-link"]');
   // The seeded database has pins so at least one thumbnail should appear
   await page.waitForSelector('[data-testid="pin-thumbnail"]');
   const thumbnails = await page.$$('[data-testid="pin-thumbnail"]');
   expect(thumbnails.length).toBeGreaterThan(0);
 
-  await expect(page.locator("nav a", { hasText: "Home" })).toHaveClass(/navigationItemActive/);
-  await expect(page.locator("nav a", { hasText: "Create" })).not.toHaveClass(/navigationItemActive/);
+  await expect(page.locator('[data-testid="sidebar-home-link"]')).toHaveClass(/navItemActive/);
+  await expect(page.locator('[data-testid="sidebar-create-link"]')).not.toHaveClass(/navItemActive/);
 });
 
 test("shows unauthenticated state when the refresh token is invalid", async ({

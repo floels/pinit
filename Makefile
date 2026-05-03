@@ -19,4 +19,4 @@ test-frontend:
 	pnpm --dir frontend install && pnpm --dir frontend test
 
 test-e2e:
-	pnpm --dir e2e-tests-web install && pnpm --dir e2e-tests-web test
+	pnpm --dir frontend install && pnpm --dir e2e-tests-web install && pnpm --dir e2e-tests-web test
