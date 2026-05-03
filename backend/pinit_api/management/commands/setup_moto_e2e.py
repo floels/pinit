@@ -1,3 +1,4 @@
+import json
 import boto3
 from botocore.exceptions import ClientError
 from django.conf import settings
@@ -45,3 +46,19 @@ class Command(BaseCommand):
             },
         )
         self.stdout.write(self.style.SUCCESS(f"Configured CORS on bucket '{bucket}'."))
+
+        s3.put_bucket_policy(
+            Bucket=bucket,
+            Policy=json.dumps({
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": "s3:GetObject",
+                        "Resource": f"arn:aws:s3:::{bucket}/*",
+                    }
+                ],
+            }),
+        )
+        self.stdout.write(self.style.SUCCESS(f"Configured public read policy on bucket '{bucket}'."))
