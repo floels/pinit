@@ -1,4 +1,3 @@
-import { useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
@@ -38,12 +37,6 @@ const SignupForm = ({
   showFormErrors,
 }: SignupFormProps) => {
   const { t } = useTranslation(["LandingPageContent", "Common"]);
-
-  const emailInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    emailInputRef.current?.focus();
-  }, []);
 
   let displayFormErrorsOther;
 
@@ -90,13 +83,13 @@ const SignupForm = ({
             type="email"
             value={formData.email}
             autoComplete="email"
+            autoFocus
             errorMessage={
               showFormErrors && formErrors.email
                 ? t(`SignupForm.${formErrors.email}`)
                 : ""
             }
             onChange={handleInputChange}
-            ref={emailInputRef}
           />
         </div>
         <div className={styles.passwordInputContainer}>

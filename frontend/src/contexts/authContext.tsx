@@ -46,6 +46,7 @@ export const AuthContextProvider = ({
     queryKey: ["refreshAccessToken"],
     queryFn: fetchRefreshedAccessToken,
     retry: false,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {

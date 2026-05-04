@@ -54,3 +54,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
         except ValidationError:
             raise serializers.ValidationError(ERROR_CODE_INVALID_PASSWORD)
         return value
+
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user

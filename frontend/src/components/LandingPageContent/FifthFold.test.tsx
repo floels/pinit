@@ -1,28 +1,11 @@
-import { RefObject } from "react";
 import en from "@/public/locales/en/LandingPageContent.json";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import FifthFold from "./FifthFold";
 
-const mockScrollIntoView = jest.fn();
-
-const heroRef = {
-  current: {
-    scrollIntoView: mockScrollIntoView,
-  },
-} as unknown as RefObject<HTMLDivElement>;
-
 const mockOnClickBackToTop = jest.fn();
 
-const fifthFold = (
-  <FifthFold heroRef={heroRef} onClickBackToTop={mockOnClickBackToTop} />
-);
-
-it("scrolls hero ref into view upon rendering", () => {
-  render(fifthFold);
-
-  expect(mockScrollIntoView).toHaveBeenCalledTimes(1);
-});
+const fifthFold = <FifthFold onClickBackToTop={mockOnClickBackToTop} />;
 
 it(`should switch to login form upon click on 'Already have an account',
 and back to signup form upon click on 'No account yet'`, async () => {

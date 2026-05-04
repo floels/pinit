@@ -50,6 +50,7 @@ class SignupTestsMixin:
     def check_attributes_new_user(self):
         new_user = User.objects.get(email=self.new_user_email)
         self.assertEqual(str(new_user.birthdate), "1970-01-01")
+        self.assertTrue(new_user.check_password("Pa$$w0rd_new_user"))
 
     def check_attributes_new_account(self):
         new_account = Account.objects.get(owner__email=self.new_user_email)

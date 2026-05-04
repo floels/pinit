@@ -6,13 +6,10 @@ import { AccountContext } from "@/contexts/accountContext";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_MY_ACCOUNT_DETAILS } from "@/lib/constants";
 
-jest.mock("@/components/LogoutTrigger/LogoutTrigger", () => {
-  const MockedLogoutTrigger = () => <div data-testid="mock-logout-trigger" />;
+jest.mock("@/lib/hooks/useLogOut");
+import { useLogOut } from "@/lib/hooks/useLogOut";
 
-  MockedLogoutTrigger.displayName = "LogoutTrigger";
-
-  return MockedLogoutTrigger;
-});
+const mockLogOut = jest.fn();
 
 const mockHandleClickOutOfAccountOptionsFlyout = jest.fn();
 
@@ -34,18 +31,20 @@ const renderComponent = () => {
   );
 };
 
-it("renders <LogoutTrigger /> upon clicking 'Log out'", async () => {
+beforeEach(() => {
+  (useLogOut as jest.Mock).mockReturnValue(mockLogOut);
+  mockLogOut.mockReset();
+});
+
+it("calls logOut and shows loading overlay upon clicking 'Log out'", async () => {
+  mockLogOut.mockReturnValue(new Promise(() => {})); // never resolves
+
   renderComponent();
 
-  expect(screen.queryByTestId("mock-logout-trigger")).toBeNull();
+  await userEvent.click(screen.getByTestId("account-options-flyout-log-out-button"));
 
-  const logoutButton = screen.getByTestId(
-    "account-options-flyout-log-out-button",
-  );
-
-  await userEvent.click(logoutButton);
-
-  screen.getByTestId("mock-logout-trigger");
+  expect(mockLogOut).toHaveBeenCalledTimes(1);
+  screen.getByTestId("full-page-loading-overlay");
 });
 
 // NB: the "click out" behavior is tested in "HeaderAuthenticatedContainer.test.tsx"
