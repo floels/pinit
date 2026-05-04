@@ -10,6 +10,13 @@ WORKDIR /app
 
 COPY . /app
 
+RUN DJANGO_SECRET_KEY=build \
+    POSTGRES_HOST=localhost \
+    POSTGRES_DB=build \
+    POSTGRES_USER=build \
+    POSTGRES_PASSWORD=build \
+    python manage.py collectstatic --noinput
+
 EXPOSE 80
 
 ENV DJANGO_SETTINGS_MODULE=pinit.settings.aws_staging
