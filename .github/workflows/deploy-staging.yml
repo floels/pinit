@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: staging
+    permissions:
+      contents: write
     outputs:
       image_uri: ${{ steps.build.outputs.image_uri }}
     steps:
