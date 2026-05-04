@@ -10,6 +10,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = ["https://d2htb842s00xmw.cloudfront.net"]
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
