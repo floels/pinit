@@ -46,9 +46,10 @@ module "rds" {
 }
 
 module "s3_pins" {
-  source      = "../../../modules/s3"
-  bucket_name = "pinit-staging-pins"
-  environment = "staging"
+  source          = "../../../modules/s3"
+  bucket_name     = "pinit-staging-pins"
+  environment     = "staging"
+  allowed_origins = ["https://${module.frontend.cloudfront_domain_name}"]
 }
 
 module "frontend" {
