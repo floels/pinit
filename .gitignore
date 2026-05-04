@@ -34,3 +34,6 @@ Thumbs.db
 *.tfstate
 *.tfstate.backup
 *.tfvars.local
+
+# Test results
+test-results/
