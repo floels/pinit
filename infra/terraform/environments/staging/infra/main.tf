@@ -42,11 +42,7 @@ module "rds" {
   db_password                = var.db_password
   vpc_id                     = module.vpc.vpc_id
   subnet_ids                 = module.vpc.private_subnet_ids
-  allowed_security_group_ids = [module.eks.cluster_name != "" ? data.aws_eks_cluster.this.vpc_config[0].cluster_security_group_id : ""]
-}
-
-data "aws_eks_cluster" "this" {
-  name = module.eks.cluster_name
+  allowed_security_group_ids = [module.eks.cluster_security_group_id]
 }
 
 module "s3_pins" {
