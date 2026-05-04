@@ -11,4 +11,4 @@ resources:
 images:
 - name: pinit-api
   newName: 771527521576.dkr.ecr.eu-west-3.amazonaws.com/pinit-api
-  newTag: 42fa6115c6a9569063e2d2a9e01d8d77a562e3fd
+  newTag: ad0d3b841216b2ff1875cc4a84e07b0614311a90
