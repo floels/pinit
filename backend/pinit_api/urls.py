@@ -54,11 +54,6 @@ urlpatterns = [
         name="get_account_details",
     ),
     path(
-        "pins/<str:unique_id>/download/",
-        pins.DownloadPinImageView.as_view(),
-        name="download_pin_image",
-    ),
-    path(
         "pins/<str:unique_id>/",
         pins.GetPinDetailsView.as_view(),
         name="get_pin_details",

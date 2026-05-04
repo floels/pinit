@@ -252,6 +252,12 @@ it("clicking 'Download image' closes the dropdown", async () => {
 
   await userEvent.click(screen.getByTestId("pin-thumbnail-more-actions-button"));
 
+  fetchMock.mockOnceIf(pin.imageURL, "fake-image-data", {
+    headers: { "Content-Type": "image/jpeg" },
+  });
+  global.URL.createObjectURL = jest.fn(() => "blob:fake-url");
+  global.URL.revokeObjectURL = jest.fn();
+
   await userEvent.click(screen.getByTestId("pin-thumbnail-download-button"));
 
   expect(screen.queryByTestId("pin-thumbnail-download-button")).toBeNull();

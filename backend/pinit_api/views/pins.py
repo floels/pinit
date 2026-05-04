@@ -1,7 +1,3 @@
-import re
-
-import requests
-from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
@@ -97,34 +93,3 @@ class SavePinView(views.APIView):
             {"pin_id": pin_unique_id, "board_id": board_unique_id},
             status=status.HTTP_200_OK if was_updated else status.HTTP_201_CREATED,
         )
-
-
-class DownloadPinImageView(views.APIView):
-    def get(self, request, unique_id):
-        pin = Pin.objects.filter(unique_id=unique_id).first()
-
-        if not pin or not pin.image_url:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            image_response = requests.get(pin.image_url, timeout=30)
-            image_response.raise_for_status()
-        except Exception:
-            return Response(status=status.HTTP_502_BAD_GATEWAY)
-
-        content_type = (
-            image_response.headers.get("Content-Type", "image/jpeg")
-            .split(";")[0]
-            .strip()
-        )
-        extension = content_type.split("/")[-1] or "jpg"
-
-        filename_base = re.sub(
-            r"[^\w\s-]", "", pin.title or f"pin-{pin.unique_id}"
-        ).strip() or f"pin-{pin.unique_id}"
-        filename = f"{filename_base}.{extension}"
-
-        response = HttpResponse(image_response.content, content_type=content_type)
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        return response
