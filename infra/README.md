@@ -347,7 +347,7 @@ which would otherwise cause an infinite loop.
 |---|---|
 | `DEPLOYMENT_AWS_ACCESS_KEY_ID` | IAM user with ECR push, S3 sync, and CloudFront invalidation permissions |
 | `DEPLOYMENT_AWS_SECRET_ACCESS_KEY` | Corresponding secret key |
-| `STAGING_BACKEND_URL` | Full URL of the ALB (e.g. `http://k8s-...elb.amazonaws.com`) — injected into the frontend bundle at build time |
+| `STAGING_BACKEND_URL` | Full HTTPS URL of the backend CloudFront distribution (e.g. `https://xxxx.cloudfront.net`) — injected into the frontend bundle at build time. Available via `terraform output backend_cloudfront_domain_name` after step 7.5. |
 | `STAGING_CLOUDFRONT_DISTRIBUTION_ID` | Available via `terraform output cloudfront_distribution_id` after phase 1 |
 
 ---
@@ -496,6 +496,33 @@ kubectl apply -f infra/k8s/argocd/apps/backend-staging.yaml
 ```
 
 ArgoCD will immediately sync `infra/k8s/overlays/staging/` and bring up the backend Deployment.
+
+### Step 7.5 — Provision the backend CloudFront distribution
+
+The backend ALB only serves HTTP. To expose the API over HTTPS (required because the frontend is
+served over HTTPS and browsers block mixed content), a CloudFront distribution is placed in front
+of it. CloudFront terminates TLS and proxies requests to the ALB over HTTP internally.
+
+This step runs after the first ArgoCD sync because the ALB hostname isn't known until the AWS Load
+Balancer Controller processes the Ingress. Get the hostname from the Ingress:
+
+```bash
+kubectl get ingress backend -n pinit-staging \
+  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+```
+
+Then apply the distribution:
+
+```bash
+cd infra/terraform/environments/staging/infra
+TF_VAR_db_username=pinit TF_VAR_db_password='<your password>' \
+  terraform apply \
+  -var="backend_alb_hostname=<hostname from above>" \
+  -target=aws_cloudfront_distribution.backend
+```
+
+Note the `backend_cloudfront_domain_name` output — you will need it for the `STAGING_BACKEND_URL`
+GitHub secret in step 9.
 
 ### Step 8 — Create the CI/CD IAM user
 
