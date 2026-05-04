@@ -36,12 +36,15 @@ beforeEach(() => {
   mockLogOut.mockReset();
 });
 
-it("calls logOut upon clicking 'Log out'", async () => {
+it("calls logOut and shows loading overlay upon clicking 'Log out'", async () => {
+  mockLogOut.mockReturnValue(new Promise(() => {})); // never resolves
+
   renderComponent();
 
   await userEvent.click(screen.getByTestId("account-options-flyout-log-out-button"));
 
   expect(mockLogOut).toHaveBeenCalledTimes(1);
+  screen.getByTestId("full-page-loading-overlay");
 });
 
 // NB: the "click out" behavior is tested in "HeaderAuthenticatedContainer.test.tsx"

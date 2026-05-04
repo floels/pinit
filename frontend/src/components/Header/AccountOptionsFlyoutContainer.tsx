@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import AccountOptionsFlyout from "./AccountOptionsFlyout";
 import { useAccountContext } from "@/contexts/accountContext";
 import { useLogOut } from "@/lib/hooks/useLogOut";
+import FullPageLoadingOverlay from "@/components/Spinners/FullPageLoadingOverlay";
 
 type AccountOptionsFlyoutContainerProps = {
   handleClickOutOfAccountOptionsFlyout: () => void;
@@ -16,6 +17,12 @@ const AccountOptionsFlyoutContainer = ({
 
   const { account } = useAccountContext();
   const logOut = useLogOut();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleClickLogOut = async () => {
+    setIsLoggingOut(true);
+    await logOut();
+  };
 
   const handleClickDocument = (event: MouseEvent) => {
     const target = event.target as Node;
@@ -41,15 +48,18 @@ const AccountOptionsFlyoutContainer = ({
   }
 
   return (
-    <AccountOptionsFlyout
-      ref={ref}
-      displayName={account.displayName}
-      initial={account.initial}
-      profilePictureURL={account.profilePictureURL}
-      accountType={account.type}
-      ownerEmail={account.ownerEmail}
-      handleClickLogOut={logOut}
-    />
+    <>
+      {isLoggingOut && <FullPageLoadingOverlay />}
+      <AccountOptionsFlyout
+        ref={ref}
+        displayName={account.displayName}
+        initial={account.initial}
+        profilePictureURL={account.profilePictureURL}
+        accountType={account.type}
+        ownerEmail={account.ownerEmail}
+        handleClickLogOut={handleClickLogOut}
+      />
+    </>
   );
 };
 
