@@ -25,3 +25,7 @@ output "frontend_bucket_name" {
 output "pins_bucket_name" {
   value = module.s3_pins.bucket_name
 }
+
+output "backend_cloudfront_domain_name" {
+  value = var.backend_alb_hostname != "" ? aws_cloudfront_distribution.backend[0].domain_name : null
+}
