@@ -365,18 +365,13 @@ Run these steps once to go from zero to a live staging environment.
 - `argocd` CLI
 - `kustomize`
 
-### Step 1 — Create Terraform remote state resources
+### Step 1 — Create Terraform remote state bucket
 
 ```bash
 aws s3 mb s3://pinit-terraform-state --region eu-west-3
-
-aws dynamodb create-table \
-  --table-name pinit-terraform-locks \
-  --attribute-definitions AttributeName=LockID,AttributeType=S \
-  --key-schema AttributeName=LockID,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST \
-  --region eu-west-3
 ```
+
+State locking uses S3's native locking (`use_lockfile = true`) — no DynamoDB table needed.
 
 ### Step 2 — Apply phase 1 (infrastructure)
 
