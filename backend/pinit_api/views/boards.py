@@ -14,12 +14,12 @@ class GetBoardDetailsView(APIView):
     def get(self, request, username, slug):
         try:
             account = Account.objects.get(username=username)
-        except:
+        except Account.DoesNotExist:
             return self.get_response_account_not_found()
 
         try:
             board = Board.objects.get(author=account, slug=slug)
-        except:
+        except Board.DoesNotExist:
             return self.get_response_board_not_found()
 
         serializer = BoardWithFullDetailsReadSerializer(board)
