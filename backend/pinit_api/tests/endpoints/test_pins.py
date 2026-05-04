@@ -201,3 +201,11 @@ class SavePinTests(APITestCase):
         self.assertEqual(response_data["errors"], [{"code": ERROR_CODE_FORBIDDEN}])
 
         self.assertEqual(self.board.pins.count(), 1)
+
+    def test_save_pin_unauthenticated(self):
+        self.client.force_authenticate(user=None)
+        response = self.post(request_payload={
+            "pin_id": self.pin_to_save.unique_id,
+            "board_id": self.board.unique_id,
+        })
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

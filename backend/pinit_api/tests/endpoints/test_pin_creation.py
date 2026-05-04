@@ -104,3 +104,8 @@ class PinCreationTests(APITestCase):
             [{"code": ERROR_CODE_INVALID_PIN_IMAGE_FILE_KEY}],
         )
         self.assertEqual(Pin.objects.count(), 0)
+
+    def test_create_pin_unauthenticated(self):
+        self.client.force_authenticate(user=None)
+        response = self.post()
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
