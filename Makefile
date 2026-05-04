@@ -1,16 +1,16 @@
 .PHONY: up up-detached up-backend seed test-backend test-frontend test-e2e
 
 up:
-	docker compose up --build
+	docker compose -f docker-compose.local.yml up --build
 
 up-detached:
-	docker compose up --build --detach
+	docker compose -f docker-compose.local.yml up --build --detach
 
 up-backend:
 	$(MAKE) -C backend up
 
 seed:
-	docker compose exec backend python manage.py seed_database_local
+	docker compose -f docker-compose.local.yml exec backend python manage.py seed_database_local
 
 test-backend:
 	$(MAKE) -C backend test
