@@ -1,5 +1,5 @@
 import { render, waitFor } from "@testing-library/react";
-import AccountDetailsFetcher from "./AccountDetailsFetcher";
+import { useAccountDetails } from "./useAccountDetails";
 import {
   API_URL_MY_ACCOUNT_DETAILS,
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
@@ -25,19 +25,29 @@ const mockSetAccount = jest.fn();
 const MOCK_ACCESS_TOKEN = "mock.access.token";
 
 beforeEach(() => {
+  fetchMock.resetMocks();
   mockLogOut.mockClear();
   mockSetAccount.mockClear();
 });
 
-const renderComponent = () => {
+const TestComponent = () => {
+  useAccountDetails();
+  return null;
+};
+
+const renderHookInContext = ({
+  accessToken = MOCK_ACCESS_TOKEN,
+  isAuthInitialized = true,
+}: {
+  accessToken?: string | null;
+  isAuthInitialized?: boolean;
+} = {}) => {
   render(
     <AuthContext.Provider
-      value={{ accessToken: MOCK_ACCESS_TOKEN, setAccessToken: jest.fn() }}
+      value={{ accessToken, setAccessToken: jest.fn(), isAuthInitialized }}
     >
-      <AccountContext.Provider
-        value={{ account: null, setAccount: mockSetAccount }}
-      >
-        {withQueryClient(<AccountDetailsFetcher />)}
+      <AccountContext.Provider value={{ account: null, setAccount: mockSetAccount }}>
+        {withQueryClient(<TestComponent />)}
       </AccountContext.Provider>
     </AuthContext.Provider>,
   );
@@ -50,7 +60,7 @@ relevant data upon successful fetch`, async () => {
     MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS],
   );
 
-  renderComponent();
+  renderHookInContext();
 
   const responseSerialized =
     MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
@@ -74,7 +84,7 @@ it("sends the access token as Authorization header", async () => {
     MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS],
   );
 
-  renderComponent();
+  renderHookInContext();
 
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledWith(
@@ -93,7 +103,7 @@ it("triggers logout upon 401 response when refresh also fails", async () => {
     .mockResponseOnce("{}", { status: 401 }) // fetch account details → 401
     .mockResponseOnce("{}", { status: 401 }); // refresh attempt → 401
 
-  renderComponent();
+  renderHookInContext();
 
   await waitFor(() => {
     expect(mockLogOut).toHaveBeenCalledTimes(1);
@@ -108,7 +118,7 @@ it("retries and sets account upon 401 response when refresh succeeds", async () 
     }) // refresh → new token
     .mockResponseOnce(MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS]); // retry → success
 
-  renderComponent();
+  renderHookInContext();
 
   await waitFor(() => {
     expect(mockSetAccount).toHaveBeenCalledWith(
@@ -116,4 +126,13 @@ it("retries and sets account upon 401 response when refresh succeeds", async () 
     );
   });
   expect(mockLogOut).not.toHaveBeenCalled();
+});
+
+it("does not fetch account details when not authenticated", async () => {
+  renderHookInContext({ accessToken: null });
+
+  // Give React Query a chance to fire if it were going to
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(fetch).not.toHaveBeenCalled();
 });

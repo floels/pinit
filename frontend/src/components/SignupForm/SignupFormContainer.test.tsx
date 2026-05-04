@@ -5,17 +5,19 @@ import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
 import { API_URL_REFRESH_TOKEN, API_URL_SIGN_UP } from "@/lib/constants";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
-import { AuthContextProvider } from "@/contexts/authContext";
+import { AuthContext } from "@/contexts/authContext";
 
 const handleClickAlreadyHaveAccount = () => {}; // NB: this behavior will be tested in <HeaderUnauthenticatedClient />
 
 const renderComponent = () => {
   render(
-    <AuthContextProvider>
+    <AuthContext.Provider
+      value={{ accessToken: null, setAccessToken: jest.fn(), isAuthInitialized: false }}
+    >
       <SignupFormContainer
         handleClickAlreadyHaveAccount={handleClickAlreadyHaveAccount}
       />
-    </AuthContextProvider>,
+    </AuthContext.Provider>,
   );
 };
 

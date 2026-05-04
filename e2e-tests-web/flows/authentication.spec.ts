@@ -10,8 +10,8 @@ test("user can log in and then log out", async ({ page }) => {
   await page.fill("div[data-testid='overlay-modal'] >> input[name='password']", E2E_TEST_USER_PASSWORD);
   await page.click('[data-testid="login-form-submit-button"]');
 
-  // After login the page reloads; AccessTokenRefresher picks up the new
-  // refreshToken cookie and surfaces an access token → authenticated header
+  // After login the page reloads; the auth provider picks up the new
+  // refresh cookie, exchanges it for an access token → authenticated header
   await page.waitForSelector('[data-testid="sidebar-home-link"]');
 
   await page.click('[data-testid="account-options-button"]');
@@ -30,7 +30,7 @@ test("access token is silently refreshed on page load when a session exists", as
   context,
 }) => {
   // Inject a valid refreshToken cookie obtained via the real API.
-  // On page load AccessTokenRefresher calls POST /api/token/web/refresh/,
+  // On page load the auth provider calls POST /api/token/web/refresh/,
   // receives an access token, and shows the authenticated UI.
   await loginAsTestUser({ context });
 
@@ -46,7 +46,7 @@ test("session persists across page refreshes", async ({ page, context }) => {
 
   await page.reload();
 
-  // AccessTokenRefresher re-runs on reload and exchanges the cookie again
+  // The auth provider re-runs on reload and exchanges the cookie again
   await page.waitForSelector('[data-testid="sidebar-home-link"]');
 });
 
