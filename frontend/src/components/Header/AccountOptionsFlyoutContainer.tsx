@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import AccountOptionsFlyout from "./AccountOptionsFlyout";
 import { useAccountContext } from "@/contexts/accountContext";
 import { useLogOut } from "@/lib/hooks/useLogOut";
-import styles from "./AccountOptionsFlyoutContainer.module.css";
 
 type AccountOptionsFlyoutContainerProps = {
   handleClickOutOfAccountOptionsFlyout: () => void;
@@ -15,15 +14,8 @@ const AccountOptionsFlyoutContainer = ({
 }: AccountOptionsFlyoutContainerProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const [clickedLogOut, setClickedLogOut] = useState(false);
-
   const { account } = useAccountContext();
   const logOut = useLogOut();
-
-  const handleClickLogOut = () => {
-    setClickedLogOut(true);
-    logOut();
-  };
 
   const handleClickDocument = (event: MouseEvent) => {
     const target = event.target as Node;
@@ -44,10 +36,6 @@ const AccountOptionsFlyoutContainer = ({
     };
   }, []);
 
-  if (clickedLogOut) {
-    return <div className={styles.loadingOverlay} data-testid="logout-loading-overlay" />;
-  }
-
   if (!account) {
     return null;
   }
@@ -60,7 +48,7 @@ const AccountOptionsFlyoutContainer = ({
       profilePictureURL={account.profilePictureURL}
       accountType={account.type}
       ownerEmail={account.ownerEmail}
-      handleClickLogOut={handleClickLogOut}
+      handleClickLogOut={logOut}
     />
   );
 };
