@@ -120,3 +120,5 @@ jobs:
 
       - name: Type-check
         run: pnpm type-check
+
+      # NB: we don't actually run the E2E tests in the CI for now.
