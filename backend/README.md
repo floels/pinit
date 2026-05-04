@@ -36,6 +36,3 @@ The API is documented using [OpenAPI 3.0](pinit_api/static/openapi_doc.yml) and 
 
 Once the backend is running, open `http://localhost:8000/api/doc/` in your browser to view the interactive documentation.
 
-## S3 credentials
-
-Pin image uploads require AWS credentials. Set `S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID` and `S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY` in a `.env` file at the repo root before running `make up`. Without them the app starts fine — only uploads fail.
