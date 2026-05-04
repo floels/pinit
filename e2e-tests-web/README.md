@@ -34,7 +34,7 @@ pnpm test
 
 `global.setup.ts` runs automatically before any test. It:
 
-1. Starts the backend, database, and S3 mock (Moto) via `docker-compose.e2e.yml` at the repo root
+1. Starts the backend, database, and S3 mock (Moto) via `docker-compose.e2e.yml` in this folder
 2. Waits for the backend to become reachable
 3. Runs Django migrations
 4. Seeds the database with test data via `manage.py seed_e2e_database`
