@@ -9,7 +9,7 @@ from ..lib.utils.string_operations import (
 )
 from ..lib.utils.authentication import get_tokens_data
 from ..models import Account
-from ..serializers import UserCreateSerializer
+from ..serializers.user_serializers import UserCreateSerializer
 from .authentication import set_refresh_token_cookie
 
 FORBIDDEN_USERNAMES = [

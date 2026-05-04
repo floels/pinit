@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status, views
 
 from ..models import Pin, Board, PinInBoard
-from ..serializers import PinWithFullDetailsReadSerializer
+from ..serializers.pin_serializers import PinWithFullDetailsReadSerializer
 from ..lib.constants import (
     ERROR_CODE_PIN_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
