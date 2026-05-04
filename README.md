@@ -24,7 +24,7 @@ pinit/
 
 ## Running locally
 
-Start the database, backend, and frontend together with Docker Compose. No setup required:
+Start the full stack with Docker Compose:
 
 ```bash
 make up
@@ -32,6 +32,8 @@ make up
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api
+
+This single command handles everything: database migrations, local S3 mock setup (via Moto), and starting all services. No additional steps are required.
 
 To populate the database with realistic test data on first run:
 

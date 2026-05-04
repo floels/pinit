@@ -1,7 +1,11 @@
 .container {
   width: 100%;
-  position: relative; /* because save flyout child 
+  position: relative; /* because save flyout child
   will have 'position: absolute' */
+}
+
+.containerWithOpenDropdown {
+  z-index: 1; /* lift above sibling thumbnails so the dropdown isn't clipped */
 }
 
 .imageContainer {
@@ -76,4 +80,88 @@
 .saveButtonText {
   font-size: var(--font-size-300);
   margin-right: 6px;
+}
+
+.belowImageRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.moreActionsButtonWrapper {
+  position: relative;
+}
+
+.moreActionsButton {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 8px;
+  color: var(--color-text-default);
+  line-height: 1;
+}
+
+.moreActionsButton:hover {
+  background-color: var(--color-background-secondary);
+}
+
+.moreActionsTooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px;
+  border-radius: 8px;
+  background-color: var(--color-gray-500);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-100);
+  box-shadow: var(--box-shadow-elevation-floating);
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.moreActionsButtonWrapper:hover .moreActionsTooltip {
+  display: block;
+}
+
+.moreActionsButtonWrapper.dropdownOpen .moreActionsTooltip {
+  display: none;
+}
+
+.moreActionsDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-container);
+  box-shadow: var(--box-shadow-elevation-floating);
+  z-index: 20;
+  min-width: 180px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.moreActionsDropdownButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-text-default);
+  white-space: nowrap;
+}
+
+.moreActionsDropdownButton:hover {
+  background-color: var(--color-background-secondary);
 }

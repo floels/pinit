@@ -7,5 +7,7 @@
   "PIN_THUMBNAIL_SAVE_FLYOUT_TITLE": "Save",
   "PIN_THUMBNAIL_SAVE_FLYOUT_BOARDS_LABEL": "Save to board",
   "SAVE_IN_BOARD_BUTTON_TEXT": "Save",
-  "PIN_SAVE_ERROR_MESSAGE": "An error occurred while attempting to save this pin."
+  "PIN_SAVE_ERROR_MESSAGE": "An error occurred while attempting to save this pin.",
+  "MORE_ACTIONS_TOOLTIP": "More actions",
+  "DOWNLOAD_IMAGE_BUTTON_TEXT": "Download image"
 }
