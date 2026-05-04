@@ -347,7 +347,7 @@ which would otherwise cause an infinite loop.
 |---|---|
 | `DEPLOYMENT_AWS_ACCESS_KEY_ID` | IAM user with ECR push, S3 sync, and CloudFront invalidation permissions |
 | `DEPLOYMENT_AWS_SECRET_ACCESS_KEY` | Corresponding secret key |
-| `STAGING_BACKEND_URL` | Full HTTPS URL of the backend CloudFront distribution (e.g. `https://xxxx.cloudfront.net`) — injected into the frontend bundle at build time. Available via `terraform output backend_cloudfront_domain_name` after step 7.5. |
+| `STAGING_BACKEND_URL` | Full HTTPS URL of the backend CloudFront distribution **including the `/api` path prefix** (e.g. `https://xxxx.cloudfront.net/api`) — injected into the frontend bundle at build time. Available via `terraform output backend_cloudfront_domain_name` after step 7.5. |
 | `STAGING_CLOUDFRONT_DISTRIBUTION_ID` | Available via `terraform output cloudfront_distribution_id` after phase 1 |
 
 ---
@@ -489,6 +489,18 @@ docker tag pinit-api:latest \
 docker push <aws-account-id>.dkr.ecr.eu-west-3.amazonaws.com/pinit-api:latest
 ```
 
+`infra/k8s/overlays/staging/kustomization.yaml` pins a specific image SHA from the last CI run.
+ArgoCD will try to pull that exact tag, so you must also push the image under that SHA:
+
+```bash
+PINNED_TAG=$(grep newTag infra/k8s/overlays/staging/kustomization.yaml | awk '{print $2}')
+
+docker tag pinit-api:latest \
+  <aws-account-id>.dkr.ecr.eu-west-3.amazonaws.com/pinit-api:$PINNED_TAG
+
+docker push <aws-account-id>.dkr.ecr.eu-west-3.amazonaws.com/pinit-api:$PINNED_TAG
+```
+
 ### Step 7 — Apply the ArgoCD Application
 
 ```bash
@@ -522,7 +534,7 @@ TF_VAR_db_username=pinit TF_VAR_db_password='<your password>' \
 ```
 
 Note the `backend_cloudfront_domain_name` output — you will need it for the `STAGING_BACKEND_URL`
-GitHub secret in step 9.
+GitHub secret in step 9. Remember to append `/api` to the domain name when setting that secret.
 
 ### Step 8 — Create the CI/CD IAM user
 
@@ -568,8 +580,27 @@ Then generate an access key for that user — you will need it in the next step.
 ### Step 9 — Set GitHub secrets
 
 In the GitHub repository settings under **Environments → staging**, add the four secrets listed in
-the [Required GitHub secrets](#required-github-secrets-staging-environment) section. From this
-point on, every push to `main` triggers a full deploy automatically.
+the [Required GitHub secrets](#required-github-secrets-staging-environment) section.
+
+### Step 10 — Deploy the frontend for the first time
+
+The frontend S3 bucket is empty until CI runs. Build and sync it manually once:
+
+```bash
+# From the repo root
+cd frontend
+ENVIRONMENT=staging BACKEND_URL=<STAGING_BACKEND_URL> pnpm build
+
+aws s3 sync dist s3://pinit-staging-frontend --delete
+
+aws cloudfront create-invalidation \
+  --distribution-id <cloudfront_distribution_id> \
+  --paths "/*"
+```
+
+Use the same value for `BACKEND_URL` that you set as the `STAGING_BACKEND_URL` GitHub secret
+(i.e. `https://<backend-domain>.cloudfront.net/api`). From this point on, every push to `main`
+triggers a full deploy automatically.
 
 ---
 
