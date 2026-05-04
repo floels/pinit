@@ -3,7 +3,7 @@ terraform {
     bucket         = "pinit-terraform-state"
     key            = "staging/platform/terraform.tfstate"
     region         = "eu-west-3"
-    dynamodb_table = "pinit-terraform-locks"
+    use_lockfile = true
     encrypt        = true
   }
 }
