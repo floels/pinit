@@ -1,5 +1,6 @@
 from django.urls import path
 from django.views.generic import TemplateView
+from django.http import JsonResponse
 
 from .views import (
     signup,
@@ -16,6 +17,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path("health/", lambda request: JsonResponse({"status": "ok"}), name="health"),
     path("doc/", TemplateView.as_view(template_name="redoc.html"), name="doc"),
     # TODO: include 'mobile' in the URL path for all mobile auth endpoints (e.g. 'token/refresh/' -> 'token/mobile/refresh/')
     path("signup/", signup.sign_up_mobile, name="sign_up_mobile"),
