@@ -28,8 +28,6 @@ class GetPinImageUploadUrlView(APIView):
 
         s3_client = boto3.client(
             "s3",
-            aws_access_key_id=settings.AWS_S3_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_S3_SECRET_ACCESS_KEY,
             region_name=getattr(settings, "AWS_S3_REGION_NAME", None),
             endpoint_url=getattr(settings, "AWS_S3_ENDPOINT_URL", None),
         )

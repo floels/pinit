@@ -147,6 +147,65 @@ resource "helm_release" "external_secrets" {
   }
 }
 
+# ── Backend Service Account (IRSA) ───────────────────────────────────────────
+
+data "aws_iam_policy_document" "backend_assume_role" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = [data.aws_iam_openid_connect_provider.this.arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(data.aws_iam_openid_connect_provider.this.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:pinit-staging:backend"]
+    }
+  }
+}
+
+resource "aws_iam_role" "backend" {
+  name               = "pinit-staging-backend"
+  assume_role_policy = data.aws_iam_policy_document.backend_assume_role.json
+}
+
+resource "aws_iam_role_policy" "backend_s3" {
+  name = "pinit-staging-backend-s3"
+  role = aws_iam_role.backend.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["s3:PutObject"]
+      Resource = "arn:aws:s3:::pinit-staging-pins/*"
+    }]
+  })
+}
+
+resource "kubectl_manifest" "pinit_staging_namespace" {
+  yaml_body = <<-YAML
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      name: pinit-staging
+  YAML
+}
+
+resource "kubectl_manifest" "backend_service_account" {
+  yaml_body = <<-YAML
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: backend
+      namespace: pinit-staging
+      annotations:
+        eks.amazonaws.com/role-arn: ${aws_iam_role.backend.arn}
+  YAML
+
+  depends_on = [kubectl_manifest.pinit_staging_namespace]
+}
+
 # ── ArgoCD ────────────────────────────────────────────────────────────────────
 
 resource "helm_release" "argocd" {

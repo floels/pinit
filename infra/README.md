@@ -210,9 +210,10 @@ Helm charts into the running cluster:
 | External Secrets Operator | `external-secrets` | Syncs AWS Secrets Manager secrets into K8s `Secret` objects |
 | ArgoCD | `argocd` | GitOps controller — syncs the cluster to `infra/k8s/` |
 
-Each Helm chart that needs AWS access gets its own IAM role via IRSA. The role's trust policy
+Each component that needs AWS access gets its own IAM role via IRSA. The role's trust policy
 allows only the specific Kubernetes service account of that component to assume it (scoped by
-namespace and service account name).
+namespace and service account name). This includes the backend pod itself, which needs
+`s3:PutObject` to sign presigned upload URLs — no static S3 credentials are stored anywhere.
 
 State is stored at `s3://pinit-terraform-state/staging/platform/terraform.tfstate`.
 
@@ -260,9 +261,9 @@ An ArgoCD `Application` resource that tells ArgoCD:
 
 ## Secrets management
 
-Application secrets (database credentials, Django secret key, S3 access keys) are stored in **AWS
-Secrets Manager** under the path `pinit/staging/backend`. They are never stored in this repository
-or in GitHub secrets.
+Application secrets (database credentials, Django secret key) are stored in **AWS Secrets Manager**
+under the path `pinit/staging/backend`. They are never stored in this repository or in GitHub
+secrets.
 
 The flow from Secrets Manager to running containers:
 
@@ -279,11 +280,18 @@ Kubernetes Secret: backend-secrets (namespace: pinit-staging)
 Environment variables in the backend container
 ```
 
-**IRSA** (IAM Roles for Service Accounts) is used so that the ESO pod can call Secrets Manager
-without any static credentials. The ESO service account is annotated with the ARN of an IAM role
-that has `secretsmanager:GetSecretValue` and `secretsmanager:DescribeSecret` on
-`arn:aws:secretsmanager:eu-north-1:*:secret:pinit/staging/*`. The cluster's OIDC provider allows
-this specific service account to assume this role via a web identity token.
+**IRSA** (IAM Roles for Service Accounts) is used throughout so that no static AWS credentials are
+stored anywhere. Two components have IRSA roles:
+
+- **External Secrets Operator** — its service account assumes a role with
+  `secretsmanager:GetSecretValue` and `secretsmanager:DescribeSecret` on
+  `arn:aws:secretsmanager:eu-north-1:*:secret:pinit/staging/*`.
+- **Backend pod** — its service account assumes a role with `s3:PutObject` on
+  `arn:aws:s3:::pinit-staging-pins/*`, which is the only permission needed to sign presigned upload
+  URLs for client-side pin image uploads.
+
+In both cases the cluster's OIDC provider allows only the specific service account (scoped by
+namespace and name) to assume the role via a web identity token.
 
 The secret must be created manually once, before the first deploy:
 
@@ -298,9 +306,7 @@ aws secretsmanager create-secret \
     "POSTGRES_USER": "...",
     "POSTGRES_PASSWORD": "...",
     "S3_PINS_BUCKET_NAME": "pinit-staging-pins",
-    "S3_PINS_BUCKET_REGION": "eu-north-1",
-    "S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID": "...",
-    "S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY": "..."
+    "S3_PINS_BUCKET_REGION": "eu-north-1"
   }'
 ```
 
@@ -398,17 +404,17 @@ aws secretsmanager create-secret \
   --name pinit/staging/backend \
   --region eu-north-1 \
   --secret-string '{
-    "DJANGO_SECRET_KEY": "<generate with: python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\">"
+    "DJANGO_SECRET_KEY": "<generate with: python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\">",
     "POSTGRES_HOST": "<rds_address output from step 2>",
     "POSTGRES_DB": "pinit_staging",
     "POSTGRES_USER": "pinit",
     "POSTGRES_PASSWORD": "<same password as TF_VAR_db_password>",
     "S3_PINS_BUCKET_NAME": "pinit-staging-pins",
-    "S3_PINS_BUCKET_REGION": "eu-north-1",
-    "S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID": "<IAM access key for S3 uploads>",
-    "S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY": "<corresponding secret key>"
+    "S3_PINS_BUCKET_REGION": "eu-north-1"
   }'
 ```
+
+S3 access for the backend is handled via IRSA — no static S3 credentials are needed here.
 
 ### Step 4 — Configure kubectl
 

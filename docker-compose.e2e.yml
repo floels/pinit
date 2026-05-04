@@ -43,7 +43,7 @@ services:
         condition: service_started
     environment:
       DJANGO_SETTINGS_MODULE: pinit.settings.e2e
-      S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID: testing
-      S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY: testing
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
 
 volumes: {}
