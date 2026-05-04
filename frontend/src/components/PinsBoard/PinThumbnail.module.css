@@ -77,3 +77,81 @@
   font-size: var(--font-size-300);
   margin-right: 6px;
 }
+
+.moreActionsContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.moreActionsButtonWrapper {
+  position: relative;
+}
+
+.moreActionsButton {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 4px 8px;
+  color: var(--color-text-default);
+  line-height: 1;
+}
+
+.moreActionsButton:hover {
+  background-color: var(--color-background-secondary);
+}
+
+.moreActionsTooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px;
+  border-radius: 8px;
+  background-color: var(--color-gray-500);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-100);
+  box-shadow: var(--box-shadow-elevation-floating);
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.moreActionsButtonWrapper:hover .moreActionsTooltip {
+  display: block;
+}
+
+.moreActionsButtonWrapper.dropdownOpen .moreActionsTooltip {
+  display: none;
+}
+
+.moreActionsDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background-color: var(--color-background-default);
+  border-radius: 16px;
+  box-shadow: var(--box-shadow-elevation-floating);
+  z-index: 20;
+  min-width: 180px;
+  overflow: hidden;
+}
+
+.moreActionsDropdownButton {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: var(--font-size-200);
+  color: var(--color-text-default);
+  white-space: nowrap;
+}
+
+.moreActionsDropdownButton:hover {
+  background-color: var(--color-background-secondary);
+}

@@ -14,15 +14,19 @@ const renderComponent = () => {
         isInFirstColumn={false}
         isInLastColumn={false}
         boards={[]}
-        isHovered={false}
+        isImageHovered={false}
         indexBoardWhereJustSaved={null}
         isSaveFlyoutOpen={false}
         isSaving={false}
+        isMoreActionsDropdownOpen={false}
         handleMouseEnterImage={() => {}}
         handleMouseLeaveImage={() => {}}
         handleClickSave={() => {}}
         getClickHandlerForBoard={() => () => {}}
         handleClickOutOfSaveFlyout={() => {}}
+        handleClickMoreActions={() => {}}
+        handleClickOutOfMoreActionsDropdown={() => {}}
+        handleDownloadImage={() => {}}
       />
     </MemoryRouter>,
   );

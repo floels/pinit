@@ -33,6 +33,8 @@ const PinThumbnailContainer = ({
   const [indexBoardWhereJustSaved, setIndexBoardWhereJustSaved] = useState<
     number | null
   >(null);
+  const [isMoreActionsDropdownOpen, setIsMoreActionsDropdownOpen] =
+    useState(false);
 
   const handleMouseEnterImage = () => {
     setIsImageHovered(true);
@@ -52,9 +54,44 @@ const PinThumbnailContainer = ({
     setIsSaveFlyoutOpen(false);
   };
 
+  const handleClickMoreActions = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    setIsMoreActionsDropdownOpen((prev) => !prev);
+  };
+
+  const handleClickOutOfMoreActionsDropdown = () => {
+    setIsMoreActionsDropdownOpen(false);
+  };
+
+  const handleDownloadImage = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    setIsMoreActionsDropdownOpen(false);
+
+    try {
+      const response = await fetch(pin.imageURL);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const extension = blob.type.split("/")[1] || "jpg";
+      link.download = `${pin.title || `pin-${pin.id}`}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(pin.imageURL, "_blank");
+    }
+  };
+
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       setIsSaveFlyoutOpen(false);
+      setIsMoreActionsDropdownOpen(false);
     }
   };
 
@@ -139,11 +176,15 @@ const PinThumbnailContainer = ({
       isSaveFlyoutOpen={isSaveFlyoutOpen}
       isSaving={isSaving}
       indexBoardWhereJustSaved={indexBoardWhereJustSaved}
+      isMoreActionsDropdownOpen={isMoreActionsDropdownOpen}
       handleMouseEnterImage={handleMouseEnterImage}
       handleMouseLeaveImage={handleMouseLeaveImage}
       handleClickSave={handleClickSave}
       getClickHandlerForBoard={getClickHandlerForBoard}
       handleClickOutOfSaveFlyout={handleClickOutOfSaveFlyout}
+      handleClickMoreActions={handleClickMoreActions}
+      handleClickOutOfMoreActionsDropdown={handleClickOutOfMoreActionsDropdown}
+      handleDownloadImage={handleDownloadImage}
     />
   );
 };

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styles from "./PinThumbnail.module.css";
@@ -7,7 +7,7 @@ import {
   PinWithAuthorDetails,
 } from "@/lib/types/frontendTypes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { faAngleDown, faEllipsis } from "@fortawesome/free-solid-svg-icons";
 import SavePinFlyoutContainer from "./SavePinFlyoutContainer";
 import { ellipsizeText } from "@/lib/utils/strings";
 
@@ -20,6 +20,7 @@ type PinThumbnailProps = {
   isSaveFlyoutOpen: boolean;
   isSaving: boolean;
   indexBoardWhereJustSaved: number | null;
+  isMoreActionsDropdownOpen: boolean;
   handleMouseEnterImage: () => void;
   handleMouseLeaveImage: () => void;
   handleClickSave: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -29,6 +30,9 @@ type PinThumbnailProps = {
     boardIndex: number;
   }) => () => void;
   handleClickOutOfSaveFlyout: () => void;
+  handleClickMoreActions: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  handleClickOutOfMoreActionsDropdown: () => void;
+  handleDownloadImage: (event: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
 const PinThumbnail = ({
@@ -40,15 +44,36 @@ const PinThumbnail = ({
   isSaveFlyoutOpen,
   isSaving,
   indexBoardWhereJustSaved,
+  isMoreActionsDropdownOpen,
   handleMouseEnterImage,
   handleMouseLeaveImage,
   handleClickSave,
   getClickHandlerForBoard,
   handleClickOutOfSaveFlyout,
+  handleClickMoreActions,
+  handleClickOutOfMoreActionsDropdown,
+  handleDownloadImage,
 }: PinThumbnailProps) => {
   const { t } = useTranslation("PinsBoard");
 
   const saveButtonRef = useRef<HTMLButtonElement>(null);
+  const moreActionsWrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isMoreActionsDropdownOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        moreActionsWrapperRef.current &&
+        !moreActionsWrapperRef.current.contains(event.target as Node)
+      ) {
+        handleClickOutOfMoreActionsDropdown();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMoreActionsDropdownOpen]);
 
   const hasSaved = indexBoardWhereJustSaved !== null;
 
@@ -125,6 +150,36 @@ const PinThumbnail = ({
           handleClickOutOfSaveFlyout={handleClickOutOfSaveFlyout}
           openerRef={saveButtonRef}
         />
+      )}
+      {(isImageHovered || isMoreActionsDropdownOpen) && (
+        <div className={styles.moreActionsContainer}>
+          <div
+            ref={moreActionsWrapperRef}
+            className={`${styles.moreActionsButtonWrapper}${isMoreActionsDropdownOpen ? ` ${styles.dropdownOpen}` : ""}`}
+          >
+            <button
+              className={styles.moreActionsButton}
+              onClick={handleClickMoreActions}
+              data-testid="pin-thumbnail-more-actions-button"
+            >
+              <FontAwesomeIcon icon={faEllipsis} />
+            </button>
+            <div className={styles.moreActionsTooltip}>
+              {t("MORE_ACTIONS_TOOLTIP")}
+            </div>
+            {isMoreActionsDropdownOpen && (
+              <div className={styles.moreActionsDropdown}>
+                <button
+                  className={styles.moreActionsDropdownButton}
+                  onClick={handleDownloadImage}
+                  data-testid="pin-thumbnail-download-button"
+                >
+                  {t("DOWNLOAD_IMAGE_BUTTON_TEXT")}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
