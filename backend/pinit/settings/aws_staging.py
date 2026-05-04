@@ -22,5 +22,5 @@ DATABASES = {
 }
 
 AWS_STORAGE_BUCKET_NAME = config("S3_PINS_BUCKET_NAME", default="pinit-staging-pins")
-AWS_S3_REGION_NAME = config("S3_PINS_BUCKET_REGION", default="eu-north-1")
+AWS_S3_REGION_NAME = config("S3_PINS_BUCKET_REGION", default="eu-west-3")
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
