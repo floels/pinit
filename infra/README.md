@@ -362,7 +362,7 @@ Run these steps once to go from zero to a live staging environment.
   for initial setup; tighten afterwards)
 - `terraform` >= 1.0
 - `kubectl`
-- `argocd` CLI
+- `docker` (for the initial image push)
 - `kustomize`
 
 ### Step 1 — Create Terraform remote state bucket
@@ -380,10 +380,25 @@ cd infra/terraform/environments/staging/infra
 
 terraform init
 
-# Pass DB credentials via env vars (not committed to the repo)
+# Pass DB credentials via env vars (not committed to the repo).
+# Use single quotes if your password contains special characters (e.g. $ # !)
+# to prevent shell expansion.
 export TF_VAR_db_username=pinit
-export TF_VAR_db_password=<choose a strong password>
+export TF_VAR_db_password='<choose a strong password>'
+```
 
+Apply in three passes to avoid a bootstrapping race condition where the EKS
+node group is created before the VPC's NAT gateway exists (nodes in private
+subnets need the NAT gateway to reach the EKS API and join the cluster):
+
+```bash
+# 1. Create VPC (public/private subnets, internet gateway, NAT gateway)
+terraform apply -target=module.vpc
+
+# 2. Create EKS cluster and node group (nodes can now reach the API via NAT)
+terraform apply -target=module.eks
+
+# 3. Create everything else (RDS, S3, ECR, CloudFront)
 terraform apply
 ```
 
@@ -427,31 +442,51 @@ terraform apply
 
 This installs ArgoCD, the AWS Load Balancer Controller and the External Secrets Operator.
 
+If the apply fails with a webhook error (`no endpoints available for service
+"aws-load-balancer-webhook-service"`), the Load Balancer Controller pods weren't ready in time.
+Wait ~30 seconds, then re-run `terraform apply` — it will pick up where it left off.
+
 ### Step 6 — Register the GitHub repo with ArgoCD
 
-ArgoCD needs read access to pull manifests from the repo. Retrieve the initial admin password:
+ArgoCD needs read access to pull manifests from the repo. Create a GitHub personal access token
+with `public_repo` scope (or `repo` for a private repo), then register the repo as a Kubernetes
+secret in the `argocd` namespace:
 
 ```bash
-kubectl -n argocd get secret argocd-initial-admin-secret \
-  -o jsonpath="{.data.password}" | base64 -d
+kubectl apply -n argocd -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pinit-repo
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  type: git
+  url: https://github.com/floels/pinit
+  username: <github-username>
+  password: <personal-access-token>
+EOF
 ```
 
-Forward the ArgoCD UI locally:
+### Step 6.5 — Push the initial Docker image to ECR
+
+The first ArgoCD sync happens before CI has run, so you need to push an initial image manually.
+On Apple Silicon Macs, add `--platform linux/amd64` — EKS nodes are x86_64.
 
 ```bash
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-```
+# From the repo root
+aws ecr get-login-password --region eu-west-3 | \
+  docker login --username AWS --password-stdin \
+  <aws-account-id>.dkr.ecr.eu-west-3.amazonaws.com
 
-Then open `https://localhost:8080`, log in as `admin`, and register the repo under
-**Settings → Repositories** (HTTPS with a GitHub personal access token, or SSH).
+docker build --platform linux/amd64 \
+  -f backend/Dockerfile.staging -t pinit-api backend/
 
-Alternatively, via the CLI:
+docker tag pinit-api:latest \
+  <aws-account-id>.dkr.ecr.eu-west-3.amazonaws.com/pinit-api:latest
 
-```bash
-argocd login localhost:8080
-argocd repo add https://github.com/floels/pinit.git \
-  --username <github-username> \
-  --password <personal-access-token>
+docker push <aws-account-id>.dkr.ecr.eu-west-3.amazonaws.com/pinit-api:latest
 ```
 
 ### Step 7 — Apply the ArgoCD Application
