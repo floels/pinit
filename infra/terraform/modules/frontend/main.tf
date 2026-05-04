@@ -1,6 +1,7 @@
 resource "aws_s3_bucket" "this" {
-  bucket = var.bucket_name
-  tags   = { Environment = var.environment }
+  bucket        = var.bucket_name
+  force_destroy = true
+  tags          = { Environment = var.environment }
 }
 
 resource "aws_s3_bucket_public_access_block" "this" {
