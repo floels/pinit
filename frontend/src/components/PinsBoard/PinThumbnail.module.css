@@ -10,7 +10,7 @@
   'display: inline-block' by default. */
   position: relative; /* because overlay child will have
   'position: absolute' */
-  cursor: zoom-in;
+  cursor: pointer;
 }
 
 .image {
@@ -19,7 +19,7 @@
   width: 100%;
   min-height: 120px;
   border-radius: 16px;
-  cursor: zoom-in;
+  cursor: pointer;
 }
 
 .hoverOverlay {
