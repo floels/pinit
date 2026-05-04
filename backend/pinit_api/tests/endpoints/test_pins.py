@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.conf import settings
@@ -209,3 +211,61 @@ class SavePinTests(APITestCase):
             "board_id": self.board.unique_id,
         })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class DownloadPinImageTests(APITestCase):
+    def setUp(self):
+        self.pin = PinFactory()
+        self.client = APIClient()
+
+    def get(self, unique_id=""):
+        return self.client.get(f"/api/pins/{unique_id}/download/")
+
+    def make_mock_image_response(self, content=b"fake image", content_type="image/jpeg"):
+        mock = MagicMock()
+        mock.content = content
+        mock.headers = {"Content-Type": content_type}
+        return mock
+
+    def test_download_happy_path(self):
+        mock_image_response = self.make_mock_image_response()
+
+        with patch("pinit_api.views.pins.requests.get", return_value=mock_image_response) as mock_get:
+            response = self.get(unique_id=self.pin.unique_id)
+
+        mock_get.assert_called_once_with(self.pin.image_url, timeout=30)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.content, b"fake image")
+        self.assertEqual(response["Content-Type"], "image/jpeg")
+        self.assertIn("attachment", response["Content-Disposition"])
+        self.assertIn(".jpeg", response["Content-Disposition"])
+
+    def test_download_pin_not_found(self):
+        response = self.get(unique_id="nonexistent_id")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_download_upstream_error(self):
+        with patch("pinit_api.views.pins.requests.get", side_effect=Exception("network error")):
+            response = self.get(unique_id=self.pin.unique_id)
+
+        self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
+
+    def test_download_filename_uses_pin_title(self):
+        pin_with_title = PinFactory(title="My Great Photo")
+        mock_image_response = self.make_mock_image_response()
+
+        with patch("pinit_api.views.pins.requests.get", return_value=mock_image_response):
+            response = self.get(unique_id=pin_with_title.unique_id)
+
+        self.assertIn("My Great Photo", response["Content-Disposition"])
+
+    def test_download_filename_falls_back_to_pin_id(self):
+        pin_without_title = PinFactory(title=None)
+        mock_image_response = self.make_mock_image_response()
+
+        with patch("pinit_api.views.pins.requests.get", return_value=mock_image_response):
+            response = self.get(unique_id=pin_without_title.unique_id)
+
+        self.assertIn(f"pin-{pin_without_title.unique_id}", response["Content-Disposition"])

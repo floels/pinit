@@ -6,7 +6,7 @@ import {
 } from "@/lib/types/frontendTypes";
 import PinThumbnail from "./PinThumbnail";
 import { useEffect, useState } from "react";
-import { API_URL_SAVE_PIN } from "@/lib/constants";
+import { API_URL_PIN_DETAILS, API_URL_SAVE_PIN } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
 import { throwIfKO } from "@/lib/utils/fetch";
 
@@ -65,27 +65,15 @@ const PinThumbnailContainer = ({
     setIsMoreActionsDropdownOpen(false);
   };
 
-  const handleDownloadImage = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
+  const handleDownloadImage = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setIsMoreActionsDropdownOpen(false);
 
-    try {
-      const response = await fetch(pin.imageURL);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      const extension = blob.type.split("/")[1] || "jpg";
-      link.download = `${pin.title || `pin-${pin.id}`}.${extension}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch {
-      window.open(pin.imageURL, "_blank");
-    }
+    const link = document.createElement("a");
+    link.href = `${API_URL_PIN_DETAILS}/${pin.id}/download/`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
