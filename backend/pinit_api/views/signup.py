@@ -2,12 +2,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from ..lib.utils import (
+from ..lib.utils.string_operations import (
     compute_username_candidate,
     compute_first_and_last_name,
     compute_initial,
-    get_tokens_data,
 )
+from ..lib.utils.authentication import get_tokens_data
 from ..models import Account
 from ..serializers import UserCreateSerializer
 from .authentication import set_refresh_token_cookie

@@ -11,7 +11,7 @@ from ..lib.constants import (
     ERROR_CODE_INVALID_PASSWORD,
     REFRESH_TOKEN_COOKIE_NAME,
 )
-from ..lib.utils import get_tokens_data
+from ..lib.utils.authentication import get_tokens_data
 
 def get_user_from_credentials(email, password):
     """Returns (user, error_response). Exactly one of the two is None."""
