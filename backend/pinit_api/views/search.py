@@ -5,7 +5,7 @@ from rest_framework import status
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 
 from ..models import Pin
-from ..serializers import PinWithAuthorDetailsReadSerializer
+from ..serializers.pin_serializers import PinWithAuthorDetailsReadSerializer
 
 
 ERROR_CODE_MISSING_SEARCH_PARAMETER = "missing_search_parameter"

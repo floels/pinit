@@ -2,7 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 
 from ..models import Pin
-from ..serializers import PinWithAuthorDetailsReadSerializer
+from ..serializers.pin_serializers import PinWithAuthorDetailsReadSerializer
 
 
 class GetPinSuggestionsView(generics.ListAPIView):
