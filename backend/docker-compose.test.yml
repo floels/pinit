@@ -30,8 +30,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      S3_PINS_BUCKET_UPLOADER_ACCESS_KEY_ID: ""
-      S3_PINS_BUCKET_UPLOADER_SECRET_ACCESS_KEY: ""
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
 
 volumes:
   postgres_data:
