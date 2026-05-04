@@ -1,7 +1,7 @@
 import random
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
-from pinit_api.lib.utils import UserManager
+from pinit_api.lib.utils.user_manager import UserManager
 
 
 class User(AbstractBaseUser):
