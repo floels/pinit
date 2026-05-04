@@ -27,8 +27,10 @@ const account = MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
 
 const boards = account.boards;
 
+const getThumbnail = () => screen.getByTestId("pin-thumbnail");
+
 const clickSaveButton = async () => {
-  fireEvent.mouseEnter(screen.getByTestId("pin-thumbnail-image"));
+  fireEvent.mouseEnter(getThumbnail());
 
   const saveButton = screen.getByTestId("pin-thumbnail-save-button");
 
@@ -69,10 +71,10 @@ it("displays 'Save' button only upon hover", () => {
   const saveButton = screen.queryByTestId("pin-thumbnail-save-button");
   expect(saveButton).toBeNull();
 
-  fireEvent.mouseEnter(screen.getByTestId("pin-thumbnail-image"));
+  fireEvent.mouseEnter(getThumbnail());
   screen.getByTestId("pin-thumbnail-save-button");
 
-  fireEvent.mouseLeave(screen.getByTestId("pin-thumbnail-image"));
+  fireEvent.mouseLeave(getThumbnail());
   expect(screen.queryByTestId("pin-thumbnail-save-button")).toBeNull();
 });
 
@@ -180,4 +182,81 @@ it("displays appropriate error toast upon KO response on saving pin", async () =
   await waitFor(() => {
     screen.getByText(en.PIN_SAVE_ERROR_MESSAGE);
   });
+});
+
+it("always displays the '...' more actions button", () => {
+  renderComponent();
+
+  screen.getByTestId("pin-thumbnail-more-actions-button");
+});
+
+it("hovering the below-image row triggers the thumbnail hover state", () => {
+  renderComponent();
+
+  expect(screen.queryByTestId("pin-thumbnail-save-button")).toBeNull();
+
+  fireEvent.mouseEnter(getThumbnail());
+
+  screen.getByTestId("pin-thumbnail-save-button");
+
+  fireEvent.mouseLeave(getThumbnail());
+
+  expect(screen.queryByTestId("pin-thumbnail-save-button")).toBeNull();
+});
+
+it("clicking '...' button opens dropdown with 'Download image' option", async () => {
+  renderComponent();
+
+  expect(screen.queryByTestId("pin-thumbnail-download-button")).toBeNull();
+
+  await userEvent.click(screen.getByTestId("pin-thumbnail-more-actions-button"));
+
+  screen.getByTestId("pin-thumbnail-download-button");
+  screen.getByText(en.DOWNLOAD_IMAGE_BUTTON_TEXT);
+});
+
+it("clicking '...' button again closes the dropdown", async () => {
+  renderComponent();
+
+  await userEvent.click(screen.getByTestId("pin-thumbnail-more-actions-button"));
+  screen.getByTestId("pin-thumbnail-download-button");
+
+  await userEvent.click(screen.getByTestId("pin-thumbnail-more-actions-button"));
+  expect(screen.queryByTestId("pin-thumbnail-download-button")).toBeNull();
+});
+
+it("clicking outside more actions dropdown closes it", async () => {
+  renderComponent();
+
+  await userEvent.click(screen.getByTestId("pin-thumbnail-more-actions-button"));
+  screen.getByTestId("pin-thumbnail-download-button");
+
+  await userEvent.click(document.body);
+
+  expect(screen.queryByTestId("pin-thumbnail-download-button")).toBeNull();
+});
+
+it("pressing Escape closes more actions dropdown", async () => {
+  renderComponent();
+
+  await userEvent.click(screen.getByTestId("pin-thumbnail-more-actions-button"));
+  screen.getByTestId("pin-thumbnail-download-button");
+
+  await userEvent.keyboard("[Escape]");
+
+  expect(screen.queryByTestId("pin-thumbnail-download-button")).toBeNull();
+});
+
+it("clicking 'Download image' closes the dropdown", async () => {
+  renderComponent();
+
+  await userEvent.click(screen.getByTestId("pin-thumbnail-more-actions-button"));
+
+  const windowOpenSpy = jest.spyOn(window, "open").mockImplementation(() => null);
+
+  await userEvent.click(screen.getByTestId("pin-thumbnail-download-button"));
+
+  expect(screen.queryByTestId("pin-thumbnail-download-button")).toBeNull();
+
+  windowOpenSpy.mockRestore();
 });

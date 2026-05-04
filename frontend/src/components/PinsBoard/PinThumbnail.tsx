@@ -120,12 +120,15 @@ const PinThumbnail = ({
   const shouldShowImageOverlay = isImageHovered || isSaveFlyoutOpen;
 
   return (
-    <div className={styles.container} data-testid="pin-thumbnail">
+    <div
+      className={styles.container}
+      onMouseEnter={handleMouseEnterImage}
+      onMouseLeave={handleMouseLeaveImage}
+      data-testid="pin-thumbnail"
+    >
       <Link
         to={`/pin/${pin.id}`}
         className={styles.imageContainer}
-        onMouseEnter={handleMouseEnterImage}
-        onMouseLeave={handleMouseLeaveImage}
         data-testid="pin-thumbnail-image"
       >
         {/* We don't use Next's Image component because we don't know the image's display height in advance. */}
@@ -151,12 +154,11 @@ const PinThumbnail = ({
           openerRef={saveButtonRef}
         />
       )}
-      {(isImageHovered || isMoreActionsDropdownOpen) && (
-        <div className={styles.moreActionsContainer}>
-          <div
-            ref={moreActionsWrapperRef}
-            className={`${styles.moreActionsButtonWrapper}${isMoreActionsDropdownOpen ? ` ${styles.dropdownOpen}` : ""}`}
-          >
+      <div className={styles.belowImageRow}>
+        <div
+          ref={moreActionsWrapperRef}
+          className={`${styles.moreActionsButtonWrapper}${isMoreActionsDropdownOpen ? ` ${styles.dropdownOpen}` : ""}`}
+        >
             <button
               className={styles.moreActionsButton}
               onClick={handleClickMoreActions}
@@ -178,9 +180,8 @@ const PinThumbnail = ({
                 </button>
               </div>
             )}
-          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
