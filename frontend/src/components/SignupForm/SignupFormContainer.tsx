@@ -12,7 +12,7 @@ import {
   isValidEmail,
   isValidPassword,
 } from "../../lib/utils/validation";
-import { useLogIn } from "../../lib/hooks/useLogIn";
+import { useAuthContext } from "@/contexts/authContext";
 import SignupForm, { FormErrors } from "./SignupForm";
 import { ResponseKOError } from "@/lib/customErrors";
 
@@ -47,7 +47,7 @@ const computeFormErrors = (values: {
 const SignupFormContainer = ({
   handleClickAlreadyHaveAccount,
 }: SignupFormContainerProps) => {
-  const logIn = useLogIn();
+  const { setAccessToken } = useAuthContext();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -84,15 +84,17 @@ const SignupFormContainer = ({
 
     setIsLoading(true);
 
+    let signupData;
+
     try {
-      await fetchSignup();
+      signupData = await fetchSignup();
     } catch (error) {
       const errorCode = (error as Error).message;
       updateFormErrorsFromErrorCode(errorCode);
       return;
     }
 
-    await logIn();
+    setAccessToken(signupData.access_token);
   };
 
   const fetchSignup = async () => {
@@ -125,7 +127,7 @@ const SignupFormContainer = ({
       throw new ResponseKOError();
     }
 
-    return response;
+    return response.json();
   };
 
   const updateFormErrorsFromErrorCode = (errorCode: string) => {

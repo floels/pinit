@@ -3,16 +3,18 @@ import userEvent from "@testing-library/user-event";
 import SignupFormContainer from "./SignupFormContainer";
 import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
-import { API_URL_REFRESH_TOKEN, API_URL_SIGN_UP } from "@/lib/constants";
-import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
+import { API_URL_SIGN_UP } from "@/lib/constants";
+import { MOCK_API_RESPONSES, MOCK_API_RESPONSES_JSON } from "@/lib/testing-utils/mockAPIResponses";
 import { AuthContext } from "@/contexts/authContext";
 
 const handleClickAlreadyHaveAccount = () => {}; // NB: this behavior will be tested in <HeaderUnauthenticatedClient />
 
+const mockSetAccessToken = jest.fn();
+
 const renderComponent = () => {
   render(
     <AuthContext.Provider
-      value={{ accessToken: null, setAccessToken: jest.fn(), isAuthInitialized: false }}
+      value={{ accessToken: null, setAccessToken: mockSetAccessToken, isAuthInitialized: false }}
     >
       <SignupFormContainer
         handleClickAlreadyHaveAccount={handleClickAlreadyHaveAccount}
@@ -23,6 +25,7 @@ const renderComponent = () => {
 
 beforeEach(() => {
   fetchMock.resetMocks();
+  mockSetAccessToken.mockReset();
 });
 
 it("displays relevant input errors", async () => {
@@ -90,7 +93,7 @@ it("displays relevant input errors", async () => {
   ).toBeNull();
 });
 
-it("refreshes the access token upon successful response", async () => {
+it("sets access token in context upon successful signup", async () => {
   renderComponent();
 
   const emailInput = screen.getByLabelText(en.SignupForm.EMAIL);
@@ -107,16 +110,11 @@ it("refreshes the access token upon successful response", async () => {
     MOCK_API_RESPONSES[API_URL_SIGN_UP],
     { status: 201 },
   );
-  fetchMock.mockOnceIf(
-    API_URL_REFRESH_TOKEN,
-    MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN],
-  );
 
   await userEvent.click(submitButton);
 
-  expect(fetch).toHaveBeenCalledWith(
-    API_URL_REFRESH_TOKEN,
-    expect.objectContaining({ method: "POST", credentials: "include" }),
+  expect(mockSetAccessToken).toHaveBeenCalledWith(
+    MOCK_API_RESPONSES_JSON[API_URL_SIGN_UP].access_token,
   );
 });
 

@@ -6,7 +6,7 @@ import {
   API_URL_OBTAIN_TOKEN,
 } from "../../lib/constants";
 import { isValidEmail, isValidPassword } from "../../lib/utils/validation";
-import { useLogIn } from "../../lib/hooks/useLogIn";
+import { useAuthContext } from "@/contexts/authContext";
 import LoginForm, { FormErrors } from "./LoginForm";
 
 type LoginFormContainerProps = {
@@ -32,7 +32,7 @@ const computeFormErrors = (values: { email: string; password: string }) => {
 const LoginFormContainer = ({
   handleClickNoAccountYet,
 }: LoginFormContainerProps) => {
-  const logIn = useLogIn();
+  const { setAccessToken } = useAuthContext();
 
   const [credentials, setCredentials] = useState({
     email: "",
@@ -71,8 +71,10 @@ const LoginFormContainer = ({
 
     setIsLoading(true);
 
+    let loginData;
+
     try {
-      await fetchTokensAndThrow();
+      loginData = await fetchTokensAndThrow();
     } catch (error) {
       updateFormErrorsFromFetchError({ error: error as Error });
       return;
@@ -80,7 +82,7 @@ const LoginFormContainer = ({
       setIsLoading(false);
     }
 
-    await logIn();
+    setAccessToken(loginData.access_token);
   };
 
   const fetchTokensAndThrow = async () => {
@@ -114,7 +116,7 @@ const LoginFormContainer = ({
       throw new Error();
     }
 
-    return response;
+    return response.json();
   };
 
   const updateFormErrorsFromFetchError = ({ error }: { error: Error }) => {
