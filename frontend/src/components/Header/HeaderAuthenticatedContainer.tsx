@@ -7,14 +7,18 @@ import {
 import { useAccountContext } from "@/contexts/accountContext";
 
 const HeaderAuthenticatedContainer = () => {
-  const [username, setUsername] = useState<string | null>(null);
-  const [profilePictureURL, setProfilePictureURL] = useState<string | null>(
-    null,
-  );
   const [isAccountOptionsFlyoutOpen, setIsAccountOptionsFlyoutOpen] =
     useState(false);
 
   const accountContext = useAccountContext();
+
+  const username = accountContext.account
+    ? accountContext.account.username
+    : localStorage.getItem(USERNAME_LOCAL_STORAGE_KEY);
+
+  const profilePictureURL = accountContext.account
+    ? accountContext.account.profilePictureURL
+    : localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY);
 
   const handleClickAccountOptionsButton = () => {
     setIsAccountOptionsFlyoutOpen(!isAccountOptionsFlyoutOpen);
@@ -29,23 +33,6 @@ const HeaderAuthenticatedContainer = () => {
   const handleClickOutOfAccountOptionsFlyout = () => {
     setIsAccountOptionsFlyoutOpen(false);
   };
-
-  useEffect(() => {
-    if (accountContext.account) {
-      const { username, profilePictureURL } = accountContext.account;
-
-      setUsername(username);
-      setProfilePictureURL(profilePictureURL);
-      return;
-    }
-
-    // If the account context has not been fetched yet, fall back to
-    // local storage:
-    setUsername(localStorage.getItem(USERNAME_LOCAL_STORAGE_KEY));
-    setProfilePictureURL(
-      localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY),
-    );
-  }, [accountContext.account]);
 
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);

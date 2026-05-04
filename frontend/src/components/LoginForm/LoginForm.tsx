@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleXmark, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
@@ -36,12 +35,6 @@ const LoginForm = ({
   handleClickNoAccountYet,
 }: LoginFormProps) => {
   const { t } = useTranslation(["LandingPageContent", "Common"]);
-
-  const emailInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    emailInputRef.current?.focus();
-  }, []);
 
   let displayFormErrorsOther;
 
@@ -83,7 +76,7 @@ const LoginForm = ({
             }
             onChange={handleInputChange}
             autoComplete="email"
-            ref={emailInputRef}
+            autoFocus
           />
         </div>
         <div className={styles.passwordInputContainer}>

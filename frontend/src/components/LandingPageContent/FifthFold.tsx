@@ -1,4 +1,4 @@
-import { useState, useEffect, RefObject } from "react";
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleUp } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
@@ -8,11 +8,10 @@ import LoginFormContainer from "../LoginForm/LoginFormContainer";
 import FifthFoldPicturesBackground from "./FifthFoldPicturesBackground";
 
 type FifthFoldProps = {
-  heroRef: RefObject<HTMLDivElement | null>;
   onClickBackToTop: () => void;
 };
 
-const FifthFold = ({ heroRef, onClickBackToTop }: FifthFoldProps) => {
+const FifthFold = ({ onClickBackToTop }: FifthFoldProps) => {
   const { t } = useTranslation("LandingPageContent");
 
   const [showLoginInsteadOfSignup, setShowLoginInsteadOfSignup] =
@@ -25,15 +24,6 @@ const FifthFold = ({ heroRef, onClickBackToTop }: FifthFoldProps) => {
   const handleClickNoAccountYet = () => {
     setShowLoginInsteadOfSignup(false);
   };
-
-  // This is needed to scroll back to the top of the page.
-  // Otherwise, for some reason, browsers scroll down to the first input of the
-  // <SignupForm /> rendered below on page load.
-  useEffect(() => {
-    if (heroRef.current?.scrollIntoView) {
-      heroRef.current.scrollIntoView();
-    }
-  }, []);
 
   return (
     <div className={styles.container}>

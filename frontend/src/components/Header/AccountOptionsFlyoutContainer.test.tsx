@@ -6,14 +6,6 @@ import { AccountContext } from "@/contexts/accountContext";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_MY_ACCOUNT_DETAILS } from "@/lib/constants";
 
-jest.mock("@/components/LogoutTrigger/LogoutTrigger", () => {
-  const MockedLogoutTrigger = () => <div data-testid="mock-logout-trigger" />;
-
-  MockedLogoutTrigger.displayName = "LogoutTrigger";
-
-  return MockedLogoutTrigger;
-});
-
 const mockHandleClickOutOfAccountOptionsFlyout = jest.fn();
 
 const defaultAccount = MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
@@ -34,10 +26,10 @@ const renderComponent = () => {
   );
 };
 
-it("renders <LogoutTrigger /> upon clicking 'Log out'", async () => {
+it("renders loading overlay upon clicking 'Log out'", async () => {
   renderComponent();
 
-  expect(screen.queryByTestId("mock-logout-trigger")).toBeNull();
+  expect(screen.queryByTestId("logout-loading-overlay")).toBeNull();
 
   const logoutButton = screen.getByTestId(
     "account-options-flyout-log-out-button",
@@ -45,7 +37,7 @@ it("renders <LogoutTrigger /> upon clicking 'Log out'", async () => {
 
   await userEvent.click(logoutButton);
 
-  screen.getByTestId("mock-logout-trigger");
+  screen.getByTestId("logout-loading-overlay");
 });
 
 // NB: the "click out" behavior is tested in "HeaderAuthenticatedContainer.test.tsx"

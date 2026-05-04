@@ -17,11 +17,7 @@ const renderComponent = () => {
 // Since the <FifthFold /> component relies on `useRouter` and other
 // specific methods, we mock the whole component for simplicity:
 jest.mock("@/components/LandingPageContent/FifthFold", () => {
-  const MockedFifthFold = ({
-    onClickBackToTop,
-  }: {
-    onClickBackToTop: () => void;
-  }) => (
+  const MockedFifthFold = ({ onClickBackToTop }: { onClickBackToTop: () => void }) => (
     <div>
       <button
         data-testid="mock-button-back-to-top"
@@ -48,6 +44,15 @@ const scrollAfterDebounceTime = ({
 
   fireEvent.wheel(document, { deltaY });
 };
+
+it("scrolls hero into view on mount", () => {
+  const mockScrollIntoView = jest.fn();
+  window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
+
+  renderComponent();
+
+  expect(mockScrollIntoView).toHaveBeenCalledTimes(1);
+});
 
 it("scrolls from fold to fold, down and up", () => {
   jest.useFakeTimers();

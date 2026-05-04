@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import LogoutTrigger from "../LogoutTrigger/LogoutTrigger";
 import AccountOptionsFlyout from "./AccountOptionsFlyout";
 import { useAccountContext } from "@/contexts/accountContext";
+import { useLogOut } from "@/lib/hooks/useLogOut";
+import styles from "./AccountOptionsFlyoutContainer.module.css";
 
 type AccountOptionsFlyoutContainerProps = {
   handleClickOutOfAccountOptionsFlyout: () => void;
@@ -17,9 +18,11 @@ const AccountOptionsFlyoutContainer = ({
   const [clickedLogOut, setClickedLogOut] = useState(false);
 
   const { account } = useAccountContext();
+  const logOut = useLogOut();
 
   const handleClickLogOut = () => {
     setClickedLogOut(true);
+    logOut();
   };
 
   const handleClickDocument = (event: MouseEvent) => {
@@ -42,7 +45,7 @@ const AccountOptionsFlyoutContainer = ({
   }, []);
 
   if (clickedLogOut) {
-    return <LogoutTrigger />;
+    return <div className={styles.loadingOverlay} data-testid="logout-loading-overlay" />;
   }
 
   if (!account) {
