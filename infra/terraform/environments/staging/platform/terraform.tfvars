@@ -1,2 +1,2 @@
-aws_region   = "eu-north-1"
+aws_region   = "eu-west-3"
 cluster_name = "pinit-staging"

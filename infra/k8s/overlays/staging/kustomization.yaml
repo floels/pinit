@@ -10,5 +10,5 @@ resources:
 
 images:
   - name: pinit-api
-    newName: ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/pinit-api
+    newName: ACCOUNT_ID.dkr.ecr.eu-west-3.amazonaws.com/pinit-api
     newTag: latest

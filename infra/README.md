@@ -241,7 +241,7 @@ extends the base.
 
 - **`namespace.yaml`** — Creates the `pinit-staging` namespace.
 - **`externalsecret.yaml`** — Defines two ESO resources: a `ClusterSecretStore` (tells ESO to use
-  AWS Secrets Manager in `eu-north-1`) and an `ExternalSecret` (instructs ESO to fetch
+  AWS Secrets Manager in `eu-west-3`) and an `ExternalSecret` (instructs ESO to fetch
   `pinit/staging/backend` from Secrets Manager and create a Kubernetes `Secret` named
   `backend-secrets` in the `pinit-staging` namespace).
 - **`kustomization.yaml`** — Applies the `pinit-staging` namespace to all resources, includes the
@@ -285,7 +285,7 @@ stored anywhere. Two components have IRSA roles:
 
 - **External Secrets Operator** — its service account assumes a role with
   `secretsmanager:GetSecretValue` and `secretsmanager:DescribeSecret` on
-  `arn:aws:secretsmanager:eu-north-1:*:secret:pinit/staging/*`.
+  `arn:aws:secretsmanager:eu-west-3:*:secret:pinit/staging/*`.
 - **Backend pod** — its service account assumes a role with `s3:PutObject` on
   `arn:aws:s3:::pinit-staging-pins/*`, which is the only permission needed to sign presigned upload
   URLs for client-side pin image uploads.
@@ -298,7 +298,7 @@ The secret must be created manually once, before the first deploy:
 ```bash
 aws secretsmanager create-secret \
   --name pinit/staging/backend \
-  --region eu-north-1 \
+  --region eu-west-3 \
   --secret-string '{
     "DJANGO_SECRET_KEY": "...",
     "POSTGRES_HOST": "<rds-address from terraform output>",
@@ -306,7 +306,7 @@ aws secretsmanager create-secret \
     "POSTGRES_USER": "...",
     "POSTGRES_PASSWORD": "...",
     "S3_PINS_BUCKET_NAME": "pinit-staging-pins",
-    "S3_PINS_BUCKET_REGION": "eu-north-1"
+    "S3_PINS_BUCKET_REGION": "eu-west-3"
   }'
 ```
 
@@ -320,7 +320,7 @@ Every push to `main` (excluding automated image-tag commits, filtered by `paths-
 ### `deploy-backend`
 
 1. **Build** — `docker build` using `backend/Dockerfile.staging`, tagged with the commit SHA.
-2. **Push** — Image is pushed to ECR as `<account>.dkr.ecr.eu-north-1.amazonaws.com/pinit-api:<sha>`.
+2. **Push** — Image is pushed to ECR as `<account>.dkr.ecr.eu-west-3.amazonaws.com/pinit-api:<sha>`.
 3. **Update manifest** — `kustomize edit set image` rewrites the `images[].newTag` field in
    `infra/k8s/overlays/staging/kustomization.yaml` to the new SHA.
 4. **Commit and push** — The manifest change is committed to `main` as
@@ -368,14 +368,14 @@ Run these steps once to go from zero to a live staging environment.
 ### Step 1 — Create Terraform remote state resources
 
 ```bash
-aws s3 mb s3://pinit-terraform-state --region eu-north-1
+aws s3 mb s3://pinit-terraform-state --region eu-west-3
 
 aws dynamodb create-table \
   --table-name pinit-terraform-locks \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
-  --region eu-north-1
+  --region eu-west-3
 ```
 
 ### Step 2 — Apply phase 1 (infrastructure)
@@ -402,7 +402,7 @@ Use the values from the Terraform outputs and your chosen credentials:
 ```bash
 aws secretsmanager create-secret \
   --name pinit/staging/backend \
-  --region eu-north-1 \
+  --region eu-west-3 \
   --secret-string '{
     "DJANGO_SECRET_KEY": "<generate with: python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\">",
     "POSTGRES_HOST": "<rds_address output from step 2>",
@@ -410,7 +410,7 @@ aws secretsmanager create-secret \
     "POSTGRES_USER": "pinit",
     "POSTGRES_PASSWORD": "<same password as TF_VAR_db_password>",
     "S3_PINS_BUCKET_NAME": "pinit-staging-pins",
-    "S3_PINS_BUCKET_REGION": "eu-north-1"
+    "S3_PINS_BUCKET_REGION": "eu-west-3"
   }'
 ```
 
@@ -419,7 +419,7 @@ S3 access for the backend is handled via IRSA — no static S3 credentials are n
 ### Step 4 — Configure kubectl
 
 ```bash
-aws eks update-kubeconfig --name pinit-staging --region eu-north-1
+aws eks update-kubeconfig --name pinit-staging --region eu-west-3
 ```
 
 ### Step 5 — Apply phase 2 (platform)
