@@ -121,7 +121,7 @@ const PinThumbnail = ({
 
   return (
     <div
-      className={styles.container}
+      className={`${styles.container}${isMoreActionsDropdownOpen ? ` ${styles.containerWithOpenDropdown}` : ""}`}
       onMouseEnter={handleMouseEnterImage}
       onMouseLeave={handleMouseLeaveImage}
       data-testid="pin-thumbnail"

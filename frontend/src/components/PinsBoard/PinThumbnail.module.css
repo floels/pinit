@@ -1,7 +1,11 @@
 .container {
   width: 100%;
-  position: relative; /* because save flyout child 
+  position: relative; /* because save flyout child
   will have 'position: absolute' */
+}
+
+.containerWithOpenDropdown {
+  z-index: 1; /* lift above sibling thumbnails so the dropdown isn't clipped */
 }
 
 .imageContainer {
@@ -81,7 +85,7 @@
 .belowImageRow {
   display: flex;
   justify-content: flex-end;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 .moreActionsButtonWrapper {
@@ -131,23 +135,25 @@
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
-  background-color: var(--color-background-default);
-  border-radius: 16px;
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-container);
   box-shadow: var(--box-shadow-elevation-floating);
   z-index: 20;
   min-width: 180px;
-  overflow: hidden;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 .moreActionsDropdownButton {
-  display: block;
   width: 100%;
-  padding: 12px 16px;
-  background: none;
+  padding: 8px;
   border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
   text-align: left;
   cursor: pointer;
-  font-size: var(--font-size-200);
   color: var(--color-text-default);
   white-space: nowrap;
 }
