@@ -602,6 +602,13 @@ Use the same value for `BACKEND_URL` that you set as the `STAGING_BACKEND_URL` G
 (i.e. `https://<backend-domain>.cloudfront.net/api`). From this point on, every push to `main`
 triggers a full deploy automatically.
 
+### Step 11 — Create a Django superuser
+
+```bash
+kubectl exec -n pinit-staging -it deployment/backend -- \
+  python manage.py createsuperuser
+```
+
 ---
 
 ## Day-to-day operations
