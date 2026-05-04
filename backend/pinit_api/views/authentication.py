@@ -39,7 +39,7 @@ def set_refresh_token_cookie(response, refresh_token):
         refresh_token,
         httponly=True,
         secure=not settings.DEBUG,
-        samesite="Strict",
+        samesite="None",
         max_age=30 * 24 * 60 * 60,
         path="/",
     )
