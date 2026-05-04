@@ -7,7 +7,7 @@ import {
   PinWithAuthorDetails,
 } from "@/lib/types/frontendTypes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDown, faEllipsis } from "@fortawesome/free-solid-svg-icons";
+import { faAngleDown, faDownload, faEllipsis } from "@fortawesome/free-solid-svg-icons";
 import SavePinFlyoutContainer from "./SavePinFlyoutContainer";
 import { ellipsizeText } from "@/lib/utils/strings";
 
@@ -176,6 +176,7 @@ const PinThumbnail = ({
                   onClick={handleDownloadImage}
                   data-testid="pin-thumbnail-download-button"
                 >
+                  <FontAwesomeIcon icon={faDownload} />
                   {t("DOWNLOAD_IMAGE_BUTTON_TEXT")}
                 </button>
               </div>
