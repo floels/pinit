@@ -467,7 +467,48 @@ kubectl apply -f infra/k8s/argocd/apps/backend-staging.yaml
 
 ArgoCD will immediately sync `infra/k8s/overlays/staging/` and bring up the backend Deployment.
 
-### Step 8 — Set GitHub secrets
+### Step 8 — Create the CI/CD IAM user
+
+GitHub Actions needs an IAM user to push images to ECR, sync the frontend to S3, and invalidate
+CloudFront. Create it in the AWS Console (no console access needed) with the following inline
+policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:CompleteLayerUpload",
+        "ecr:PutImage"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:DeleteObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::pinit-staging-frontend",
+        "arn:aws:s3:::pinit-staging-frontend/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "cloudfront:CreateInvalidation",
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+Then generate an access key for that user — you will need it in the next step.
+
+### Step 9 — Set GitHub secrets
 
 In the GitHub repository settings under **Environments → staging**, add the four secrets listed in
 the [Required GitHub secrets](#required-github-secrets-staging-environment) section. From this
