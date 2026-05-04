@@ -16,7 +16,6 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
       accessToken: "mock.token",
       setAccessToken: mockSetAccessToken,
       isAuthInitialized: true,
-      setIsAuthInitialized: jest.fn(),
     }}
   >
     {children}

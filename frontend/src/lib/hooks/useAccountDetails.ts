@@ -12,45 +12,30 @@ import { serializeAccountWithPrivateDetails } from "@/lib/utils/serializers";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-const AccountDetailsFetcher = () => {
+export const useAccountDetails = () => {
   const fetchWithAuth = useFetchWithAuth();
   const { setAccount } = useAccountContext();
-  const { accessToken } = useAuthContext();
+  const { accessToken, isAuthInitialized } = useAuthContext();
 
   const fetchAccountDetails = async () => {
     const response = await fetchWithAuth(API_URL_MY_ACCOUNT_DETAILS);
-
     throwIfKO(response);
-
     const responseData = await response.json();
-
     return serializeAccountWithPrivateDetails(responseData);
   };
 
   const persistAccountData = (data: AccountWithPrivateDetails) => {
     const { username, profilePictureURL } = data;
-
-    persistUsername(username);
-
-    if (profilePictureURL) {
-      persistProfilePictureURL(profilePictureURL);
-    }
-  };
-
-  const persistUsername = (username: string) => {
     localStorage?.setItem(USERNAME_LOCAL_STORAGE_KEY, username);
-  };
-
-  const persistProfilePictureURL = (profilePictureUrl: string) => {
-    localStorage?.setItem(
-      PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
-      profilePictureUrl,
-    );
+    if (profilePictureURL) {
+      localStorage?.setItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY, profilePictureURL);
+    }
   };
 
   const { data } = useQuery({
     queryKey: ["fetchMyAccountDetails", accessToken],
     queryFn: fetchAccountDetails,
+    enabled: isAuthInitialized && !!accessToken,
     retry: false,
   });
 
@@ -60,8 +45,4 @@ const AccountDetailsFetcher = () => {
       persistAccountData(data);
     }
   }, [data]);
-
-  return null;
 };
-
-export default AccountDetailsFetcher;

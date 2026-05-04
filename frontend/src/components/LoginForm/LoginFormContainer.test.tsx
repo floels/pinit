@@ -8,7 +8,7 @@ import {
   API_URL_REFRESH_TOKEN,
 } from "@/lib/constants";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
-import { AuthContextProvider } from "@/contexts/authContext";
+import { AuthContext } from "@/contexts/authContext";
 
 const typeInEmailInput = async (text: string) => {
   const emailInput = screen.getByLabelText(en.LoginForm.EMAIL);
@@ -38,9 +38,11 @@ const handleClickNoAccountYet = () => {}; // NB: this behavior will be tested in
 
 const renderComponent = () => {
   render(
-    <AuthContextProvider>
+    <AuthContext.Provider
+      value={{ accessToken: null, setAccessToken: jest.fn(), isAuthInitialized: false }}
+    >
       <LoginFormContainer handleClickNoAccountYet={handleClickNoAccountYet} />
-    </AuthContextProvider>,
+    </AuthContext.Provider>,
   );
 };
 
