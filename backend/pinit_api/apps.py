@@ -7,4 +7,5 @@ class PinitApiConfig(AppConfig):
     label = "pinit_api"
 
     def ready(self):
+        # Import signals module so @receiver decorators are registered.
         import pinit_api.signals  # noqa: F401
