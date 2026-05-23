@@ -1,14 +1,18 @@
+import logging
+import math
+
+from django.conf import settings
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
-from rest_framework import status
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 
-from ..models import Pin
-from ..serializers.pin_serializers import PinWithAuthorDetailsReadSerializer
+from ..elasticsearch_client import get_es_client, PINS_INDEX
 
+logger = logging.getLogger(__name__)
 
 ERROR_CODE_MISSING_SEARCH_PARAMETER = "missing_search_parameter"
+
+PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
 
 
 @api_view(["GET"])
@@ -23,22 +27,65 @@ def search_pins(request):
 
     shortened_search_term = search_term[:140]
 
-    search_vector = SearchVector("title", weight="A") + SearchVector(
-        "description", weight="B"
+    try:
+        page = max(1, int(request.GET.get("page", 1)))
+    except ValueError:
+        page = 1
+
+    from_offset = (page - 1) * PAGE_SIZE
+
+    try:
+        es_response = get_es_client().search(
+            index=PINS_INDEX,
+            query={
+                "multi_match": {
+                    "query": shortened_search_term,
+                    "fields": ["title^2", "description"],
+                    "type": "best_fields",
+                }
+            },
+            sort=[
+                {"_score": {"order": "desc"}},
+                {"created_at": {"order": "desc"}},
+            ],
+            from_=from_offset,
+            size=PAGE_SIZE,
+        )
+    except Exception:
+        logger.exception("Elasticsearch search failed for query %r", shortened_search_term)
+        return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    total_count = es_response["hits"]["total"]["value"]
+    hits = es_response["hits"]["hits"]
+
+    results = []
+    for hit in hits:
+        source = hit["_source"]
+        results.append(
+            {
+                "unique_id": source["unique_id"],
+                "title": source["title"],
+                "image_url": source["image_url"],
+                "author": source["author"],
+            }
+        )
+
+    total_pages = math.ceil(total_count / PAGE_SIZE) if total_count > 0 else 1
+    base_url = request.build_absolute_uri("/api/search/")
+    next_url = (
+        f"{base_url}?q={shortened_search_term}&page={page + 1}"
+        if page < total_pages
+        else None
     )
-    search_query = SearchQuery(shortened_search_term)
-
-    all_pins_annotated = Pin.objects.annotate(
-        search=search_vector, rank=SearchRank(search_vector, search_query)
+    previous_url = (
+        f"{base_url}?q={shortened_search_term}&page={page - 1}" if page > 1 else None
     )
 
-    matched_pins = all_pins_annotated.filter(search=search_query)
-
-    search_results = matched_pins.order_by("-rank", "-created_at")
-
-    paginator = PageNumberPagination()
-    paginated_results = paginator.paginate_queryset(search_results, request)
-
-    serializer = PinWithAuthorDetailsReadSerializer(paginated_results, many=True)
-
-    return paginator.get_paginated_response(serializer.data)
+    return Response(
+        {
+            "count": total_count,
+            "next": next_url,
+            "previous": previous_url,
+            "results": results,
+        }
+    )

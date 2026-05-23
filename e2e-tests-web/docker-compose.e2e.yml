@@ -27,6 +27,18 @@ services:
     depends_on:
       - moto
 
+  elasticsearch_e2e:
+    image: elasticsearch:8.13.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   backend_e2e:
     build:
       context: ../backend
@@ -41,6 +53,8 @@ services:
         condition: service_healthy
       moto:
         condition: service_started
+      elasticsearch_e2e:
+        condition: service_healthy
     environment:
       DJANGO_SETTINGS_MODULE: pinit.settings.e2e
       AWS_ACCESS_KEY_ID: testing

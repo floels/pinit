@@ -22,11 +22,20 @@ services:
     depends_on:
       - moto
 
+  elasticsearch:
+    image: elasticsearch:8.13.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: sh -c "python manage.py migrate && python manage.py set_up_moto && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py set_up_moto && python manage.py index_all_pins && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
     ports:
@@ -34,6 +43,7 @@ services:
     depends_on:
       - db
       - moto
+      - elasticsearch
     environment:
       DJANGO_SETTINGS_MODULE: pinit.settings.local
       AWS_ACCESS_KEY_ID: testing

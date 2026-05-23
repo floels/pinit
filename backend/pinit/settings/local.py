@@ -28,3 +28,5 @@ AWS_S3_PUBLIC_ENDPOINT_URL = "http://localhost:5555"
 
 # The moto mock server only speaks HTTP, so override the default "https:" here:
 AWS_S3_URL_PROTOCOL = "http:"
+
+ELASTICSEARCH_URL = "http://elasticsearch:9200"
