@@ -19,7 +19,7 @@ pinit/
 ├── backend/         # Django REST API
 ├── frontend/        # Vite + React SPA
 ├── e2e-tests-web/   # Playwright end-to-end tests
-└── infra/          # Terraform + Kubernetes manifests for AWS deployment
+├── infra/           # Terraform + Kubernetes manifests for AWS deployment
 └── nginx/           # CORS proxy config for local S3 mock
 ```
 
