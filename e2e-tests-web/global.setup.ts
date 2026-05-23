@@ -37,5 +37,6 @@ setup("start E2E services and seed database", async () => {
 
   compose("exec -T backend_e2e python manage.py migrate");
   compose("exec -T backend_e2e python manage.py set_up_moto");
+  compose("exec -T backend_e2e python manage.py index_all_pins");
   compose("exec -T backend_e2e python manage.py seed_database_e2e");
 });

@@ -8,6 +8,7 @@ Django REST API serving the PinIt platform.
 - PostgreSQL 13
 - AWS S3 via `django-storages` for asset storage
 - `djangorestframework-simplejwt` for JWT authentication
+- Elasticsearch 8 for full-text search
 
 
 ## Running locally

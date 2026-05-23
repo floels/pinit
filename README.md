@@ -10,6 +10,7 @@ A Pinterest-like platform for discovering, creating, and organizing pins on boar
 | Backend  | Django 5, Django REST Framework, Python 3        |
 | Database | PostgreSQL 13                                    |
 | Storage  | AWS S3 (pin images)                             |
+| Search   | Elasticsearch 8                                  |
 
 ## Structure
 
@@ -33,7 +34,7 @@ make up
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api
 
-This single command handles everything: database migrations, local S3 mock setup (via Moto), and starting all services. No additional steps are required.
+This single command handles everything: database migrations, local S3 mock setup (via Moto), Elasticsearch index setup, and starting all services. No additional steps are required. Search is backed by Elasticsearch (auto-started with `make up`).
 
 To populate the database with realistic test data on first run:
 
