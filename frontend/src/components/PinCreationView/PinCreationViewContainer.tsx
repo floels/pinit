@@ -154,6 +154,10 @@ const PinCreationViewContainer = () => {
     resetForm();
   };
 
+  const showUnsavedChangesModal = blocker.state === "blocked";
+  const onConfirmLeave = blocker.proceed!;
+  const onCancelLeave = blocker.reset!;
+
   return (
     <PinCreationView
       hasDroppedFile={hasDroppedFile}
@@ -164,9 +168,9 @@ const PinCreationViewContainer = () => {
       handleClickDeleteImage={handleClickDeleteImage}
       handleInputChange={handleInputChange}
       handleSubmit={handleSubmit}
-      showUnsavedChangesModal={blocker.state === "blocked"}
-      onConfirmLeave={blocker.proceed ?? (() => {})}
-      onCancelLeave={blocker.reset ?? (() => {})}
+      showUnsavedChangesModal={showUnsavedChangesModal}
+      onConfirmLeave={onConfirmLeave}
+      onCancelLeave={onCancelLeave}
     />
   );
 };
