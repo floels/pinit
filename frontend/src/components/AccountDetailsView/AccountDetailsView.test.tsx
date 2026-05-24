@@ -1,10 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import AccountDetailsView from "./AccountDetailsView";
 import en from "@/public/locales/en/AccountDetails.json";
-import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
+import { MOCK_API_RESPONSES_SERIALIZED, CREATED_PINS_URL, MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
+import { mockIntersectionObserver } from "@/lib/testing-utils/misc";
 
 const account = MOCK_API_RESPONSES_SERIALIZED[API_URL_ACCOUNT_DETAILS];
+
+beforeEach(() => {
+  mockIntersectionObserver();
+  fetchMock.mockResponse(MOCK_API_RESPONSES[CREATED_PINS_URL]);
+});
 
 it("renders all relevant details", () => {
   render(<AccountDetailsView account={account} />);

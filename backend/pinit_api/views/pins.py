@@ -3,20 +3,88 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, views
+from rest_framework.exceptions import NotFound
 
-from ..models import Pin, Board, PinInBoard
+from ..models import Pin, Board, PinInBoard, Account
 from ..serializers.pin_serializers import PinWithFullDetailsReadSerializer
 from ..lib.constants import (
     ERROR_CODE_PIN_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
     ERROR_CODE_FORBIDDEN,
+    ERROR_CODE_ACCOUNT_NOT_FOUND,
 )
 
 
-class GetPinDetailsView(generics.RetrieveAPIView):
-    queryset = Pin.objects.all()
+class PinView(views.APIView):
+    def get(self, request, unique_id):
+        pin = Pin.objects.filter(unique_id=unique_id).first()
+        if not pin:
+            return Response(
+                {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = PinWithFullDetailsReadSerializer(pin)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, unique_id):
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        pin = Pin.objects.filter(unique_id=unique_id).first()
+        if not pin:
+            return Response(
+                {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if pin.author != request.user.account:
+            return Response(
+                {"errors": [{"code": ERROR_CODE_FORBIDDEN}]},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if "title" in request.data:
+            pin.title = request.data["title"]
+        if "description" in request.data:
+            pin.description = request.data["description"]
+        pin.save()
+
+        serializer = PinWithFullDetailsReadSerializer(pin)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, unique_id):
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        pin = Pin.objects.filter(unique_id=unique_id).first()
+        if not pin:
+            return Response(
+                {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if pin.author != request.user.account:
+            return Response(
+                {"errors": [{"code": ERROR_CODE_FORBIDDEN}]},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        pin.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# Keep old name as alias for backward compatibility
+GetPinDetailsView = PinView
+
+
+class GetCreatedPinsView(generics.ListAPIView):
     serializer_class = PinWithFullDetailsReadSerializer
-    lookup_field = "unique_id"
+
+    def get_queryset(self):
+        username = self.kwargs["username"]
+        if not Account.objects.filter(username=username).exists():
+            raise NotFound()
+        return Pin.objects.filter(author__username=username).order_by("-created_at")
 
 
 class SavePinView(views.APIView):

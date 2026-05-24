@@ -70,7 +70,7 @@ const CreatedAndSavedPins = ({ account }: CreatedAndSavedPinsProps) => {
           />
         </div>
       </div>
-      {activeTab === TAB.CREATED && <CreatedPins />}
+      {activeTab === TAB.CREATED && <CreatedPins username={account.username} />}
       {activeTab === TAB.SAVED && <SavedPins account={account} />}
     </div>
   );

@@ -1,12 +1,13 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import AccountDetailsPage from "./AccountDetailsPage";
-import { withQueryClient } from "@/lib/testing-utils/misc";
+import { mockIntersectionObserver, withQueryClient } from "@/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
+  CREATED_PINS_URL,
 } from "@/lib/testing-utils/mockAPIResponses";
-import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
+import { API_URL_ACCOUNT_DETAILS, API_URL_CREATED_PINS } from "@/lib/constants";
 import en from "@/public/locales/en/AccountDetails.json";
 
 const username = "johndoe";
@@ -22,6 +23,7 @@ const renderComponent = () => {
 
 beforeEach(() => {
   fetchMock.resetMocks();
+  mockIntersectionObserver();
 });
 
 it("fetches account details from the correct endpoint", () => {
@@ -36,6 +38,7 @@ it("fetches account details from the correct endpoint", () => {
 
 it("renders account details upon successful fetch", async () => {
   fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_ACCOUNT_DETAILS]);
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[CREATED_PINS_URL]);
 
   renderComponent();
 
