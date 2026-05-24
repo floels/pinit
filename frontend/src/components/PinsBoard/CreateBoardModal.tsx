@@ -63,42 +63,52 @@ const CreateBoardModal = ({ pin, onClose, onSuccess }: CreateBoardModalProps) =>
     });
   };
 
+  const nameInput = (
+    <div className={styles.inputWrapper}>
+      <label htmlFor="boardName" className={styles.nameLabel}>
+        {t("CREATE_BOARD_NAME_LABEL")}
+      </label>
+      <LabelledTextInput
+        name="boardName"
+        type="text"
+        placeholder={t("CREATE_BOARD_NAME_PLACEHOLDER")}
+        value={boardName}
+        onChange={handleNameChange}
+        autoComplete="off"
+        data-testid="create-board-name-input"
+      />
+      {errorMessage && (
+        <p className={styles.errorMessage} data-testid="create-board-error">
+          {errorMessage}
+        </p>
+      )}
+    </div>
+  );
+
+  const submitButtonText = isSubmitting
+    ? t("CREATE_BOARD_SUBMITTING_BUTTON_TEXT")
+    : t("CREATE_BOARD_SUBMIT_BUTTON_TEXT");
+
+  const submitButton = (
+    <div className={styles.footer}>
+      <button
+        type="submit"
+        className={styles.submitButton}
+        disabled={isSubmitting || !boardName.trim()}
+        data-testid="create-board-submit-button"
+      >
+        {submitButtonText}
+      </button>
+    </div>
+  );
+
   return (
     <OverlayModal onClose={onClose}>
       <div className={styles.container} data-testid="create-board-modal">
         <h2 className={styles.title}>{t("CREATE_BOARD_MODAL_TITLE")}</h2>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.inputWrapper}>
-            <label htmlFor="boardName" className={styles.nameLabel}>
-              {t("CREATE_BOARD_NAME_LABEL")}
-            </label>
-            <LabelledTextInput
-              name="boardName"
-              type="text"
-              placeholder={t("CREATE_BOARD_NAME_PLACEHOLDER")}
-              value={boardName}
-              onChange={handleNameChange}
-              autoComplete="off"
-              data-testid="create-board-name-input"
-            />
-            {errorMessage && (
-              <p className={styles.errorMessage} data-testid="create-board-error">
-                {errorMessage}
-              </p>
-            )}
-          </div>
-          <div className={styles.footer}>
-            <button
-              type="submit"
-              className={styles.submitButton}
-              disabled={isSubmitting || !boardName.trim()}
-              data-testid="create-board-submit-button"
-            >
-              {isSubmitting
-                ? t("CREATE_BOARD_SUBMITTING_BUTTON_TEXT")
-                : t("CREATE_BOARD_SUBMIT_BUTTON_TEXT")}
-            </button>
-          </div>
+          {nameInput}
+          {submitButton}
         </form>
       </div>
     </OverlayModal>
