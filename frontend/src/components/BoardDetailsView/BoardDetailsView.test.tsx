@@ -26,7 +26,7 @@ it("renders board details", () => {
 
   expect(authorProfilePicture.getAttribute("src")).toBe(board.author.profilePictureURL);
 
-  screen.getByText(`${board.pins.length} ${en.PINS}`);
+  screen.getByText(`${board.pins.length} ${en.PINS_other}`);
 
   const pinThumbnails = screen.getAllByTestId("pin-thumbnail");
 
