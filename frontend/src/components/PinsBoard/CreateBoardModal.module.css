@@ -1,8 +1,9 @@
 .container {
-  padding: 24px 32px 32px;
+  /* padding-top ~20px keeps the title vertically centred with the X button (centre at 36px) */
+  padding: 20px 32px 40px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .title {
@@ -26,7 +27,6 @@
 
 .nameLabel {
   font-size: var(--font-size-200);
-  font-weight: var(--font-weight-semibold);
 }
 
 .errorMessage {
@@ -48,7 +48,7 @@
   border-radius: 12px;
   font-size: var(--font-size-300);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-default);
+  color: var(--color-gray-400);
   background-color: var(--color-background-secondary);
 }
 
