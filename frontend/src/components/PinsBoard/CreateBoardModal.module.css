@@ -1,9 +1,8 @@
 .container {
-  /* padding-top ~20px keeps the title vertically centred with the X button (centre at 36px) */
-  padding: 20px 32px 40px;
+  padding: 20px 32px 48px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 40px;
 }
 
 .title {
@@ -41,7 +40,7 @@
 }
 
 .submitButton {
-  cursor: pointer;
+  cursor: default;
   border: none;
   padding: 0 24px;
   height: 48px;
@@ -53,6 +52,7 @@
 }
 
 .submitButton:not(:disabled) {
+  cursor: pointer;
   background-color: var(--color-background-important);
   color: var(--color-text-inverse);
 }
