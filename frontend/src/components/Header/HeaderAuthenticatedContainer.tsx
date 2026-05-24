@@ -20,6 +20,8 @@ const HeaderAuthenticatedContainer = () => {
     ? accountContext.account.profilePictureURL
     : localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY);
 
+  const initial = accountContext.account?.initial ?? null;
+
   const handleClickAccountOptionsButton = () => {
     setIsAccountOptionsFlyoutOpen(!isAccountOptionsFlyoutOpen);
   };
@@ -45,6 +47,7 @@ const HeaderAuthenticatedContainer = () => {
   return (
     <HeaderAuthenticated
       username={username}
+      initial={initial}
       profilePictureURL={profilePictureURL}
       isAccountOptionsFlyoutOpen={isAccountOptionsFlyoutOpen}
       handleClickAccountOptionsButton={handleClickAccountOptionsButton}

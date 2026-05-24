@@ -10,6 +10,7 @@ import AccountOptionsFlyoutContainer from "./AccountOptionsFlyoutContainer";
 
 type HeaderAuthenticatedProps = {
   username: string | null;
+  initial: string | null;
   profilePictureURL: string | null;
   isAccountOptionsFlyoutOpen: boolean;
   handleClickAccountOptionsButton: () => void;
@@ -18,6 +19,7 @@ type HeaderAuthenticatedProps = {
 
 const HeaderAuthenticated = ({
   username,
+  initial,
   profilePictureURL,
   isAccountOptionsFlyoutOpen,
   handleClickAccountOptionsButton,
@@ -40,7 +42,7 @@ const HeaderAuthenticated = ({
     />
   ) : (
     <div className={styles.profileLinkBadge}>
-      <FontAwesomeIcon icon={faUser} data-testid="profile-link-icon" />
+      {initial || <FontAwesomeIcon icon={faUser} data-testid="profile-link-icon" />}
     </div>
   );
 
