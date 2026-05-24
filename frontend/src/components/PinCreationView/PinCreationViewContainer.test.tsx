@@ -15,6 +15,13 @@ import { FetchMock } from "jest-fetch-mock";
 import { ToastContainer } from "react-toastify";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useBlocker: jest.fn(),
+}));
+
+import { useBlocker } from "react-router-dom";
+
 const mockImageFile = new File(["mockImage"], "MockImage.png", {
   type: "image/png",
 });
@@ -54,8 +61,11 @@ const setupMocksForSuccessfulFlow = () => {
   fetchMock.mockOnce(MOCK_API_RESPONSES[API_URL_CREATE_PIN], { status: 201 });
 };
 
+const mockUseBlocker = useBlocker as jest.Mock;
+
 beforeEach(() => {
   fetchMock.resetMocks();
+  mockUseBlocker.mockReturnValue({ state: "unblocked" });
 });
 
 it("renders header, have input fields disabled, and not render submit button initially", () => {
@@ -227,4 +237,59 @@ it("displays error toast in case of KO response upon posting", async () => {
   // Assert loading state was deactivated:
   expect(submitButton).toHaveTextContent(en.PUBLISH);
   expect(screen.queryByTestId("pin-creation-loading-overlay")).toBeNull();
+});
+
+it("does not show unsaved changes modal when blocker is unblocked", () => {
+  mockUseBlocker.mockReturnValue({ state: "unblocked" });
+
+  renderComponent();
+
+  expect(screen.queryByTestId("overlay-modal")).toBeNull();
+});
+
+it("shows unsaved changes modal when navigation is blocked", () => {
+  mockUseBlocker.mockReturnValue({
+    state: "blocked",
+    proceed: jest.fn(),
+    reset: jest.fn(),
+  });
+
+  renderComponent();
+
+  screen.getByText(en.UNSAVED_CHANGES_MODAL_TITLE);
+  screen.getByText(en.UNSAVED_CHANGES_MODAL_MESSAGE);
+  screen.getByTestId("unsaved-changes-modal-leave-button");
+  screen.getByTestId("unsaved-changes-modal-stay-button");
+});
+
+it("calls blocker.proceed when clicking 'Leave' in unsaved changes modal", async () => {
+  const mockProceed = jest.fn();
+
+  mockUseBlocker.mockReturnValue({
+    state: "blocked",
+    proceed: mockProceed,
+    reset: jest.fn(),
+  });
+
+  renderComponent();
+
+  await userEvent.click(screen.getByTestId("unsaved-changes-modal-leave-button"));
+
+  expect(mockProceed).toHaveBeenCalledTimes(1);
+});
+
+it("calls blocker.reset when clicking 'Stay' in unsaved changes modal", async () => {
+  const mockReset = jest.fn();
+
+  mockUseBlocker.mockReturnValue({
+    state: "blocked",
+    proceed: jest.fn(),
+    reset: mockReset,
+  });
+
+  renderComponent();
+
+  await userEvent.click(screen.getByTestId("unsaved-changes-modal-stay-button"));
+
+  expect(mockReset).toHaveBeenCalledTimes(1);
 });

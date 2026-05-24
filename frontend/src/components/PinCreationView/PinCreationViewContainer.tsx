@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useBlocker } from "react-router-dom";
 import { API_URL_CREATE_PIN, API_URL_PIN_IMAGE_UPLOAD_URL } from "@/lib/constants";
 import { useFetchWithAuth } from "@/lib/hooks/useFetchWithAuth";
 import { toast } from "react-toastify";
@@ -29,6 +30,20 @@ const PinCreationViewContainer = () => {
   const [isPosting, setIsPosting] = useState(false);
 
   const hasDroppedFile = Boolean(pinImageFile);
+
+  const blocker = useBlocker(hasDroppedFile);
+
+  useEffect(() => {
+    if (!hasDroppedFile) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasDroppedFile]);
 
   const handleFileDropped = (file: File) => {
     setPinImageFile(file);
@@ -161,6 +176,9 @@ const PinCreationViewContainer = () => {
       handleClickDeleteImage={handleClickDeleteImage}
       handleInputChange={handleInputChange}
       handleSubmit={handleSubmit}
+      showUnsavedChangesModal={blocker.state === "blocked"}
+      onConfirmLeave={blocker.proceed ?? (() => {})}
+      onCancelLeave={blocker.reset ?? (() => {})}
     />
   );
 };

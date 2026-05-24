@@ -11,5 +11,9 @@
   "PUBLISHING": "Publishing",
   "ERROR_POSTING_PIN": "An error occurred while trying to publish your Pin. Please try again.",
   "PIN_PUBLISHED": "Your Pin has been published!",
-  "VIEW": "View"
+  "VIEW": "View",
+  "UNSAVED_CHANGES_MODAL_TITLE": "Leave this page?",
+  "UNSAVED_CHANGES_MODAL_MESSAGE": "Your changes will be lost if you leave.",
+  "UNSAVED_CHANGES_MODAL_STAY": "Stay",
+  "UNSAVED_CHANGES_MODAL_LEAVE": "Leave"
 }
