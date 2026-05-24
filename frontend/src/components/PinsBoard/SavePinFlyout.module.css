@@ -47,8 +47,8 @@
 }
 
 .createBoardButton {
-  width: calc(100% + 24px); /* stretch to cancel the parent's 12px side padding */
-  margin-left: -12px;
+  align-self: stretch; /* override align-items: center so margins work correctly */
+  margin: 0 -12px; /* bleed into the container's 12px side padding */
   background-color: var(--color-background-secondary);
   border: none;
   border-radius: 0 0 var(--border-radius-container) var(--border-radius-container);
