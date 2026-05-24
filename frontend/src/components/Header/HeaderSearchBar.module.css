@@ -36,6 +36,8 @@
   height: 48px;
   width: 48px;
   border-radius: 50%;
+  border: none;
+  background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;

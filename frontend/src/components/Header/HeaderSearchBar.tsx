@@ -58,6 +58,10 @@ const HeaderSearchBar = ({
     };
   }, []);
 
+  const placeholder = isInputFocused
+    ? t("PLACEHOLDER_SEARCH_FOCUSED")
+    : t("PLACEHOLDER_SEARCH");
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -81,7 +85,7 @@ const HeaderSearchBar = ({
         autoComplete="off"
         autoCorrect="off"
         className={styles.searchInput}
-        placeholder={t("PLACEHOLDER_SEARCH")}
+        placeholder={placeholder}
         onChange={onInputChange}
         onFocus={onInputFocus}
         onBlur={onInputBlur}
@@ -89,7 +93,7 @@ const HeaderSearchBar = ({
       />
       <button
         className={classNames(styles.clearIconContainer, {
-          [styles.clearIconContainerHidden]: !isInputFocused,
+          [styles.clearIconContainerHidden]: !inputValue,
         })}
         onClick={onClickClearIcon}
         data-testid="clear-icon"

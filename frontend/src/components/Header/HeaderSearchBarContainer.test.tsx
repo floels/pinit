@@ -94,6 +94,38 @@ it("hides search icon when input gets focus", async () => {
   expect(screen.queryByTestId("search-icon")).toBeNull();
 });
 
+it("changes placeholder to 'Try a title or description' when input is focused", async () => {
+  renderComponent();
+
+  const searchInput = screen.getByTestId("search-bar-input");
+
+  expect(searchInput).toHaveAttribute("placeholder", "Search");
+
+  await clickSearchInput();
+
+  expect(searchInput).toHaveAttribute("placeholder", "Try a title or description");
+});
+
+it("hides clear icon when input is focused but empty", async () => {
+  renderComponent();
+
+  await clickSearchInput();
+
+  expect(screen.getByTestId("clear-icon")).toHaveClass("clearIconContainerHidden");
+});
+
+it("shows clear icon only when input has a value", async () => {
+  renderComponent();
+
+  await clickSearchInput();
+
+  expect(screen.getByTestId("clear-icon")).toHaveClass("clearIconContainerHidden");
+
+  await userEvent.type(screen.getByTestId("search-bar-input"), "a");
+
+  expect(screen.getByTestId("clear-icon")).not.toHaveClass("clearIconContainerHidden");
+});
+
 it("displays search suggestions with search term as first suggestion", async () => {
   fetchMock.mockOnceIf(
     `${API_URL_SEARCH_SUGGESTIONS}?search=foo`,
