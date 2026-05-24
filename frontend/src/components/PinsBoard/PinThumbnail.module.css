@@ -117,7 +117,7 @@
   color: var(--color-text-inverse);
   font-size: var(--font-size-100);
   box-shadow: var(--box-shadow-elevation-floating);
-  z-index: 10;
+  z-index: 1;
   pointer-events: none;
   white-space: nowrap;
 }
@@ -137,7 +137,7 @@
   background-color: var(--color-white);
   border-radius: var(--border-radius-container);
   box-shadow: var(--box-shadow-elevation-floating);
-  z-index: 20;
+  z-index: 2;
   min-width: 180px;
   padding: 8px;
   box-sizing: border-box;

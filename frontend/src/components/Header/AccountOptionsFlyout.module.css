@@ -8,7 +8,7 @@
   padding: 8px;
   box-sizing: border-box;
   background-color: var(--color-white);
-  z-index: 10; /* so it appears above page content */
+  z-index: var(--z-index-above-content);
 }
 
 .currentlyInLabel {

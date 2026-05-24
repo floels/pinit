@@ -55,6 +55,18 @@
 
   --header-height: 80px;
   --sidebar-width: 72px;
+
+  /* Z-index scale — global stacking layers, from lowest to highest.
+     Use these variables whenever an element needs to participate in the
+     root stacking context. For z-indices that are local to a component's
+     own stacking context (e.g. a spinner inside a modal), use small
+     literal values (1, 2, …) instead. */
+  --z-index-above-content: 10;  /* dropdowns, flyouts, tooltips */
+  --z-index-search-overlay: 20; /* search-bar focus backdrop */
+  --z-index-search-bar: 30;     /* search bar, above its own backdrop */
+  --z-index-sidebar: 50;        /* fixed sidebar nav */
+  --z-index-modal: 100;         /* full-screen modals and loading panels */
+  --z-index-loading: 200;       /* full-page loading overlay (topmost) */
 }
 
 body {
@@ -64,8 +76,7 @@ body {
 }
 
 main {
-  position: relative; /* because child <HeaderSearchBarFocusedOverlay />
-  will have 'position: absolute;' */
+  position: relative;
 }
 
 /* https://fkhadra.github.io/react-toastify/how-to-style#override-existing-css-classes */
