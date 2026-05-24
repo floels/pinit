@@ -1,6 +1,7 @@
 import {
   API_URL_ACCOUNT_DETAILS,
   API_URL_BOARD_DETAILS,
+  API_URL_CREATE_BOARD,
   API_URL_CREATE_PIN,
   API_URL_MY_ACCOUNT_DETAILS,
   API_URL_OBTAIN_TOKEN,
@@ -101,6 +102,11 @@ export const MOCK_API_RESPONSES_JSON = {
   [API_URL_SAVE_PIN]: {
     board_id: "000000000000000001",
     pin_id: "000000000000000001",
+  },
+  [API_URL_CREATE_BOARD]: {
+    unique_id: "000000000000000003",
+    name: "New Board",
+    slug: "new-board",
   },
   [API_URL_SEARCH]: {
     results: Array.from({ length: 50 }, (_, index) => ({

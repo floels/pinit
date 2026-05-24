@@ -36,13 +36,13 @@
 .closeButton {
   cursor: pointer;
   border: none;
-  border-radius: 50%;
+  border-radius: 8px;
   padding: 0;
-  height: 40px;
-  width: 40px;
+  height: 32px;
+  width: 32px;
   background-color: transparent;
 }
 
 .closeButton:hover {
-  background-color: var(--color-background-secondary);
+  background-color: var(--color-gray-100);
 }

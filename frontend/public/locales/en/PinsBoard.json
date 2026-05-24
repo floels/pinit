@@ -9,5 +9,14 @@
   "SAVE_IN_BOARD_BUTTON_TEXT": "Save",
   "PIN_SAVE_ERROR_MESSAGE": "An error occurred while attempting to save this pin.",
   "MORE_ACTIONS_TOOLTIP": "More actions",
-  "DOWNLOAD_IMAGE_BUTTON_TEXT": "Download image"
+  "DOWNLOAD_IMAGE_BUTTON_TEXT": "Download image",
+  "CREATE_BOARD_BUTTON_TEXT": "Create board",
+  "CREATE_BOARD_MODAL_TITLE": "Create board",
+  "CREATE_BOARD_NAME_LABEL": "Name",
+  "CREATE_BOARD_NAME_PLACEHOLDER": "Add a title, like \"DIY\" or \"Recipes\"",
+  "CREATE_BOARD_SUBMIT_BUTTON_TEXT": "Create",
+  "CREATE_BOARD_SUBMITTING_BUTTON_TEXT": "Creating",
+  "CREATE_BOARD_SUCCESS_MESSAGE": "Board created!",
+  "CREATE_BOARD_VIEW_LINK": "View",
+  "CREATE_BOARD_ERROR_MESSAGE": "An error occurred while trying to create this board. Please try again."
 }

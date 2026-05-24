@@ -7,9 +7,12 @@ import {
 } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import PinThumbnailContainer from "./PinThumbnailContainer";
-import { AccountContext } from "@/contexts/accountContext";
+import { AccountContext, AccountContextType } from "@/contexts/accountContext";
+import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";
+import { useState } from "react";
 import userEvent from "@testing-library/user-event";
 import {
+  API_URL_CREATE_BOARD,
   API_URL_MY_ACCOUNT_DETAILS,
   API_URL_PIN_SUGGESTIONS,
   API_URL_SAVE_PIN,
@@ -63,6 +66,24 @@ const renderComponent = () => {
       </AccountContext.Provider>
     </MemoryRouter>,
   );
+};
+
+const StatefulWrapper = () => {
+  const [currentAccount, setCurrentAccount] = useState<AccountWithPrivateDetails | null>(account);
+  const accountContext: AccountContextType = { account: currentAccount, setAccount: setCurrentAccount };
+
+  return (
+    <MemoryRouter>
+      <AccountContext.Provider value={accountContext}>
+        <ToastContainer />
+        <PinThumbnailContainer pin={pin} isInFirstColumn={false} isInLastColumn={false} />
+      </AccountContext.Provider>
+    </MemoryRouter>
+  );
+};
+
+const renderComponentWithState = () => {
+  render(<StatefulWrapper />);
 };
 
 it("displays 'Save' button only upon hover", () => {
@@ -261,4 +282,107 @@ it("clicking 'Download image' closes the dropdown", async () => {
   await userEvent.click(screen.getByTestId("pin-thumbnail-download-button"));
 
   expect(screen.queryByTestId("pin-thumbnail-download-button")).toBeNull();
+});
+
+it("displays 'Create board' button in flyout", async () => {
+  renderComponent();
+
+  await clickSaveButton();
+
+  screen.getByTestId("save-pin-flyout-create-board-button");
+  screen.getByText(en.CREATE_BOARD_BUTTON_TEXT);
+});
+
+it("clicking 'Create board' closes flyout and opens create board modal", async () => {
+  renderComponent();
+
+  await clickSaveButton();
+  screen.getByTestId("save-pin-flyout-board-buttons");
+
+  await userEvent.click(screen.getByTestId("save-pin-flyout-create-board-button"));
+
+  expect(screen.queryByTestId("save-pin-flyout-board-buttons")).toBeNull();
+  screen.getByTestId("create-board-modal");
+});
+
+it("closing create board modal dismisses it", async () => {
+  renderComponent();
+
+  await clickSaveButton();
+  await userEvent.click(screen.getByTestId("save-pin-flyout-create-board-button"));
+  screen.getByTestId("create-board-modal");
+
+  await userEvent.click(screen.getByTestId("overlay-modal-close-button"));
+
+  expect(screen.queryByTestId("create-board-modal")).toBeNull();
+});
+
+it("successfully creating a board shows success toast with view link", async () => {
+  renderComponent();
+
+  await clickSaveButton();
+  await userEvent.click(screen.getByTestId("save-pin-flyout-create-board-button"));
+
+  const nameInput = screen.getByTestId("create-board-name-input");
+  await userEvent.type(nameInput, "New Board");
+
+  fetchMock.mockOnceIf(
+    API_URL_CREATE_BOARD,
+    MOCK_API_RESPONSES[API_URL_CREATE_BOARD],
+    { status: 201 },
+  );
+
+  await userEvent.click(screen.getByTestId("create-board-submit-button"));
+
+  await waitFor(() => {
+    expect(screen.queryByTestId("create-board-modal")).toBeNull();
+    screen.getByTestId("board-created-toast-message");
+    screen.getByTestId("board-created-toast-view-link");
+  });
+});
+
+it("failed board creation shows error message in modal", async () => {
+  renderComponent();
+
+  await clickSaveButton();
+  await userEvent.click(screen.getByTestId("save-pin-flyout-create-board-button"));
+
+  const nameInput = screen.getByTestId("create-board-name-input");
+  await userEvent.type(nameInput, "New Board");
+
+  fetchMock.mockOnceIf(API_URL_CREATE_BOARD, "{}", { status: 409 });
+
+  await userEvent.click(screen.getByTestId("create-board-submit-button"));
+
+  await waitFor(() => {
+    screen.getByTestId("create-board-error");
+    screen.getByText(en.CREATE_BOARD_ERROR_MESSAGE);
+  });
+});
+
+it("new board is added to the flyout board list after creation", async () => {
+  renderComponentWithState();
+
+  await clickSaveButton();
+  await userEvent.click(screen.getByTestId("save-pin-flyout-create-board-button"));
+
+  await userEvent.type(screen.getByTestId("create-board-name-input"), "New Board");
+
+  fetchMock.mockOnceIf(
+    API_URL_CREATE_BOARD,
+    MOCK_API_RESPONSES[API_URL_CREATE_BOARD],
+    { status: 201 },
+  );
+
+  await userEvent.click(screen.getByTestId("create-board-submit-button"));
+
+  await waitFor(() => {
+    expect(screen.queryByTestId("create-board-modal")).toBeNull();
+  });
+
+  await clickSaveButton();
+
+  const boardButtonsContainer = screen.getByTestId("save-pin-flyout-board-buttons");
+  const boardButtons = Array.from(boardButtonsContainer.childNodes);
+  expect(boardButtons).toHaveLength(3);
 });

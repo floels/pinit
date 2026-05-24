@@ -42,7 +42,7 @@ const BoardDetailsView = ({ board }: { board: BoardWithFullDetails }) => {
       {displayAuthorProfilePicture}
       <div className={styles.pins}>
         <div className={styles.pinsHeader}>
-          {numberOfPins} {t("PINS")}
+          {numberOfPins} {t("PINS", { count: numberOfPins })}
         </div>
         <PinThumbnailsGrid pins={pins} />
       </div>

@@ -13,6 +13,7 @@ type SavePinFlyoutContainerProps = {
     boardIndex: number;
   }) => () => void;
   handleClickOutOfSaveFlyout: () => void;
+  handleClickCreateBoard: () => void;
   openerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
@@ -23,6 +24,7 @@ const SavePinFlyoutContainer = ({
   isSaving,
   getClickHandlerForBoard,
   handleClickOutOfSaveFlyout,
+  handleClickCreateBoard,
   openerRef,
 }: SavePinFlyoutContainerProps) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -53,6 +55,7 @@ const SavePinFlyoutContainer = ({
       boards={boards}
       isSaving={isSaving}
       getClickHandlerForBoard={getClickHandlerForBoard}
+      onClickCreateBoard={handleClickCreateBoard}
       ref={ref}
     />
   );

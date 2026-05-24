@@ -29,17 +29,46 @@
 .title {
   margin-top: 24px;
   margin-bottom: 24px;
-  font-size: var(--font-size-300);
+  font-size: var(--font-size-400);
   font-weight: var(--font-weight-semibold);
 }
 
 .boardsLabelAndList {
   width: 100%;
-  padding-bottom: 20px;
 }
 
 .boardsLabel {
+  display: block;
   font-size: var(--font-size-100);
+}
+
+.boardsScrollable {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.createBoardButton {
+  align-self: stretch; /* override align-items: center so margins work correctly */
+  margin: 0 -12px; /* bleed into the container's 12px side padding */
+  background-color: transparent;
+  border: none;
+  border-radius: 0 0 var(--border-radius-container) var(--border-radius-container);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-default);
+}
+
+.createBoardButton:hover {
+  background-color: var(--color-background-secondary);
+}
+
+.createBoardIcon {
+  font-size: var(--font-size-400);
 }
 
 .loadingOverlay {

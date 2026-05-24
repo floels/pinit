@@ -3,7 +3,7 @@ import SaveInBoardButtonContainer from "./SaveInBoardButtonContainer";
 import styles from "./SavePinFlyout.module.css";
 import { BoardWithBasicDetails } from "@/lib/types/frontendTypes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { forwardRef } from "react";
 import classNames from "classnames";
 
@@ -17,6 +17,7 @@ type SavePinFlyoutProps = {
   }: {
     boardIndex: number;
   }) => () => void;
+  onClickCreateBoard: () => void;
 };
 
 const SavePinFlyout = forwardRef<HTMLDivElement, SavePinFlyoutProps>(
@@ -27,6 +28,7 @@ const SavePinFlyout = forwardRef<HTMLDivElement, SavePinFlyoutProps>(
       boards,
       isSaving,
       getClickHandlerForBoard,
+      onClickCreateBoard,
     } = props;
 
     const { t } = useTranslation("PinsBoard");
@@ -54,12 +56,24 @@ const SavePinFlyout = forwardRef<HTMLDivElement, SavePinFlyoutProps>(
         <span className={styles.title}>
           {t("PIN_THUMBNAIL_SAVE_FLYOUT_TITLE")}
         </span>
-        <div className={styles.boardsLabelAndList}>
-          <span className={styles.boardsLabel}>
-            {t("PIN_THUMBNAIL_SAVE_FLYOUT_BOARDS_LABEL")}
-          </span>
-          {saveInBoardButtons}
-        </div>
+        {boards.length > 0 && (
+          <div className={styles.boardsLabelAndList}>
+            <span className={styles.boardsLabel}>
+              {t("PIN_THUMBNAIL_SAVE_FLYOUT_BOARDS_LABEL")}
+            </span>
+            <div className={styles.boardsScrollable}>
+              {saveInBoardButtons}
+            </div>
+          </div>
+        )}
+        <button
+          className={styles.createBoardButton}
+          onClick={onClickCreateBoard}
+          data-testid="save-pin-flyout-create-board-button"
+        >
+          <FontAwesomeIcon icon={faPlus} className={styles.createBoardIcon} />
+          {t("CREATE_BOARD_BUTTON_TEXT")}
+        </button>
         {isSaving && (
           <div className={styles.loadingOverlay}>
             <FontAwesomeIcon

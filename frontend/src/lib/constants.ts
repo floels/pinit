@@ -13,6 +13,7 @@ export const API_URL_SEARCH_SUGGESTIONS = `${API_BASE_URL}/search-suggestions/`;
 export const API_URL_PIN_IMAGE_UPLOAD_URL = `${API_BASE_URL}/pin-image-upload-url/`;
 export const API_URL_CREATE_PIN = `${API_BASE_URL}/create-pin/`;
 export const API_URL_SAVE_PIN = `${API_BASE_URL}/save-pin/`;
+export const API_URL_CREATE_BOARD = `${API_BASE_URL}/boards/`;
 
 export const API_URL_PIN_DETAILS = `${API_BASE_URL}/pins`;
 export const API_URL_ACCOUNT_DETAILS = `${API_BASE_URL}/accounts`;

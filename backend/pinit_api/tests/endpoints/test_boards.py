@@ -1,12 +1,92 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-from ..testing_utils.factories import BoardFactory, PinFactory
+from ..testing_utils.factories import AccountFactory, BoardFactory, PinFactory
+from pinit_api.models import Board
 from pinit_api.lib.constants import (
     ERROR_CODE_ACCOUNT_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
+    ERROR_CODE_BOARD_NAME_REQUIRED,
+    ERROR_CODE_PIN_NOT_FOUND,
 )
 
 NUMBER_PINS = 5
+
+
+class CreateBoardViewTests(APITestCase):
+    def setUp(self):
+        self.account = AccountFactory()
+        self.pin = PinFactory()
+        self.client.force_authenticate(user=self.account.owner)
+
+    def post(self, payload=None):
+        return self.client.post("/api/boards/", payload, format="json")
+
+    def test_happy_path_with_pin(self):
+        response = self.post({"name": "My Travel Board", "pin_id": self.pin.unique_id})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.json()
+        self.assertEqual(data["name"], "My Travel Board")
+        self.assertEqual(data["slug"], "my-travel-board")
+        self.assertIn("unique_id", data)
+
+        board = Board.objects.get(unique_id=data["unique_id"])
+        self.assertIn(self.pin, board.pins.all())
+
+    def test_happy_path_without_pin(self):
+        response = self.post({"name": "Empty Board"})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.json()
+        self.assertEqual(data["name"], "Empty Board")
+        self.assertEqual(data["slug"], "empty-board")
+
+    def test_missing_name_returns_400(self):
+        response = self.post({"pin_id": self.pin.unique_id})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json(), {"errors": [{"code": ERROR_CODE_BOARD_NAME_REQUIRED}]}
+        )
+
+    def test_blank_name_returns_400(self):
+        response = self.post({"name": "   "})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json(), {"errors": [{"code": ERROR_CODE_BOARD_NAME_REQUIRED}]}
+        )
+
+    def test_slug_conflict_auto_suffixed(self):
+        BoardFactory(author=self.account, name="My Board", slug="my-board")
+
+        response = self.post({"name": "My Board"})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()["slug"], "my-board-2")
+
+    def test_slug_conflict_auto_suffixed_multiple_times(self):
+        BoardFactory(author=self.account, name="My Board", slug="my-board")
+        BoardFactory(author=self.account, name="My Board 2", slug="my-board-2")
+
+        response = self.post({"name": "My Board"})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()["slug"], "my-board-3")
+
+    def test_nonexistent_pin_returns_404(self):
+        response = self.post({"name": "My Board", "pin_id": "000000000000000"})
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            response.json(), {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]}
+        )
+
+    def test_unauthenticated_returns_401(self):
+        self.client.force_authenticate(user=None)
+        response = self.post({"name": "My Board"})
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class GetBoardDetailsViewTests(APITestCase):
