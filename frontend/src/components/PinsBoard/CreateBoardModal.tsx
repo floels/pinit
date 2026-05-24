@@ -69,10 +69,12 @@ const CreateBoardModal = ({ pin, onClose, onSuccess }: CreateBoardModalProps) =>
         <h2 className={styles.title}>{t("CREATE_BOARD_MODAL_TITLE")}</h2>
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputWrapper}>
+            <label htmlFor="boardName" className={styles.nameLabel}>
+              {t("CREATE_BOARD_NAME_LABEL")}
+            </label>
             <LabelledTextInput
               name="boardName"
               type="text"
-              label={t("CREATE_BOARD_NAME_LABEL")}
               placeholder={t("CREATE_BOARD_NAME_PLACEHOLDER")}
               value={boardName}
               onChange={handleNameChange}

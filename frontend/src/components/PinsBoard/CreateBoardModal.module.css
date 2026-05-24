@@ -6,7 +6,7 @@
 }
 
 .title {
-  font-size: var(--font-size-400);
+  font-size: var(--font-size-500);
   font-weight: var(--font-weight-semibold);
   text-align: center;
   margin: 0;
@@ -22,6 +22,11 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.nameLabel {
+  font-size: var(--font-size-200);
+  font-weight: var(--font-weight-semibold);
 }
 
 .errorMessage {
@@ -40,14 +45,14 @@
   border: none;
   padding: 0 24px;
   height: 48px;
-  border-radius: 24px;
+  border-radius: 12px;
   font-size: var(--font-size-300);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-inverse);
-  background-color: var(--color-background-important);
+  color: var(--color-text-default);
+  background-color: var(--color-background-secondary);
 }
 
-.submitButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.submitButton:not(:disabled) {
+  background-color: var(--color-background-important);
+  color: var(--color-text-inverse);
 }
