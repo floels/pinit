@@ -4,5 +4,5 @@
   bottom: 0;
   width: 100%;
   background-color: var(--color-background-gray-transparent);
-  z-index: 5;
+  z-index: var(--z-index-search-overlay);
 }
