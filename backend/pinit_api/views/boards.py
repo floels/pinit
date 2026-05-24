@@ -1,13 +1,64 @@
-from ..models import Board, Account
+from django.utils import timezone
+from django.utils.text import slugify
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
-from ..serializers.board_serializers import BoardWithFullDetailsReadSerializer
+from ..models import Board, Account, Pin
+from ..serializers.board_serializers import (
+    BoardReadBaseSerializer,
+    BoardWithFullDetailsReadSerializer,
+)
 from pinit_api.lib.constants import (
     ERROR_CODE_ACCOUNT_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
+    ERROR_CODE_BOARD_NAME_REQUIRED,
+    ERROR_CODE_BOARD_ALREADY_EXISTS,
+    ERROR_CODE_PIN_NOT_FOUND,
 )
+
+
+class CreateBoardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        name = (request.data.get("name") or "").strip()
+        pin_unique_id = request.data.get("pin_id")
+
+        if not name:
+            return Response(
+                {"errors": [{"code": ERROR_CODE_BOARD_NAME_REQUIRED}]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        author = request.user.account
+        slug = slugify(name)
+
+        if Board.objects.filter(author=author, slug=slug).exists():
+            return Response(
+                {"errors": [{"code": ERROR_CODE_BOARD_ALREADY_EXISTS}]},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        pin = None
+        if pin_unique_id:
+            pin = Pin.objects.filter(unique_id=pin_unique_id).first()
+            if not pin:
+                return Response(
+                    {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        board = Board.objects.create(name=name, slug=slug, author=author)
+
+        if pin:
+            board.pins.add(pin)
+            board.last_pin_added_at = timezone.now()
+            board.save()
+
+        serializer = BoardReadBaseSerializer(board)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class GetBoardDetailsView(APIView):

@@ -33,6 +33,7 @@ type PinThumbnailProps = {
   handleClickMoreActions: (event: React.MouseEvent<HTMLButtonElement>) => void;
   handleClickOutOfMoreActionsDropdown: () => void;
   handleDownloadImage: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  handleClickCreateBoard: () => void;
 };
 
 const PinThumbnail = ({
@@ -53,6 +54,7 @@ const PinThumbnail = ({
   handleClickMoreActions,
   handleClickOutOfMoreActionsDropdown,
   handleDownloadImage,
+  handleClickCreateBoard,
 }: PinThumbnailProps) => {
   const { t } = useTranslation("PinsBoard");
 
@@ -151,6 +153,7 @@ const PinThumbnail = ({
           isSaving={isSaving}
           getClickHandlerForBoard={getClickHandlerForBoard}
           handleClickOutOfSaveFlyout={handleClickOutOfSaveFlyout}
+          handleClickCreateBoard={handleClickCreateBoard}
           openerRef={saveButtonRef}
         />
       )}

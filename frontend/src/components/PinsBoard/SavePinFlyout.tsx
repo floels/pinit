@@ -17,6 +17,7 @@ type SavePinFlyoutProps = {
   }: {
     boardIndex: number;
   }) => () => void;
+  onClickCreateBoard: () => void;
 };
 
 const SavePinFlyout = forwardRef<HTMLDivElement, SavePinFlyoutProps>(
@@ -27,6 +28,7 @@ const SavePinFlyout = forwardRef<HTMLDivElement, SavePinFlyoutProps>(
       boards,
       isSaving,
       getClickHandlerForBoard,
+      onClickCreateBoard,
     } = props;
 
     const { t } = useTranslation("PinsBoard");
@@ -58,7 +60,18 @@ const SavePinFlyout = forwardRef<HTMLDivElement, SavePinFlyoutProps>(
           <span className={styles.boardsLabel}>
             {t("PIN_THUMBNAIL_SAVE_FLYOUT_BOARDS_LABEL")}
           </span>
-          {saveInBoardButtons}
+          <div className={styles.boardsScrollable}>
+            {saveInBoardButtons}
+          </div>
+        </div>
+        <div className={styles.createBoardButtonContainer}>
+          <button
+            className={styles.createBoardButton}
+            onClick={onClickCreateBoard}
+            data-testid="save-pin-flyout-create-board-button"
+          >
+            {t("CREATE_BOARD_BUTTON_TEXT")}
+          </button>
         </div>
         {isSaving && (
           <div className={styles.loadingOverlay}>

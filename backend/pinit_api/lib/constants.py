@@ -12,6 +12,8 @@ ERROR_CODE_INVALID_PIN_IMAGE_FILE_EXTENSION = "invalid_pin_image_file_extension"
 ERROR_CODE_INVALID_PIN_IMAGE_FILE_KEY = "invalid_pin_image_file_key"
 ERROR_CODE_INVALID_REFRESH_TOKEN = "invalid_refresh_token"
 ERROR_CODE_MISSING_REFRESH_TOKEN = "missing_refresh_token"
+ERROR_CODE_BOARD_NAME_REQUIRED = "board_name_required"
+ERROR_CODE_BOARD_ALREADY_EXISTS = "board_already_exists"
 
 # Cookie names
 REFRESH_TOKEN_COOKIE_NAME = "refreshToken"

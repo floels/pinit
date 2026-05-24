@@ -70,6 +70,11 @@ urlpatterns = [
         name="get_search_suggestions",
     ),
     path(
+        "boards/",
+        boards.CreateBoardView.as_view(),
+        name="create_board",
+    ),
+    path(
         "boards/<str:username>/<str:slug>/",
         boards.GetBoardDetailsView.as_view(),
         name="get_board_details",

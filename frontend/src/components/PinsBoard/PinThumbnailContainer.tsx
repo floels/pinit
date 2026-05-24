@@ -1,10 +1,13 @@
 import { useAccountContext } from "@/contexts/accountContext";
 import { toast } from "react-toastify";
 import {
+  Board,
   BoardWithBasicDetails,
   PinWithAuthorDetails,
 } from "@/lib/types/frontendTypes";
 import PinThumbnail from "./PinThumbnail";
+import CreateBoardModal from "./CreateBoardModal";
+import BoardCreatedToastMessage from "./BoardCreatedToastMessage";
 import { useEffect, useState } from "react";
 import { API_URL_SAVE_PIN } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
@@ -23,7 +26,7 @@ const PinThumbnailContainer = ({
 }: PinThumbnailContainerProps) => {
   const { t } = useTranslation("PinsBoard");
 
-  const { account } = useAccountContext();
+  const { account, setAccount } = useAccountContext();
 
   const boards = account?.boards || [];
 
@@ -35,6 +38,7 @@ const PinThumbnailContainer = ({
   >(null);
   const [isMoreActionsDropdownOpen, setIsMoreActionsDropdownOpen] =
     useState(false);
+  const [isCreateBoardModalOpen, setIsCreateBoardModalOpen] = useState(false);
 
   const handleMouseEnterImage = () => {
     setIsImageHovered(true);
@@ -154,6 +158,36 @@ const PinThumbnailContainer = ({
     });
   };
 
+  const handleClickCreateBoard = () => {
+    setIsSaveFlyoutOpen(false);
+    setIsCreateBoardModalOpen(true);
+  };
+
+  const handleBoardCreated = (board: Board) => {
+    setIsCreateBoardModalOpen(false);
+
+    if (account) {
+      const newBoard: BoardWithBasicDetails = {
+        ...board,
+        firstImageURLs: [pin.imageURL],
+      };
+      setAccount({
+        ...account,
+        boards: [...account.boards, newBoard],
+      });
+    }
+
+    toast.success(
+      () => (
+        <BoardCreatedToastMessage
+          username={account!.username}
+          slug={board.slug}
+        />
+      ),
+      { toastId: "toast-board-created" },
+    );
+  };
+
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
 
@@ -163,25 +197,35 @@ const PinThumbnailContainer = ({
   }, []);
 
   return (
-    <PinThumbnail
-      pin={pin}
-      isInFirstColumn={isInFirstColumn}
-      isInLastColumn={isInLastColumn}
-      boards={boards}
-      isImageHovered={isImageHovered}
-      isSaveFlyoutOpen={isSaveFlyoutOpen}
-      isSaving={isSaving}
-      indexBoardWhereJustSaved={indexBoardWhereJustSaved}
-      isMoreActionsDropdownOpen={isMoreActionsDropdownOpen}
-      handleMouseEnterImage={handleMouseEnterImage}
-      handleMouseLeaveImage={handleMouseLeaveImage}
-      handleClickSave={handleClickSave}
-      getClickHandlerForBoard={getClickHandlerForBoard}
-      handleClickOutOfSaveFlyout={handleClickOutOfSaveFlyout}
-      handleClickMoreActions={handleClickMoreActions}
-      handleClickOutOfMoreActionsDropdown={handleClickOutOfMoreActionsDropdown}
-      handleDownloadImage={handleDownloadImage}
-    />
+    <>
+      <PinThumbnail
+        pin={pin}
+        isInFirstColumn={isInFirstColumn}
+        isInLastColumn={isInLastColumn}
+        boards={boards}
+        isImageHovered={isImageHovered}
+        isSaveFlyoutOpen={isSaveFlyoutOpen}
+        isSaving={isSaving}
+        indexBoardWhereJustSaved={indexBoardWhereJustSaved}
+        isMoreActionsDropdownOpen={isMoreActionsDropdownOpen}
+        handleMouseEnterImage={handleMouseEnterImage}
+        handleMouseLeaveImage={handleMouseLeaveImage}
+        handleClickSave={handleClickSave}
+        getClickHandlerForBoard={getClickHandlerForBoard}
+        handleClickOutOfSaveFlyout={handleClickOutOfSaveFlyout}
+        handleClickMoreActions={handleClickMoreActions}
+        handleClickOutOfMoreActionsDropdown={handleClickOutOfMoreActionsDropdown}
+        handleDownloadImage={handleDownloadImage}
+        handleClickCreateBoard={handleClickCreateBoard}
+      />
+      {isCreateBoardModalOpen && (
+        <CreateBoardModal
+          pin={pin}
+          onClose={() => setIsCreateBoardModalOpen(false)}
+          onSuccess={handleBoardCreated}
+        />
+      )}
+    </>
   );
 };
 
