@@ -1,3 +1,4 @@
 .authenticatedContentArea {
   margin-left: var(--sidebar-width);
+  position: relative;
 }

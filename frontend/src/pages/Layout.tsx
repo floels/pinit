@@ -22,10 +22,10 @@ const Layout = () => {
           <>
             <SidebarAuthenticated />
             <div className={styles.authenticatedContentArea}>
+              <HeaderSearchBarFocusedOverlay />
               <HeaderAuthenticatedContainer />
               <main>
                 {isAuthInitialized ? <Outlet /> : <SpinnerBelowHeader />}
-                <HeaderSearchBarFocusedOverlay />
               </main>
             </div>
           </>
