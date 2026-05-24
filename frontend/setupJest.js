@@ -46,17 +46,30 @@ const lookupKey = (nsObj, key) => {
   return typeof result === "string" ? result : key;
 };
 
+const resolvePlural = (nsObj, key, count) => {
+  const suffix = count === 1 ? "_one" : "_other";
+  const pluralResult = lookupKey(nsObj, `${key}${suffix}`);
+  return pluralResult !== `${key}${suffix}` ? pluralResult : lookupKey(nsObj, key);
+};
+
 const mockT = (defaultNsObj) => (key, opts) => {
+  let nsObj = defaultNsObj || allNamespaces["Common"];
+
   if (typeof key === "string" && key.includes(":")) {
     const colonIdx = key.indexOf(":");
     const ns = key.slice(0, colonIdx);
     const rest = key.slice(colonIdx + 1);
-    return lookupKey(allNamespaces[ns] || {}, rest);
+    nsObj = allNamespaces[ns] || {};
+    key = rest;
+  } else if (opts && opts.ns) {
+    nsObj = allNamespaces[opts.ns] || {};
   }
-  if (opts && opts.ns) {
-    return lookupKey(allNamespaces[opts.ns] || {}, key);
+
+  if (opts && opts.count !== undefined) {
+    return resolvePlural(nsObj, key, opts.count);
   }
-  return lookupKey(defaultNsObj || allNamespaces["Common"], key);
+
+  return lookupKey(nsObj, key);
 };
 
 // Mock react-i18next — resolves keys against the actual namespace JSON files
