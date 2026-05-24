@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useBlocker } from "react-router-dom";
 import { API_URL_CREATE_PIN, API_URL_PIN_IMAGE_UPLOAD_URL } from "@/lib/constants";
 import { useFetchWithAuth } from "@/lib/hooks/useFetchWithAuth";
@@ -32,18 +32,6 @@ const PinCreationViewContainer = () => {
   const hasDroppedFile = Boolean(pinImageFile);
 
   const blocker = useBlocker(hasDroppedFile);
-
-  useEffect(() => {
-    if (!hasDroppedFile) return;
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasDroppedFile]);
 
   const handleFileDropped = (file: File) => {
     setPinImageFile(file);
