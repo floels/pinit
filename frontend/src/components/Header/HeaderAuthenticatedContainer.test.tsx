@@ -125,3 +125,14 @@ but username was found in local storage`, () => {
 
   screen.getByTestId("profile-link-icon");
 });
+
+it("displays the initial from account context in the profile badge when no profile picture is set", () => {
+  renderComponent({
+    account: { ...defaultAccount, profilePictureURL: null },
+  });
+
+  expect(screen.getByTestId("profile-link")).toHaveTextContent(
+    defaultAccount.initial,
+  );
+  expect(screen.queryByTestId("profile-link-icon")).toBeNull();
+});
