@@ -3,7 +3,7 @@ import SaveInBoardButtonContainer from "./SaveInBoardButtonContainer";
 import styles from "./SavePinFlyout.module.css";
 import { BoardWithBasicDetails } from "@/lib/types/frontendTypes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { forwardRef } from "react";
 import classNames from "classnames";
 
@@ -64,15 +64,14 @@ const SavePinFlyout = forwardRef<HTMLDivElement, SavePinFlyoutProps>(
             {saveInBoardButtons}
           </div>
         </div>
-        <div className={styles.createBoardButtonContainer}>
-          <button
-            className={styles.createBoardButton}
-            onClick={onClickCreateBoard}
-            data-testid="save-pin-flyout-create-board-button"
-          >
-            {t("CREATE_BOARD_BUTTON_TEXT")}
-          </button>
-        </div>
+        <button
+          className={styles.createBoardButton}
+          onClick={onClickCreateBoard}
+          data-testid="save-pin-flyout-create-board-button"
+        >
+          <FontAwesomeIcon icon={faPlus} className={styles.createBoardIcon} />
+          {t("CREATE_BOARD_BUTTON_TEXT")}
+        </button>
         {isSaving && (
           <div className={styles.loadingOverlay}>
             <FontAwesomeIcon

@@ -284,7 +284,7 @@ it("clicking 'Download image' closes the dropdown", async () => {
   expect(screen.queryByTestId("pin-thumbnail-download-button")).toBeNull();
 });
 
-it("displays '+ Create board' button in flyout", async () => {
+it("displays 'Create board' button in flyout", async () => {
   renderComponent();
 
   await clickSaveButton();
@@ -293,7 +293,7 @@ it("displays '+ Create board' button in flyout", async () => {
   screen.getByText(en.CREATE_BOARD_BUTTON_TEXT);
 });
 
-it("clicking '+ Create board' closes flyout and opens create board modal", async () => {
+it("clicking 'Create board' closes flyout and opens create board modal", async () => {
   renderComponent();
 
   await clickSaveButton();

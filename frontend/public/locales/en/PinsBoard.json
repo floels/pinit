@@ -10,7 +10,7 @@
   "PIN_SAVE_ERROR_MESSAGE": "An error occurred while attempting to save this pin.",
   "MORE_ACTIONS_TOOLTIP": "More actions",
   "DOWNLOAD_IMAGE_BUTTON_TEXT": "Download image",
-  "CREATE_BOARD_BUTTON_TEXT": "+ Create board",
+  "CREATE_BOARD_BUTTON_TEXT": "Create board",
   "CREATE_BOARD_MODAL_TITLE": "Create board",
   "CREATE_BOARD_NAME_LABEL": "Name",
   "CREATE_BOARD_NAME_PLACEHOLDER": "Add a name",
