@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 from ..testing_utils.factories import AccountFactory, BoardFactory, PinFactory
+from pinit_api.models import Board
 from pinit_api.lib.constants import (
     ERROR_CODE_ACCOUNT_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
@@ -29,6 +30,9 @@ class CreateBoardViewTests(APITestCase):
         self.assertEqual(data["name"], "My Travel Board")
         self.assertEqual(data["slug"], "my-travel-board")
         self.assertIn("unique_id", data)
+
+        board = Board.objects.get(unique_id=data["unique_id"])
+        self.assertIn(self.pin, board.pins.all())
 
     def test_happy_path_without_pin(self):
         response = self.post({"name": "Empty Board"})
@@ -77,15 +81,6 @@ class CreateBoardViewTests(APITestCase):
         response = self.post({"name": "My Board"})
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_pin_is_saved_in_new_board(self):
-        response = self.post({"name": "My Board", "pin_id": self.pin.unique_id})
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        from pinit_api.models import Board
-
-        board = Board.objects.get(unique_id=response.json()["unique_id"])
-        self.assertIn(self.pin, board.pins.all())
 
 
 class GetBoardDetailsViewTests(APITestCase):
