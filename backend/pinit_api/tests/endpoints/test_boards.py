@@ -6,7 +6,6 @@ from pinit_api.lib.constants import (
     ERROR_CODE_ACCOUNT_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
     ERROR_CODE_BOARD_NAME_REQUIRED,
-    ERROR_CODE_BOARD_ALREADY_EXISTS,
     ERROR_CODE_PIN_NOT_FOUND,
 )
 
@@ -58,15 +57,22 @@ class CreateBoardViewTests(APITestCase):
             response.json(), {"errors": [{"code": ERROR_CODE_BOARD_NAME_REQUIRED}]}
         )
 
-    def test_duplicate_board_name_returns_409(self):
+    def test_slug_conflict_auto_suffixed(self):
         BoardFactory(author=self.account, name="My Board", slug="my-board")
 
         response = self.post({"name": "My Board"})
 
-        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
-        self.assertEqual(
-            response.json(), {"errors": [{"code": ERROR_CODE_BOARD_ALREADY_EXISTS}]}
-        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()["slug"], "my-board-2")
+
+    def test_slug_conflict_auto_suffixed_multiple_times(self):
+        BoardFactory(author=self.account, name="My Board", slug="my-board")
+        BoardFactory(author=self.account, name="My Board 2", slug="my-board-2")
+
+        response = self.post({"name": "My Board"})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()["slug"], "my-board-3")
 
     def test_nonexistent_pin_returns_404(self):
         response = self.post({"name": "My Board", "pin_id": "000000000000000"})

@@ -14,7 +14,6 @@ from pinit_api.lib.constants import (
     ERROR_CODE_ACCOUNT_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
     ERROR_CODE_BOARD_NAME_REQUIRED,
-    ERROR_CODE_BOARD_ALREADY_EXISTS,
     ERROR_CODE_PIN_NOT_FOUND,
 )
 
@@ -33,13 +32,7 @@ class CreateBoardView(APIView):
             )
 
         author = request.user.account
-        slug = slugify(name)
-
-        if Board.objects.filter(author=author, slug=slug).exists():
-            return Response(
-                {"errors": [{"code": ERROR_CODE_BOARD_ALREADY_EXISTS}]},
-                status=status.HTTP_409_CONFLICT,
-            )
+        slug = self.get_unique_slug(base_slug=slugify(name), author=author)
 
         pin = None
         if pin_unique_id:
@@ -59,6 +52,14 @@ class CreateBoardView(APIView):
 
         serializer = BoardReadBaseSerializer(board)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get_unique_slug(self, base_slug, author):
+        slug = base_slug
+        counter = 2
+        while Board.objects.filter(author=author, slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        return slug
 
 
 class GetBoardDetailsView(APIView):
