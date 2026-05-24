@@ -56,14 +56,16 @@ const SavePinFlyout = forwardRef<HTMLDivElement, SavePinFlyoutProps>(
         <span className={styles.title}>
           {t("PIN_THUMBNAIL_SAVE_FLYOUT_TITLE")}
         </span>
-        <div className={styles.boardsLabelAndList}>
-          <span className={styles.boardsLabel}>
-            {t("PIN_THUMBNAIL_SAVE_FLYOUT_BOARDS_LABEL")}
-          </span>
-          <div className={styles.boardsScrollable}>
-            {saveInBoardButtons}
+        {boards.length > 0 && (
+          <div className={styles.boardsLabelAndList}>
+            <span className={styles.boardsLabel}>
+              {t("PIN_THUMBNAIL_SAVE_FLYOUT_BOARDS_LABEL")}
+            </span>
+            <div className={styles.boardsScrollable}>
+              {saveInBoardButtons}
+            </div>
           </div>
-        </div>
+        )}
         <button
           className={styles.createBoardButton}
           onClick={onClickCreateBoard}

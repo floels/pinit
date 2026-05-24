@@ -49,7 +49,7 @@
 .createBoardButton {
   align-self: stretch; /* override align-items: center so margins work correctly */
   margin: 0 -12px; /* bleed into the container's 12px side padding */
-  background-color: var(--color-background-secondary);
+  background-color: transparent;
   border: none;
   border-radius: 0 0 var(--border-radius-container) var(--border-radius-container);
   cursor: pointer;
@@ -63,8 +63,7 @@
 }
 
 .createBoardButton:hover {
-  background-color: var(--color-background-secondary-hover, var(--color-background-secondary));
-  filter: brightness(0.95);
+  background-color: var(--color-background-secondary);
 }
 
 .createBoardIcon {
