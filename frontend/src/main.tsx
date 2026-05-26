@@ -11,15 +11,18 @@ config.autoAddCss = false;
 import { AuthContextProvider } from "@/contexts/authContext";
 import { AccountContextProvider } from "@/contexts/accountContext";
 import QueryClientProvider from "@/components/QueryClientProvider/QueryClientProvider";
+import ErrorBoundary from "@/components/ErrorBoundary/ErrorBoundary";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider>
-      <AuthContextProvider>
-        <AccountContextProvider>
-          <RouterProvider router={router} />
-        </AccountContextProvider>
-      </AuthContextProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider>
+        <AuthContextProvider>
+          <AccountContextProvider>
+            <RouterProvider router={router} />
+          </AccountContextProvider>
+        </AuthContextProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );

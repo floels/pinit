@@ -32,7 +32,7 @@ export const useAccountDetails = () => {
     }
   };
 
-  const { data } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ["fetchMyAccountDetails", accessToken],
     queryFn: fetchAccountDetails,
     enabled: isAuthInitialized && !!accessToken,
@@ -45,4 +45,6 @@ export const useAccountDetails = () => {
       persistAccountData(data);
     }
   }, [data]);
+
+  return { isError };
 };

@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import { useAuthContext } from "@/contexts/authContext";
 import { useAccountDetails } from "@/lib/hooks/useAccountDetails";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
@@ -11,8 +13,17 @@ import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 import styles from "./Layout.module.css";
 
 const Layout = () => {
+  const { t } = useTranslation();
   const { accessToken, isAuthInitialized } = useAuthContext();
-  useAccountDetails();
+  const { isError: isAccountDetailsFetchError } = useAccountDetails();
+
+  useEffect(() => {
+    if (isAccountDetailsFetchError) {
+      toast.warn(t("ACCOUNT_DETAILS_FETCH_ERROR"), {
+        toastId: "toast-account-details-fetch-error",
+      });
+    }
+  }, [isAccountDetailsFetchError]);
 
   return (
     <>

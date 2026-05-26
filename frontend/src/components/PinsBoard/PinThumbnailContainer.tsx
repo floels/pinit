@@ -75,17 +75,23 @@ const PinThumbnailContainer = ({
     event.preventDefault();
     setIsMoreActionsDropdownOpen(false);
 
-    const response = await fetch(pin.imageURL);
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    const extension = blob.type.split("/")[1] || "jpg";
-    link.download = `${pin.title || `pin-${pin.id}`}.${extension}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      const response = await fetch(pin.imageURL);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const extension = blob.type.split("/")[1] || "jpg";
+      link.download = `${pin.title || `pin-${pin.id}`}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.warn(t("DOWNLOAD_IMAGE_ERROR_MESSAGE"), {
+        toastId: "toast-download-image-error",
+      });
+    }
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {

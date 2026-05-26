@@ -30,8 +30,10 @@ beforeEach(() => {
   mockSetAccount.mockClear();
 });
 
+let hookResult: ReturnType<typeof useAccountDetails> = { isError: false };
+
 const TestComponent = () => {
-  useAccountDetails();
+  hookResult = useAccountDetails();
   return null;
 };
 
@@ -135,4 +137,14 @@ it("does not fetch account details when not authenticated", async () => {
   await new Promise((resolve) => setTimeout(resolve, 50));
 
   expect(fetch).not.toHaveBeenCalled();
+});
+
+it("returns isError: true when fetch fails", async () => {
+  fetchMock.mockResponseOnce("{}", { status: 500 });
+
+  renderHookInContext();
+
+  await waitFor(() => {
+    expect(hookResult.isError).toBe(true);
+  });
 });
