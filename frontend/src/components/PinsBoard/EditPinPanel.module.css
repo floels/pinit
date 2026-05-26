@@ -112,13 +112,14 @@
   border-radius: 8px;
   font-size: var(--font-size-300);
   color: var(--color-text-default);
-  background-color: var(--color-background-secondary);
+  background-color: var(--color-white);
   box-sizing: border-box;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-gray-500);
+  border-color: #0084ff;
+  box-shadow: var(--box-shadow-focused-input);
 }
 
 .textarea {
@@ -150,7 +151,7 @@
 
 .footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 16px 24px;
   gap: 12px;

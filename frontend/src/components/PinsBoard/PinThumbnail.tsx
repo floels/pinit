@@ -170,7 +170,6 @@ const PinThumbnail = ({
           className={styles.imageContainer}
           data-testid="pin-thumbnail-image"
         >
-          {/* We don't use Next's Image component because we don't know the image's display height in advance. */}
           <img
             alt={
               pin.title
