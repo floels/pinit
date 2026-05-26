@@ -61,7 +61,7 @@
      root stacking context. For z-indices that are local to a component's
      own stacking context (e.g. a spinner inside a modal), use small
      literal values (1, 2, …) instead. */
-  --z-index-above-content: 10;  /* dropdowns, flyouts, tooltips */
+  --z-index-above-content: 60;  /* dropdowns, flyouts, tooltips — must exceed sidebar */
   --z-index-search-overlay: 20; /* search-bar focus backdrop */
   --z-index-search-bar: 30;     /* search bar, above its own backdrop */
   --z-index-sidebar: 50;        /* fixed sidebar nav */
