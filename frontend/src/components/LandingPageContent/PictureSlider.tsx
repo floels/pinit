@@ -8,6 +8,7 @@ import PictureSliderPictures, {
   PICTURE_SLIDER_TOPICS,
   TopicsType,
 } from "./PictureSliderPictures";
+import { IMAGE_FADE_LAG_MS, IMAGE_URLS } from "./PictureSliderPicture";
 
 type PictureSliderProps = {
   onClickSeeBelow: () => void;
@@ -16,44 +17,41 @@ type PictureSliderProps = {
 type PictureSliderState = {
   previousStep: number | null;
   currentStep: number;
-  timeSinceLastStepChange: number;
 };
 
 export const TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS = 5000;
-const DURATION_TRANSITION_OUT_HEADERS_MS = 1500;
-export const TIMER_TIME_STEP_MS = 50;
+
+// How long to keep previousStep set after a transition, so exit animations finish.
+// Covers the longest possible cascade: (numImages - 1) * lag + CSS transition duration.
+const NUM_IMAGES_PER_TOPIC = IMAGE_URLS.FOOD.length;
+const CSS_TRANSITION_DURATION_MS = 700;
+const PREVIOUS_STEP_CLEAR_DELAY_MS =
+  (NUM_IMAGES_PER_TOPIC - 1) * IMAGE_FADE_LAG_MS + CSS_TRANSITION_DURATION_MS;
 
 const computeHeaderClasses = ({
   topic,
   topicIndex,
   currentStep,
   previousStep,
-  timeSinceLastStepChange,
 }: {
   topic: TopicsType;
   topicIndex: number;
   currentStep: number;
   previousStep: number | null;
-  timeSinceLastStepChange: number;
 }) => {
-  const isHeaderOfCurrentStep = topicIndex === currentStep - 1; // '-1' because
-  // 'topicIndex' is zero-based, while 'currentStep' is one-based
-
+  const isHeaderOfCurrentStep = topicIndex === currentStep - 1;
   const isHeaderOfPreviousStep =
-    previousStep && topicIndex === previousStep - 1;
+    previousStep !== null && topicIndex === previousStep - 1;
 
   const defaultClasses = `${styles.topicHeader} ${
     styles[`topicHeader${_.capitalize(topic)}`]
-  }`; // e.g. "topicHeader topicHeaderFood"
+  }`;
 
   if (isHeaderOfCurrentStep) {
     return `${defaultClasses} ${styles.topicHeaderVisible} ${styles.topicHeaderCenterPosition}`;
   }
 
-  if (
-    isHeaderOfPreviousStep &&
-    timeSinceLastStepChange < DURATION_TRANSITION_OUT_HEADERS_MS
-  ) {
+  if (isHeaderOfPreviousStep) {
     return `${defaultClasses} ${styles.topicHeaderTopPosition}`;
   }
 
@@ -67,14 +65,13 @@ const computeStepperButtonClasses = ({
   stepperButtonIndex: number;
   currentStep: number;
 }) => {
-  const isStepperButtonOfCurrentStep = stepperButtonIndex === currentStep - 1; // '-1' because
-  // 'stepperButtonIndex' is zero-based, while 'currentStep' is one-based
+  const isStepperButtonOfCurrentStep = stepperButtonIndex === currentStep - 1;
 
   const correspondingTopic = PICTURE_SLIDER_TOPICS[stepperButtonIndex];
 
   const defaultClasses = `${styles.stepperButton} ${
     styles[`stepperButton${_.capitalize(correspondingTopic)}`]
-  }`; // e.g. "stepperButton stepperButtonFood"
+  }`;
 
   if (isStepperButtonOfCurrentStep) {
     return `${defaultClasses} ${styles.stepperButtonActive}`;
@@ -95,43 +92,37 @@ const PictureSlider = ({ onClickSeeBelow }: PictureSliderProps) => {
   const [state, setState] = useState<PictureSliderState>({
     previousStep: null,
     currentStep: 1,
-    timeSinceLastStepChange: 0,
   });
 
+  // Restart the auto-advance interval whenever the step changes, so a manual
+  // click always resets the 5-second countdown.
   useEffect(() => {
     const timerId = setInterval(() => {
-      setState((prevState) => {
-        const newTimeSinceLastStepChange =
-          prevState.timeSinceLastStepChange + TIMER_TIME_STEP_MS;
+      setState((prevState) => ({
+        previousStep: prevState.currentStep,
+        currentStep:
+          prevState.currentStep === 4 ? 1 : prevState.currentStep + 1,
+      }));
+    }, TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS);
 
-        if (
-          newTimeSinceLastStepChange >= TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS
-        ) {
-          return {
-            previousStep: prevState.currentStep,
-            currentStep:
-              prevState.currentStep === 4 ? 1 : prevState.currentStep + 1,
-            timeSinceLastStepChange: 0,
-          };
-        }
+    return () => clearInterval(timerId);
+  }, [state.currentStep]);
 
-        return {
-          ...prevState,
-          timeSinceLastStepChange: newTimeSinceLastStepChange,
-        };
-      });
-    }, TIMER_TIME_STEP_MS);
+  // Clear previousStep once all exit animations have had time to finish.
+  useEffect(() => {
+    if (state.previousStep === null) return;
 
-    return () => {
-      clearInterval(timerId);
-    };
-  }, []);
+    const timerId = setTimeout(() => {
+      setState((s) => ({ ...s, previousStep: null }));
+    }, PREVIOUS_STEP_CLEAR_DELAY_MS);
+
+    return () => clearTimeout(timerId);
+  }, [state.currentStep]);
 
   const moveToStep = (newStep: number) => {
     setState((prevState) => ({
       previousStep: prevState.currentStep,
       currentStep: newStep,
-      timeSinceLastStepChange: 0,
     }));
   };
 

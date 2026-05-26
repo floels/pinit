@@ -1,7 +1,6 @@
 import styles from "./PictureSliderPicture.module.css";
 import { PICTURE_SLIDER_TOPICS } from "./PictureSliderPictures";
 
-const DURATION_TRANSITION_OUT_IMAGES_MS = 1500;
 export const IMAGE_FADE_LAG_MS = 100;
 
 export const IMAGE_URLS = {
@@ -72,41 +71,30 @@ type PictureSliderPictureProps = {
   imageIndex: number;
   currentStep: number;
   previousStep: number | null;
-  timeSinceLastStepChange: number;
 };
 
 const computeImageClasses = ({
   topicIndex,
   currentStep,
   previousStep,
-  laggedTimeSinceLastStepChange,
 }: {
   topicIndex: number;
   currentStep: number;
   previousStep: number | null;
-  laggedTimeSinceLastStepChange: number;
 }) => {
-  const topicIsActive = topicIndex === currentStep - 1; // '-1' because
-  // 'topicIndex' is zero-based, while 'currentStep' is one-based
-  const topicWasJustActive = previousStep && topicIndex === previousStep - 1;
+  const topicIsActive = topicIndex === currentStep - 1;
+  const topicWasJustActive =
+    previousStep !== null && topicIndex === previousStep - 1;
 
-  if (topicIsActive && laggedTimeSinceLastStepChange > 0) {
+  if (topicIsActive) {
     return `${styles.image} ${styles.imageVisible} ${styles.imageCenterPosition}`;
   }
 
-  if (topicWasJustActive && laggedTimeSinceLastStepChange < 0) {
-    return `${styles.image} ${styles.imageVisible} ${styles.imageCenterPosition}`;
-  }
-
-  if (
-    topicWasJustActive &&
-    laggedTimeSinceLastStepChange < DURATION_TRANSITION_OUT_IMAGES_MS
-  ) {
-    // Topic was just active, lag is elapsed but not the transition => send to top
+  if (topicWasJustActive) {
     return `${styles.image} ${styles.imageTopPosition}`;
   }
 
-  return styles.image; // default case (where image is invisible and translated to its bottom position, see CSS file)
+  return styles.image;
 };
 
 const PictureSliderPicture = ({
@@ -114,19 +102,11 @@ const PictureSliderPicture = ({
   imageIndex,
   currentStep,
   previousStep,
-  timeSinceLastStepChange,
 }: PictureSliderPictureProps) => {
-  // We introduce a lag on the 'timeSinceLastStepChange', which
-  // depends on the 'imageIndex'. This is to create the visual effect
-  // whereby pictures fade out in a cascading fashion.
-  const laggedTimeSinceLastStepChange =
-    timeSinceLastStepChange - imageIndex * IMAGE_FADE_LAG_MS;
-
   const imageClasses = computeImageClasses({
     topicIndex,
     currentStep,
     previousStep,
-    laggedTimeSinceLastStepChange,
   });
 
   const topicLabel = PICTURE_SLIDER_TOPICS[topicIndex];
@@ -138,6 +118,7 @@ const PictureSliderPicture = ({
         src={imageURL}
         alt={topicLabel.toLowerCase()}
         className={imageClasses}
+        style={{ transitionDelay: `${imageIndex * IMAGE_FADE_LAG_MS}ms` }}
         data-testid={`picture-slider-picture-${topicLabel.toLowerCase()}-${imageIndex}`}
       />
     </div>

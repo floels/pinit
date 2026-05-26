@@ -6,7 +6,6 @@
 
 import { act, render, screen } from "@testing-library/react";
 import PictureSlider, {
-  TIMER_TIME_STEP_MS,
   TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS,
 } from "./PictureSlider";
 import { IMAGE_FADE_LAG_MS, IMAGE_URLS } from "./PictureSliderPicture";
@@ -75,11 +74,8 @@ should show proper step in stepper, and
 should style elements with proper color`, () => {
   renderComponent();
 
-  const timeRightAfterFirstAutomaticTopicTransition =
-    TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS + TIMER_TIME_STEP_MS;
-
   act(() => {
-    jest.advanceTimersByTime(timeRightAfterFirstAutomaticTopicTransition);
+    jest.advanceTimersByTime(TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS);
   });
 
   // Check that only second header is visible
@@ -121,97 +117,48 @@ should style elements with proper color`, () => {
   expect(carret.className).toEqual("carret carretHome");
 });
 
-it("after the first timer step, should show only first image of first topic in central position", () => {
+it("on initial render, all images of first topic are visible with cascade transition delays", () => {
   renderComponent();
 
-  act(() => {
-    jest.advanceTimersByTime(TIMER_TIME_STEP_MS);
-  });
+  for (let i = 0; i < NUMBER_IMAGES_PER_TOPIC; i++) {
+    const picture = screen.getByTestId(`picture-slider-picture-food-${i}`);
+    expect(picture.className).toEqual("image imageVisible imageCenterPosition");
+    expect(picture).toHaveStyle(`transition-delay: ${i * IMAGE_FADE_LAG_MS}ms`);
+  }
 
-  const firstPictureFirstTopic = screen.getByTestId(
-    "picture-slider-picture-food-0",
-  );
-  expect(firstPictureFirstTopic.className).toEqual(
-    "image imageVisible imageCenterPosition",
-  );
-
+  // All other topic images are in the default (invisible) state
   PICTURE_SLIDER_TOPICS.forEach((topic) => {
+    if (topic === TopicsType.FOOD) return;
     for (let i = 0; i < NUMBER_IMAGES_PER_TOPIC; i++) {
-      if (topic === "FOOD" && i === 0) continue;
-
-      const pictureTestId = `picture-slider-picture-${topic.toLowerCase()}-${i}`;
-      const picture = screen.getByTestId(pictureTestId);
-
-      expect(picture.className).toEqual("image"); // i.e. no 'imageVisible' or other class
+      const picture = screen.getByTestId(
+        `picture-slider-picture-${topic.toLowerCase()}-${i}`,
+      );
+      expect(picture.className).toEqual("image");
     }
   });
 });
 
-it("after the first image lag interval, should show only first two images of first topic", () => {
+it(`after the first automatic topic transition, all images of the first topic should be in
+top position and all images of the second topic should be visible`, () => {
   renderComponent();
 
-  const timeRightAfterImageFadeLag = IMAGE_FADE_LAG_MS + TIMER_TIME_STEP_MS;
-
   act(() => {
-    jest.advanceTimersByTime(timeRightAfterImageFadeLag);
+    jest.advanceTimersByTime(TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS);
   });
 
-  const firstPictureFirstTopic = screen.getByTestId(
-    "picture-slider-picture-food-0",
-  );
-  expect(firstPictureFirstTopic.className).toEqual(
-    "image imageVisible imageCenterPosition",
-  );
+  // All FOOD images are exiting (top position) with cascade delays
+  for (let i = 0; i < NUMBER_IMAGES_PER_TOPIC; i++) {
+    const picture = screen.getByTestId(`picture-slider-picture-food-${i}`);
+    expect(picture.className).toEqual("image imageTopPosition");
+    expect(picture).toHaveStyle(`transition-delay: ${i * IMAGE_FADE_LAG_MS}ms`);
+  }
 
-  const secondPictureFirstTopic = screen.getByTestId(
-    "picture-slider-picture-food-1",
-  );
-  expect(secondPictureFirstTopic.className).toEqual(
-    "image imageVisible imageCenterPosition",
-  );
-
-  PICTURE_SLIDER_TOPICS.forEach((topic) => {
-    for (let i = 0; i < NUMBER_IMAGES_PER_TOPIC; i++) {
-      if (topic === "FOOD" && i <= 1) continue;
-
-      const pictureTestId = `picture-slider-picture-${topic.toLowerCase()}-${i}`;
-      const picture = screen.getByTestId(pictureTestId);
-
-      expect(picture.className).toEqual("image"); // i.e. no 'imageVisible' or other class
-    }
-  });
-});
-
-it(`after the first automatic topic transition, should no longer show first image
-of first topic, should still show second image of first topic, 
-and should show first image of second topic`, () => {
-  renderComponent();
-
-  const timeRightAfterFirstAutomaticTopicTransition =
-    TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS + TIMER_TIME_STEP_MS;
-
-  act(() => {
-    jest.advanceTimersByTime(timeRightAfterFirstAutomaticTopicTransition);
-  });
-
-  const firstPictureFirstTopic = screen.getByTestId(
-    "picture-slider-picture-food-0",
-  );
-  expect(firstPictureFirstTopic.className).toEqual("image imageTopPosition");
-
-  const secondPictureFirstTopic = screen.getByTestId(
-    "picture-slider-picture-food-1",
-  );
-  expect(secondPictureFirstTopic.className).toEqual(
-    "image imageVisible imageCenterPosition",
-  );
-
-  const secondPictureSecondTopic = screen.getByTestId(
-    "picture-slider-picture-home-0",
-  );
-  expect(secondPictureSecondTopic.className).toEqual(
-    "image imageVisible imageCenterPosition",
-  );
+  // All HOME images are entering (visible) with cascade delays
+  for (let i = 0; i < NUMBER_IMAGES_PER_TOPIC; i++) {
+    const picture = screen.getByTestId(`picture-slider-picture-home-${i}`);
+    expect(picture.className).toEqual("image imageVisible imageCenterPosition");
+    expect(picture).toHaveStyle(`transition-delay: ${i * IMAGE_FADE_LAG_MS}ms`);
+  }
 });
 
 it("moves to corresponding step when user clicks stepper button", async () => {
