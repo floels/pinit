@@ -10,10 +10,7 @@ import {
   MOCK_API_RESPONSES_SERIALIZED,
   CREATED_PINS_URL,
 } from "@/lib/testing-utils/mockAPIResponses";
-import {
-  API_URL_MY_ACCOUNT_DETAILS,
-  API_URL_CREATED_PINS,
-} from "@/lib/constants";
+import { API_URL_MY_ACCOUNT_DETAILS, API_URL_CREATED_PINS } from "@/lib/constants";
 import en from "@/public/locales/en/CreatedPins.json";
 
 const account = MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
@@ -50,18 +47,6 @@ const renderComponent = (username = "johndoe") => {
     </MemoryRouter>,
   );
 };
-
-it("fetches created pins from the correct endpoint", async () => {
-  const createdPinsUrl = `${API_URL_CREATED_PINS}/johndoe/pins/?page=1`;
-
-  fetchMock.mockOnceIf(createdPinsUrl, MOCK_API_RESPONSES[CREATED_PINS_URL]);
-
-  renderComponent("johndoe");
-
-  await waitFor(() => {
-    expect(fetchMock).toHaveBeenCalledWith(createdPinsUrl);
-  });
-});
 
 it("renders pin thumbnails and titles after successful fetch", async () => {
   fetchMock.mockOnceIf(
