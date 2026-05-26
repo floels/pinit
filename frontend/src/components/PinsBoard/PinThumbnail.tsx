@@ -127,7 +127,7 @@ const PinThumbnail = ({
 
   const shouldShowImageOverlay = isImageHovered || isSaveFlyoutOpen;
 
-  const belowImageRowContent = isOwnPin ? (
+  const editButton = (
     <button
       className={styles.moreActionsButton}
       onClick={handleClickEdit}
@@ -135,7 +135,9 @@ const PinThumbnail = ({
     >
       <FontAwesomeIcon icon={faPencil} />
     </button>
-  ) : showMoreActions ? (
+  );
+
+  const moreActionsButton = (
     <div
       ref={moreActionsWrapperRef}
       className={`${styles.moreActionsButtonWrapper}${isMoreActionsDropdownOpen ? ` ${styles.dropdownOpen}` : ""}`}
@@ -163,7 +165,14 @@ const PinThumbnail = ({
         </div>
       )}
     </div>
-  ) : null;
+  );
+
+  let belowImageRowContent = null;
+  if (isOwnPin) {
+    belowImageRowContent = editButton;
+  } else if (showMoreActions) {
+    belowImageRowContent = moreActionsButton;
+  }
 
   return (
     <div
