@@ -31,7 +31,7 @@ const PinThumbnailsGrid = ({ pins }: PinThumbnailsGridProps) => {
   const viewportWidth = useViewportWidth();
 
   useEffect(() => {
-    if (viewportWidth) {
+    if (viewportWidth !== undefined) {
       const calculatedColumns = getNumberOfColumns(viewportWidth);
       setNumberOfColumns(calculatedColumns);
     }

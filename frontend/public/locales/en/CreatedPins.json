@@ -1,0 +1,15 @@
+{
+  "ERROR_FETCH_CREATED_PINS": "An error occurred while displaying created pins.",
+  "EMPTY_CREATED_PINS": "No pins created yet.",
+  "EDIT_PANEL_TITLE": "Edit Pin",
+  "EDIT_TITLE_LABEL": "Title",
+  "EDIT_TITLE_PLACEHOLDER": "Add a title",
+  "EDIT_DESCRIPTION_LABEL": "Description",
+  "EDIT_DESCRIPTION_PLACEHOLDER": "Write a description for your Pin",
+  "EDIT_SAVE_BUTTON": "Save",
+  "EDIT_DELETE_BUTTON": "Delete",
+  "EDIT_SAVE_ERROR": "An error occurred while saving this pin.",
+  "EDIT_DELETE_ERROR": "An error occurred while deleting this pin.",
+  "PAGINATION_PREVIOUS": "Previous",
+  "PAGINATION_NEXT": "Next"
+}

@@ -5,7 +5,7 @@ import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
 import { throwIfKO } from "@/lib/utils/fetch";
 import { serializeAccountWithPublicDetails } from "@/lib/utils/serializers";
 import { Response404Error } from "@/lib/customErrors";
-import AccountDetailsView from "@/components/AccountDetailsView/AccountDetailsView";
+import AccountDetailsView from "@/components/AccountDetails/AccountDetails";
 import ErrorView from "@/components/ErrorView/ErrorView";
 import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 

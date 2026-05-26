@@ -8,6 +8,7 @@ import {
 import PinThumbnail from "./PinThumbnail";
 import CreateBoardModal from "./CreateBoardModal";
 import BoardCreatedToastMessage from "./BoardCreatedToastMessage";
+import EditPinPanelContainer from "./EditPinPanelContainer";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSavePin } from "@/lib/hooks/useSavePin";
@@ -16,12 +17,26 @@ type PinThumbnailContainerProps = {
   pin: PinWithAuthorDetails;
   isInFirstColumn: boolean;
   isInLastColumn: boolean;
+  isOwnPin?: boolean;
+  showMoreActions?: boolean;
+  description?: string | null;
+  onPinDeleted?: (pinId: string) => void;
+  onPinUpdated?: (
+    pinId: string,
+    title: string | null,
+    description: string | null,
+  ) => void;
 };
 
 const PinThumbnailContainer = ({
   pin,
   isInFirstColumn,
   isInLastColumn,
+  isOwnPin,
+  showMoreActions = true,
+  description,
+  onPinDeleted,
+  onPinUpdated,
 }: PinThumbnailContainerProps) => {
   const { t } = useTranslation("PinsBoard");
 
@@ -38,6 +53,7 @@ const PinThumbnailContainer = ({
   const [isMoreActionsDropdownOpen, setIsMoreActionsDropdownOpen] =
     useState(false);
   const [isCreateBoardModalOpen, setIsCreateBoardModalOpen] = useState(false);
+  const [isEditPanelOpen, setIsEditPanelOpen] = useState(false);
 
   const handleMouseEnterImage = () => {
     setIsImageHovered(true);
@@ -74,29 +90,29 @@ const PinThumbnailContainer = ({
     event.preventDefault();
     setIsMoreActionsDropdownOpen(false);
 
-    try {
-      const response = await fetch(pin.imageURL);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      const extension = blob.type.split("/")[1] || "jpg";
-      link.download = `${pin.title || `pin-${pin.id}`}.${extension}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch {
-      toast.warn(t("DOWNLOAD_IMAGE_ERROR_MESSAGE"), {
-        toastId: "toast-download-image-error",
-      });
-    }
+    const response = await fetch(pin.imageURL);
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const extension = blob.type.split("/")[1] || "jpg";
+    link.download = `${pin.title || `pin-${pin.id}`}.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleClickEdit = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    setIsEditPanelOpen(true);
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       setIsSaveFlyoutOpen(false);
       setIsMoreActionsDropdownOpen(false);
+      setIsEditPanelOpen(false);
     }
   };
 
@@ -186,6 +202,8 @@ const PinThumbnailContainer = ({
         isSaving={savePinMutation.isPending}
         indexBoardWhereJustSaved={indexBoardWhereJustSaved}
         isMoreActionsDropdownOpen={isMoreActionsDropdownOpen}
+        isOwnPin={isOwnPin}
+        showMoreActions={showMoreActions}
         handleMouseEnterImage={handleMouseEnterImage}
         handleMouseLeaveImage={handleMouseLeaveImage}
         handleClickSave={handleClickSave}
@@ -195,12 +213,27 @@ const PinThumbnailContainer = ({
         handleClickOutOfMoreActionsDropdown={handleClickOutOfMoreActionsDropdown}
         handleDownloadImage={handleDownloadImage}
         handleClickCreateBoard={handleClickCreateBoard}
+        handleClickEdit={handleClickEdit}
       />
       {isCreateBoardModalOpen && (
         <CreateBoardModal
           pin={pin}
           onClose={() => setIsCreateBoardModalOpen(false)}
           onSuccess={handleBoardCreated}
+        />
+      )}
+      {isOwnPin && isEditPanelOpen && (
+        <EditPinPanelContainer
+          pin={{ ...pin, description: description ?? null }}
+          onClose={() => setIsEditPanelOpen(false)}
+          onSave={(title, desc) => {
+            onPinUpdated?.(pin.id, title, desc);
+            setIsEditPanelOpen(false);
+          }}
+          onDelete={() => {
+            onPinDeleted?.(pin.id);
+            setIsEditPanelOpen(false);
+          }}
         />
       )}
     </>

@@ -163,3 +163,13 @@
 .moreActionsDropdownButton:hover {
   background-color: var(--color-background-secondary);
 }
+
+.pinTitle {
+  flex: 1;
+  font-size: var(--font-size-200);
+  font-weight: var(--font-weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 4px;
+}
