@@ -1,4 +1,12 @@
 import { useEffect, useRef } from "react";
+
+export enum FOLD {
+  FIRST = 1,
+  SECOND = 2,
+  THIRD = 3,
+  FOURTH = 4,
+  FIFTH = 5,
+}
 import PictureSlider from "./PictureSlider";
 import styles from "./LandingPageContent.module.css";
 import SecondFold from "./SecondFold";
