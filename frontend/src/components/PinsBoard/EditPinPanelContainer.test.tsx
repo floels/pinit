@@ -81,7 +81,7 @@ it("calls onClose when the X button is clicked", async () => {
 
   await userEvent.click(screen.getByTestId("edit-pin-panel-close-button"));
 
-  expect(mockOnClose).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(mockOnClose).toHaveBeenCalledTimes(1));
 });
 
 it("calls onClose when backdrop is clicked", async () => {
@@ -89,7 +89,7 @@ it("calls onClose when backdrop is clicked", async () => {
 
   await userEvent.click(screen.getByTestId("edit-pin-panel-backdrop"));
 
-  expect(mockOnClose).toHaveBeenCalledTimes(1);
+  await waitFor(() => expect(mockOnClose).toHaveBeenCalledTimes(1));
 });
 
 it("can submit title and description change via PATCH, then calls onSave callback", async () => {

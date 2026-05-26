@@ -175,7 +175,7 @@
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: 50%;
+  border-radius: 8px;
   background-color: var(--color-white);
   color: var(--color-text-default);
   cursor: pointer;

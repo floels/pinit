@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import styles from "./EditPinPanel.module.css";
+
+const CLOSE_ANIMATION_MS = 250;
 
 type EditPinPanelProps = {
   title: string;
@@ -31,22 +34,39 @@ const EditPinPanel = ({
   onClose,
 }: EditPinPanelProps) => {
   const { t } = useTranslation("CreatedPins");
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, CLOSE_ANIMATION_MS);
+  };
 
   const isLoading = isSaving || isDeleting;
+
+  const panelClassName = [styles.panel, isClosing ? styles.panelClosing : null]
+    .filter(Boolean)
+    .join(" ");
+
+  const backdropClassName = [
+    styles.backdrop,
+    isClosing ? styles.backdropClosing : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <>
       <div
-        className={styles.backdrop}
-        onClick={onClose}
+        className={backdropClassName}
+        onClick={handleClose}
         data-testid="edit-pin-panel-backdrop"
       />
-      <div className={styles.panel} data-testid="edit-pin-panel">
+      <div className={panelClassName} data-testid="edit-pin-panel">
         <div className={styles.header}>
           <h2 className={styles.title}>{t("EDIT_PANEL_TITLE")}</h2>
           <button
             className={styles.closeButton}
-            onClick={onClose}
+            onClick={handleClose}
             data-testid="edit-pin-panel-close-button"
           >
             <FontAwesomeIcon icon={faXmark} />
