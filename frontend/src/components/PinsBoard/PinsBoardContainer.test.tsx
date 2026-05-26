@@ -8,17 +8,13 @@ import { mockIntersectionObserver, withQueryClient } from "@/lib/testing-utils/m
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
-  MOCK_API_RESPONSES_SERIALIZED,
 } from "@/lib/testing-utils/mockAPIResponses";
 
-const initialPins =
-  MOCK_API_RESPONSES_SERIALIZED[API_URL_PIN_SUGGESTIONS].results;
-
-const simulateScrollToBottomOfPage = () => {
-  const callback = (global.IntersectionObserver as jest.Mock).mock.calls[1][0]; // here
-  // we pick the second call because a first intersection will be detected upon
-  // initial render, but will not trigger a fetch. It's the second intersection event
-  // that should trigger the fetch.
+const simulateScrollToBottom = async () => {
+  // PinsBoard is only rendered after page 1 has loaded (the container shows
+  // SpinnerBelowHeader while loading), so the board is always non-empty when
+  // the observer is first created. Only one observer exists (index 0).
+  const callback = (global.IntersectionObserver as jest.Mock).mock.calls[0][0];
 
   act(() => {
     callback([{ isIntersecting: true }]);
@@ -26,6 +22,7 @@ const simulateScrollToBottomOfPage = () => {
 };
 
 beforeEach(() => {
+  fetchMock.resetMocks();
   mockIntersectionObserver();
 });
 
@@ -35,7 +32,7 @@ const renderComponent = () => {
       <MemoryRouter>
         <ToastContainer />
         <PinsBoardContainer
-          initialPins={initialPins}
+          queryKey={["pin-suggestions"]}
           fetchPinsAPIRoute={API_URL_PIN_SUGGESTIONS}
         />
       </MemoryRouter>,
@@ -45,46 +42,68 @@ const renderComponent = () => {
 
 it("fetches new thumbnails when user scrolls to bottom", async () => {
   fetchMock.mockOnceIf(
+    API_URL_PIN_SUGGESTIONS,
+    MOCK_API_RESPONSES[API_URL_PIN_SUGGESTIONS],
+  );
+  fetchMock.mockOnceIf(
     `${API_URL_PIN_SUGGESTIONS}?page=2`,
     MOCK_API_RESPONSES[API_URL_PIN_SUGGESTIONS],
   );
 
   renderComponent();
 
-  await simulateScrollToBottomOfPage();
+  await waitFor(() =>
+    expect(screen.getAllByTestId("pin-thumbnail").length).toBeGreaterThan(0),
+  );
+
+  await simulateScrollToBottom();
 
   await waitFor(() => {
     const renderedPinThumbnails = screen.getAllByTestId("pin-thumbnail");
-
     const expectedNumberThumbnails =
-      initialPins.length +
-      MOCK_API_RESPONSES_JSON[API_URL_PIN_SUGGESTIONS].results.length;
-
+      2 * MOCK_API_RESPONSES_JSON[API_URL_PIN_SUGGESTIONS].results.length;
     expect(renderedPinThumbnails).toHaveLength(expectedNumberThumbnails);
   });
 });
 
-it("displays loading spinner while fetching new thumbnails", () => {
-  const eternalPromise = new Promise<Response>(() => {});
-  fetchMock.mockImplementationOnce(() => eternalPromise);
+it("displays loading spinner while fetching new thumbnails", async () => {
+  fetchMock.mockOnceIf(
+    API_URL_PIN_SUGGESTIONS,
+    MOCK_API_RESPONSES[API_URL_PIN_SUGGESTIONS],
+  );
 
   renderComponent();
 
+  await waitFor(() =>
+    expect(screen.getAllByTestId("pin-thumbnail").length).toBeGreaterThan(0),
+  );
+
   expect(screen.queryByTestId("loading-spinner")).toBeNull();
 
-  simulateScrollToBottomOfPage();
+  const eternalPromise = new Promise<Response>(() => {});
+  fetchMock.mockImplementationOnce(() => eternalPromise);
 
-  screen.getByTestId("loading-spinner");
+  await simulateScrollToBottom();
+
+  await waitFor(() => screen.getByTestId("loading-spinner"));
 });
 
 it("displays error message in case of KO response upon new thumbnails fetch", async () => {
+  fetchMock.mockOnceIf(
+    API_URL_PIN_SUGGESTIONS,
+    MOCK_API_RESPONSES[API_URL_PIN_SUGGESTIONS],
+  );
   fetchMock.mockOnceIf(`${API_URL_PIN_SUGGESTIONS}?page=2`, "{}", {
     status: 400,
   });
 
   renderComponent();
 
-  simulateScrollToBottomOfPage();
+  await waitFor(() =>
+    expect(screen.getAllByTestId("pin-thumbnail").length).toBeGreaterThan(0),
+  );
+
+  simulateScrollToBottom();
 
   await waitFor(() => {
     screen.getByText(en.ERROR_DISPLAY_PINS);

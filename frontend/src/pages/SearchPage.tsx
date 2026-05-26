@@ -1,52 +1,20 @@
-import { useTranslation } from "react-i18next";
 import { useSearchParams, Navigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { API_URL_SEARCH } from "@/lib/constants";
-import { throwIfKO } from "@/lib/utils/fetch";
-import { serializePinsWithAuthorDetails } from "@/lib/utils/serializers";
 import PinsBoardContainer from "@/components/PinsBoard/PinsBoardContainer";
-import ErrorView from "@/components/ErrorView/ErrorView";
-import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
 
 const SearchPage = () => {
-  const { t } = useTranslation("PinsSearch");
   const [searchParams] = useSearchParams();
   const searchTerm = searchParams.get("q");
-
-  const fetchSearchResults = async () => {
-    const url = `${API_URL_SEARCH}?q=${searchTerm}`;
-
-    const response = await fetch(url);
-
-    throwIfKO(response);
-
-    const responseData = await response.json();
-
-    return serializePinsWithAuthorDetails(responseData.results);
-  };
-
-  const { data: initialPins, error, isLoading } = useQuery({
-    queryKey: ["search", searchTerm],
-    queryFn: fetchSearchResults,
-    enabled: !!searchTerm,
-  });
 
   if (!searchTerm) {
     return <Navigate to="/" replace />;
   }
 
-  if (isLoading) {
-    return <SpinnerBelowHeader />;
-  }
-
-  if (error) {
-    return <ErrorView message={t("ERROR_FETCH_SEARCH_RESULTS")} />;
-  }
-
   return (
     <PinsBoardContainer
-      initialPins={initialPins!}
-      fetchPinsAPIRoute={API_URL_SEARCH}
+      queryKey={["search", searchTerm]}
+      fetchPinsAPIRoute={`${API_URL_SEARCH}?q=${searchTerm}`}
+      errorMessageKey="PinsSearch.ERROR_FETCH_SEARCH_RESULTS"
       emptyResultsMessageKey="PinsSearch.NO_RESULTS"
     />
   );

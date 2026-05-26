@@ -1,88 +1,90 @@
-import { useState, useEffect } from "react";
+import { useCallback } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { appendQueryParam } from "@/lib/utils/strings";
-import PinsBoard from "./PinsBoard";
-import { PinWithAuthorDetails } from "@/lib/types/frontendTypes";
 import { serializePinsWithAuthorDetails } from "@/lib/utils/serializers";
 import { throwIfKO } from "@/lib/utils/fetch";
+import { PinWithAuthorDetails } from "@/lib/types/frontendTypes";
+import PinsBoard from "./PinsBoard";
+import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
+import ErrorView from "@/components/ErrorView/ErrorView";
+
+type FetchFn = (url: string, options?: RequestInit) => Promise<Response>;
 
 type PinsBoardContainerProps = {
-  initialPins: PinWithAuthorDetails[];
+  queryKey: string[];
   fetchPinsAPIRoute: string;
+  fetchFn?: FetchFn;
   emptyResultsMessageKey?: string;
+  errorMessageKey?: string;
 };
 
 const PinsBoardContainer = ({
-  initialPins,
+  queryKey,
   fetchPinsAPIRoute,
+  fetchFn,
   emptyResultsMessageKey,
+  errorMessageKey,
 }: PinsBoardContainerProps) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pins, setPins] = useState<PinWithAuthorDetails[]>([]);
-  const [isFetching, setIsFetching] = useState(false);
-  const [fetchFailed, setFetchFailed] = useState(false);
+  const { t } = useTranslation();
 
-  const fetchNextPinsAndFallBack = async () => {
-    let newPins: PinWithAuthorDetails[];
+  const resolvedFetchFn: FetchFn = fetchFn ?? fetch;
 
-    try {
-      newPins = await fetchNextPins();
-    } catch {
-      setFetchFailed(true);
-      return;
-    } finally {
-      setIsFetching(false);
-    }
+  const fetchPage = useCallback(
+    async ({ pageParam }: { pageParam: number }) => {
+      const url =
+        pageParam === 1
+          ? fetchPinsAPIRoute
+          : appendQueryParam({
+              url: fetchPinsAPIRoute,
+              key: "page",
+              value: String(pageParam),
+            });
 
-    setPins((currentPins) => [...currentPins, ...newPins]);
-    setFetchFailed(false);
-  };
+      const response = await resolvedFetchFn(url);
 
-  const fetchNextPins = async () => {
-    const url = getEndpointURL();
+      throwIfKO(response);
 
-    const response = await fetch(url);
+      const { results } = await response.json();
 
-    throwIfKO(response);
+      return serializePinsWithAuthorDetails(results) as PinWithAuthorDetails[];
+    },
+    [fetchPinsAPIRoute, resolvedFetchFn],
+  );
 
-    const responseData = await response.json();
+  const {
+    data,
+    fetchNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    isFetchNextPageError,
+  } = useInfiniteQuery({
+    queryKey,
+    queryFn: fetchPage,
+    initialPageParam: 1,
+    getNextPageParam: (_lastPage, allPages) => allPages.length + 1,
+  });
 
-    return serializePinsWithAuthorDetails(responseData.results);
-  };
+  if (isLoading) {
+    return <SpinnerBelowHeader />;
+  }
 
-  const getEndpointURL = () => {
-    return appendQueryParam({
-      url: fetchPinsAPIRoute,
-      key: "page",
-      value: currentPage.toString(),
-    });
-  };
+  if (isError && !data) {
+    const [ns, ...keyParts] = (errorMessageKey ?? "").split(".");
+    const errorMessage = t(keyParts.join("."), { ns });
+    return <ErrorView message={errorMessage} />;
+  }
 
-  const handleScrolledToBottom = () => {
-    if (!isFetching) {
-      setIsFetching(true);
-      setFetchFailed(false);
-      setCurrentPage((previousPage) => previousPage + 1); // will trigger the fetch of next pins, via the 'useEffect' below
-    }
-  };
-
-  // 'initialPins' will change if user searches for another term:
-  useEffect(() => {
-    setPins([...initialPins]);
-  }, [initialPins]);
-
-  useEffect(() => {
-    if (currentPage > 1) {
-      fetchNextPinsAndFallBack();
-    }
-  }, [currentPage]);
+  const allPins = data?.pages.flat() ?? [];
 
   return (
     <PinsBoard
-      pins={pins}
-      isFetching={isFetching}
-      fetchFailed={fetchFailed}
+      pins={allPins}
+      isFetching={isFetchingNextPage}
+      fetchFailed={isFetchNextPageError}
       emptyResultsMessageKey={emptyResultsMessageKey}
-      onScrolledToBottom={handleScrolledToBottom}
+      onScrolledToBottom={fetchNextPage}
     />
   );
 };
