@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import styles from "./PinCreationView.module.css";
 import PinImageDropzone from "./PinImageDropzone";
+import UnsavedChangesModal from "./UnsavedChangesModal";
 
 type PinCreationViewProps = {
   hasDroppedFile: boolean;
@@ -13,6 +14,9 @@ type PinCreationViewProps = {
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  showUnsavedChangesModal: boolean;
+  onConfirmLeave: () => void;
+  onCancelLeave: () => void;
 };
 
 const PinCreationView = ({
@@ -24,11 +28,17 @@ const PinCreationView = ({
   handleClickDeleteImage,
   handleInputChange,
   handleSubmit,
+  showUnsavedChangesModal,
+  onConfirmLeave,
+  onCancelLeave,
 }: PinCreationViewProps) => {
   const { t } = useTranslation("PinCreation");
 
   return (
     <div className={styles.container}>
+      {showUnsavedChangesModal && (
+        <UnsavedChangesModal onLeave={onConfirmLeave} onStay={onCancelLeave} />
+      )}
       {isPosting && (
         <div
           className={styles.loadingOverlay}

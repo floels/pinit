@@ -1,0 +1,48 @@
+.content {
+  padding: 32px;
+}
+
+.title {
+  font-size: var(--font-size-400);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: 12px;
+}
+
+.message {
+  font-size: var(--font-size-300);
+  color: var(--color-text-secondary);
+  margin-bottom: 28px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.stayButton {
+  cursor: pointer;
+  border: 2px solid var(--color-border-container);
+  background-color: transparent;
+  padding: 0 20px;
+  height: 48px;
+  border-radius: 24px;
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stayButton:hover {
+  background-color: var(--color-gray-100);
+}
+
+.leaveButton {
+  cursor: pointer;
+  border: none;
+  padding: 0 20px;
+  height: 48px;
+  border-radius: 24px;
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-inverse);
+  background-color: var(--color-background-important);
+}
