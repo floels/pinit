@@ -5,9 +5,9 @@ import EditPinPanel from "./EditPinPanel";
 import { AuthContext } from "@/contexts/authContext";
 import { AccountContext } from "@/contexts/accountContext";
 import { PinWithFullDetails } from "@/lib/types/frontendTypes";
-import { API_URL_UPDATE_PIN, API_URL_MY_ACCOUNT_DETAILS, API_URL_REFRESH_TOKEN } from "@/lib/constants";
+import { API_URL_UPDATE_PIN, API_URL_MY_ACCOUNT_DETAILS } from "@/lib/constants";
 import en from "@/public/locales/en/CreatedPins.json";
-import { MOCK_API_RESPONSES, MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
+import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
 
 const account = MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
 

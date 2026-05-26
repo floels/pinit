@@ -7,7 +7,7 @@ import {
   MOCK_API_RESPONSES_JSON,
   CREATED_PINS_URL,
 } from "@/lib/testing-utils/mockAPIResponses";
-import { API_URL_ACCOUNT_DETAILS, API_URL_CREATED_PINS } from "@/lib/constants";
+import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
 import en from "@/public/locales/en/AccountDetails.json";
 
 const username = "johndoe";
