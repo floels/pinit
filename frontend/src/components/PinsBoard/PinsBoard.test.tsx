@@ -6,10 +6,12 @@ import en from "@/public/locales/en/PinsSearch.json";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
 
+const VIEWPORT_WIDTH_PX = 1200;
+
 Object.defineProperty(window, "innerWidth", {
   writable: true,
   configurable: true,
-  value: 1200,
+  value: VIEWPORT_WIDTH_PX,
 });
 
 const NUMBER_PINS = 50;
