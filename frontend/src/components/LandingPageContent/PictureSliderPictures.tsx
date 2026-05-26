@@ -4,7 +4,6 @@ import styles from "./PictureSliderPictures.module.css";
 type PictureSliderPicturesProps = {
   currentStep: number;
   previousStep: number | null;
-  timeSinceLastStepChange: number;
 };
 
 export enum TopicsType {
@@ -24,7 +23,6 @@ export const PICTURE_SLIDER_TOPICS: TopicsType[] = [
 const PictureSliderPictures = ({
   currentStep,
   previousStep,
-  timeSinceLastStepChange,
 }: PictureSliderPicturesProps) => {
   return (
     <div className={styles.container}>
@@ -32,7 +30,6 @@ const PictureSliderPictures = ({
         const commonPictureProps = {
           currentStep,
           previousStep,
-          timeSinceLastStepChange,
           topicIndex: index,
         };
 
