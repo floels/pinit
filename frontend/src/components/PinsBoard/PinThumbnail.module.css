@@ -164,6 +164,10 @@
   background-color: var(--color-background-secondary);
 }
 
+.imageWrapper {
+  position: relative;
+}
+
 .editButton {
   position: absolute;
   bottom: 8px;

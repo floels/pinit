@@ -164,22 +164,24 @@ const PinThumbnail = ({
       onMouseLeave={handleMouseLeaveImage}
       data-testid="pin-thumbnail"
     >
-      <Link
-        to={`/pin/${pin.id}`}
-        className={styles.imageContainer}
-        data-testid="pin-thumbnail-image"
-      >
-        {/* We don't use Next's Image component because we don't know the image's display height in advance. */}
-        <img
-          alt={
-            pin.title
-              ? pin.title
-              : `${t("ALT_PIN_BY")} ${pin.author.displayName}`
-          }
-          src={pin.imageURL}
-          className={styles.image}
-        />
-        {shouldShowImageOverlay && imageOverlay}
+      <div className={styles.imageWrapper}>
+        <Link
+          to={`/pin/${pin.id}`}
+          className={styles.imageContainer}
+          data-testid="pin-thumbnail-image"
+        >
+          {/* We don't use Next's Image component because we don't know the image's display height in advance. */}
+          <img
+            alt={
+              pin.title
+                ? pin.title
+                : `${t("ALT_PIN_BY")} ${pin.author.displayName}`
+            }
+            src={pin.imageURL}
+            className={styles.image}
+          />
+          {shouldShowImageOverlay && imageOverlay}
+        </Link>
         {isOwnPin && (
           <button
             className={styles.editButton}
@@ -189,7 +191,7 @@ const PinThumbnail = ({
             <FontAwesomeIcon icon={faPencil} />
           </button>
         )}
-      </Link>
+      </div>
       {isSaveFlyoutOpen && (
         <SavePinFlyoutContainer
           isInFirstColumn={isInFirstColumn}
