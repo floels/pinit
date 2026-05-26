@@ -5,6 +5,10 @@ E2E_TEST_USER_EMAIL = "e2e_test@example.com"
 E2E_TEST_USER_PASSWORD = "testpassword123"
 E2E_TEST_USER_USERNAME = "e2etestuser"
 
+# Fixed unique IDs so E2E tests can reference known pins authored by the test user
+CREATED_PIN_TO_EDIT_UNIQUE_ID = "e2etestpin000002"
+CREATED_PIN_TO_DELETE_UNIQUE_ID = "e2etestpin000003"
+
 JOHNDOE_EMAIL = "john.doe@example.com"
 JOHNDOE_USERNAME = "johndoe"
 
@@ -67,5 +71,23 @@ class Command(BaseCommand):
                 image_url=f"https://example.com/sample-pin-{i}.jpg",
                 author=johndoe_account,
             )
+
+        test_user_account = Account.objects.get(username=E2E_TEST_USER_USERNAME)
+
+        self.stdout.write("Creating pins authored by the E2E test user...")
+        Pin.objects.create(
+            unique_id=CREATED_PIN_TO_EDIT_UNIQUE_ID,
+            title="Pin to edit",
+            description="Original description.",
+            image_url="https://example.com/created-pin-1.jpg",
+            author=test_user_account,
+        )
+        Pin.objects.create(
+            unique_id=CREATED_PIN_TO_DELETE_UNIQUE_ID,
+            title="Pin to delete",
+            description="This pin will be deleted.",
+            image_url="https://example.com/created-pin-2.jpg",
+            author=test_user_account,
+        )
 
         self.stdout.write(self.style.SUCCESS("E2E database seeded successfully."))
