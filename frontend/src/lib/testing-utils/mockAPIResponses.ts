@@ -3,6 +3,7 @@ import {
   API_URL_BOARD_DETAILS,
   API_URL_CREATE_BOARD,
   API_URL_CREATE_PIN,
+  API_URL_CREATED_PINS,
   API_URL_MY_ACCOUNT_DETAILS,
   API_URL_OBTAIN_TOKEN,
   API_URL_PIN_DETAILS,
@@ -13,7 +14,10 @@ import {
   API_URL_SEARCH,
   API_URL_SEARCH_SUGGESTIONS,
   API_URL_SIGN_UP,
+  API_URL_UPDATE_PIN,
 } from "../constants";
+
+export const CREATED_PINS_URL = `${API_URL_CREATED_PINS}/johndoe/pins/`;
 import { TypesOfAccount } from "../types/frontendTypes";
 
 export const MOCK_API_RESPONSES_JSON = {
@@ -168,6 +172,39 @@ export const MOCK_API_RESPONSES_JSON = {
       "https://i.pinimg.com/1200x/a9/b1/51/a9b151f4593e062c012579071aa09d16.jpg",
     description: "Description for account of John Doe.",
   },
+  [CREATED_PINS_URL]: {
+    count: 5,
+    next: null,
+    previous: null,
+    results: Array.from({ length: 5 }, (_, index) => ({
+      unique_id: String(index + 10).padStart(18, "0"),
+      image_url:
+        "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      title: `Created Pin ${index + 1} title`,
+      description: `Created pin ${index + 1} description`,
+      author: {
+        username: "johndoe",
+        display_name: "John Doe",
+        initial: "J",
+        profile_picture_url:
+          "https://i.pinimg.com/564x/49/ce/d2/49ced2e29b6d4945a13be722bac54642.jpg",
+      },
+    })),
+  },
+  [`${API_URL_UPDATE_PIN}/000000000000000010/`]: {
+    unique_id: "000000000000000010",
+    image_url:
+      "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+    title: "Updated title",
+    description: "Updated description",
+    author: {
+      username: "johndoe",
+      display_name: "John Doe",
+      initial: "J",
+      profile_picture_url:
+        "https://i.pinimg.com/564x/49/ce/d2/49ced2e29b6d4945a13be722bac54642.jpg",
+    },
+  },
   [API_URL_BOARD_DETAILS]: {
     id: "000000000000000001",
     name: "Board 1 name",
@@ -300,6 +337,22 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
       title: `Pin ${index} title`,
       imageURL:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      author: {
+        username: "johndoe",
+        displayName: "John Doe",
+        initial: "J",
+        profilePictureURL:
+          "https://i.pinimg.com/564x/49/ce/d2/49ced2e29b6d4945a13be722bac54642.jpg",
+      },
+    })),
+  },
+  [CREATED_PINS_URL]: {
+    results: Array.from({ length: 5 }, (_, index) => ({
+      id: String(index + 10).padStart(18, "0"),
+      imageURL:
+        "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      title: `Created Pin ${index + 1} title`,
+      description: `Created pin ${index + 1} description`,
       author: {
         username: "johndoe",
         displayName: "John Doe",

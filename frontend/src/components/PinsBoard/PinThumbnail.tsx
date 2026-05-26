@@ -7,7 +7,7 @@ import {
   PinWithAuthorDetails,
 } from "@/lib/types/frontendTypes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDown, faDownload, faEllipsis } from "@fortawesome/free-solid-svg-icons";
+import { faAngleDown, faDownload, faEllipsis, faPencil } from "@fortawesome/free-solid-svg-icons";
 import SavePinFlyoutContainer from "./SavePinFlyoutContainer";
 import { ellipsizeText } from "@/lib/utils/strings";
 
@@ -21,6 +21,8 @@ type PinThumbnailProps = {
   isSaving: boolean;
   indexBoardWhereJustSaved: number | null;
   isMoreActionsDropdownOpen: boolean;
+  isOwnPin?: boolean;
+  showMoreActions?: boolean;
   handleMouseEnterImage: () => void;
   handleMouseLeaveImage: () => void;
   handleClickSave: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -34,6 +36,7 @@ type PinThumbnailProps = {
   handleClickOutOfMoreActionsDropdown: () => void;
   handleDownloadImage: (event: React.MouseEvent<HTMLButtonElement>) => void;
   handleClickCreateBoard: () => void;
+  handleClickEdit?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
 const PinThumbnail = ({
@@ -46,6 +49,8 @@ const PinThumbnail = ({
   isSaving,
   indexBoardWhereJustSaved,
   isMoreActionsDropdownOpen,
+  isOwnPin,
+  showMoreActions = true,
   handleMouseEnterImage,
   handleMouseLeaveImage,
   handleClickSave,
@@ -55,6 +60,7 @@ const PinThumbnail = ({
   handleClickOutOfMoreActionsDropdown,
   handleDownloadImage,
   handleClickCreateBoard,
+  handleClickEdit,
 }: PinThumbnailProps) => {
   const { t } = useTranslation("PinsBoard");
 
@@ -121,6 +127,36 @@ const PinThumbnail = ({
 
   const shouldShowImageOverlay = isImageHovered || isSaveFlyoutOpen;
 
+  const moreActionsButton = (
+    <div
+      ref={moreActionsWrapperRef}
+      className={`${styles.moreActionsButtonWrapper}${isMoreActionsDropdownOpen ? ` ${styles.dropdownOpen}` : ""}`}
+    >
+      <button
+        className={styles.moreActionsButton}
+        onClick={handleClickMoreActions}
+        data-testid="pin-thumbnail-more-actions-button"
+      >
+        <FontAwesomeIcon icon={faEllipsis} />
+      </button>
+      <div className={styles.moreActionsTooltip}>
+        {t("MORE_ACTIONS_TOOLTIP")}
+      </div>
+      {isMoreActionsDropdownOpen && (
+        <div className={styles.moreActionsDropdown}>
+          <button
+            className={styles.moreActionsDropdownButton}
+            onClick={handleDownloadImage}
+            data-testid="pin-thumbnail-download-button"
+          >
+            <FontAwesomeIcon icon={faDownload} />
+            {t("DOWNLOAD_IMAGE_BUTTON_TEXT")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div
       className={`${styles.container}${isMoreActionsDropdownOpen ? ` ${styles.containerWithOpenDropdown}` : ""}`}
@@ -128,23 +164,33 @@ const PinThumbnail = ({
       onMouseLeave={handleMouseLeaveImage}
       data-testid="pin-thumbnail"
     >
-      <Link
-        to={`/pin/${pin.id}`}
-        className={styles.imageContainer}
-        data-testid="pin-thumbnail-image"
-      >
-        {/* We don't use Next's Image component because we don't know the image's display height in advance. */}
-        <img
-          alt={
-            pin.title
-              ? pin.title
-              : `${t("ALT_PIN_BY")} ${pin.author.displayName}`
-          }
-          src={pin.imageURL}
-          className={styles.image}
-        />
-        {shouldShowImageOverlay && imageOverlay}
-      </Link>
+      <div className={styles.imageWrapper}>
+        <Link
+          to={`/pin/${pin.id}`}
+          className={styles.imageContainer}
+          data-testid="pin-thumbnail-image"
+        >
+          <img
+            alt={
+              pin.title
+                ? pin.title
+                : `${t("ALT_PIN_BY")} ${pin.author.displayName}`
+            }
+            src={pin.imageURL}
+            className={styles.image}
+          />
+          {shouldShowImageOverlay && imageOverlay}
+        </Link>
+        {isOwnPin && (
+          <button
+            className={styles.editButton}
+            onClick={handleClickEdit}
+            data-testid="pin-thumbnail-edit-button"
+          >
+            <FontAwesomeIcon icon={faPencil} />
+          </button>
+        )}
+      </div>
       {isSaveFlyoutOpen && (
         <SavePinFlyoutContainer
           isInFirstColumn={isInFirstColumn}
@@ -158,33 +204,12 @@ const PinThumbnail = ({
         />
       )}
       <div className={styles.belowImageRow}>
-        <div
-          ref={moreActionsWrapperRef}
-          className={`${styles.moreActionsButtonWrapper}${isMoreActionsDropdownOpen ? ` ${styles.dropdownOpen}` : ""}`}
-        >
-            <button
-              className={styles.moreActionsButton}
-              onClick={handleClickMoreActions}
-              data-testid="pin-thumbnail-more-actions-button"
-            >
-              <FontAwesomeIcon icon={faEllipsis} />
-            </button>
-            <div className={styles.moreActionsTooltip}>
-              {t("MORE_ACTIONS_TOOLTIP")}
-            </div>
-            {isMoreActionsDropdownOpen && (
-              <div className={styles.moreActionsDropdown}>
-                <button
-                  className={styles.moreActionsDropdownButton}
-                  onClick={handleDownloadImage}
-                  data-testid="pin-thumbnail-download-button"
-                >
-                  <FontAwesomeIcon icon={faDownload} />
-                  {t("DOWNLOAD_IMAGE_BUTTON_TEXT")}
-                </button>
-              </div>
-            )}
-        </div>
+        {pin.title && isOwnPin && (
+          <span className={styles.pinTitle} data-testid="pin-thumbnail-title">
+            {pin.title}
+          </span>
+        )}
+        {!isOwnPin && showMoreActions && moreActionsButton}
       </div>
     </div>
   );

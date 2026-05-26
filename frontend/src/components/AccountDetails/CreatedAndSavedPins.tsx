@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./CreatedAndSavedPins.module.css";
 import { useTranslation } from "react-i18next";
-import CreatedPins from "./CreatedPins";
+import CreatedPinsContainer from "./CreatedPinsContainer";
 import SavedPins from "./SavedPins";
 import { AccountWithPublicDetails } from "@/lib/types/frontendTypes";
 
@@ -70,7 +70,7 @@ const CreatedAndSavedPins = ({ account }: CreatedAndSavedPinsProps) => {
           />
         </div>
       </div>
-      {activeTab === TAB.CREATED && <CreatedPins />}
+      {activeTab === TAB.CREATED && <CreatedPinsContainer username={account.username} />}
       {activeTab === TAB.SAVED && <SavedPins account={account} />}
     </div>
   );

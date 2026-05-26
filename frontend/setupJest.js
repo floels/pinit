@@ -15,6 +15,7 @@ import PinDetails from "./public/locales/en/PinDetails.json";
 import AccountDetails from "./public/locales/en/AccountDetails.json";
 import BoardDetails from "./public/locales/en/BoardDetails.json";
 import PinCreation from "./public/locales/en/PinCreation.json";
+import CreatedPins from "./public/locales/en/CreatedPins.json";
 
 // https://github.com/jefflau/jest-fetch-mock#to-setup-for-all-tests
 enableMocks();
@@ -31,6 +32,7 @@ const allNamespaces = {
   AccountDetails,
   BoardDetails,
   PinCreation,
+  CreatedPins,
 };
 
 const lookupKey = (nsObj, key) => {

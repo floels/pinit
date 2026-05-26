@@ -22,7 +22,6 @@ const PinDetailsView = ({ pin }: PinDetailsViewProps) => {
         </button>
       </Link>
       <div className={styles.pinViewContainer} data-testid="pin-view-container">
-        {/* We don't use Next's Image component because we don't know the image's display height in advance. */}
         <img
           src={pin.imageURL}
           alt={

@@ -18,6 +18,10 @@ export const API_URL_CREATE_BOARD = `${API_BASE_URL}/boards/`;
 export const API_URL_PIN_DETAILS = `${API_BASE_URL}/pins`;
 export const API_URL_ACCOUNT_DETAILS = `${API_BASE_URL}/accounts`;
 export const API_URL_BOARD_DETAILS = `${API_BASE_URL}/boards`;
+export const API_URL_CREATED_PINS = `${API_BASE_URL}/accounts`;
+// Used as: `${API_URL_CREATED_PINS}/${username}/pins/`
+export const API_URL_UPDATE_PIN = `${API_BASE_URL}/pins`;
+// Used as: `${API_URL_UPDATE_PIN}/${pinId}/` (PATCH or DELETE)
 
 // API error codes
 export const ERROR_CODE_UNAUTHORIZED = "unauthorized";

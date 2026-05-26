@@ -45,6 +45,12 @@ export const serializePinWithFullDetails = (
   };
 };
 
+export const serializePinsWithFullDetails = (
+  pins: PinWithFullDetailsFromAPI[],
+): PinWithFullDetails[] => {
+  return pins.map(serializePinWithFullDetails);
+};
+
 const serializeAccount = (account: AccountFromAPI): Account => {
   return {
     username: account.username,

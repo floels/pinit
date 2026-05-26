@@ -163,3 +163,38 @@
 .moreActionsDropdownButton:hover {
   background-color: var(--color-background-secondary);
 }
+
+.imageWrapper {
+  position: relative;
+}
+
+.editButton {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--color-white);
+  color: var(--color-text-default);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-200);
+}
+
+.editButton:hover {
+  background-color: var(--color-gray-200);
+}
+
+.pinTitle {
+  flex: 1;
+  font-size: var(--font-size-200);
+  font-weight: var(--font-weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 4px;
+}

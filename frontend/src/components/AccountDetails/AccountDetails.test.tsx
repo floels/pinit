@@ -1,13 +1,18 @@
 import { render, screen } from "@testing-library/react";
-import AccountDetailsView from "./AccountDetailsView";
+import AccountDetailsView from "./AccountDetails";
 import en from "@/public/locales/en/AccountDetails.json";
-import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
+import { MOCK_API_RESPONSES_SERIALIZED, CREATED_PINS_URL, MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
+import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const account = MOCK_API_RESPONSES_SERIALIZED[API_URL_ACCOUNT_DETAILS];
 
+beforeEach(() => {
+  fetchMock.mockResponse(MOCK_API_RESPONSES[CREATED_PINS_URL]);
+});
+
 it("renders all relevant details", () => {
-  render(<AccountDetailsView account={account} />);
+  render(withQueryClient(<AccountDetailsView account={account} />));
 
   screen.getByText(account.displayName);
   screen.getByText(account.username);
@@ -30,7 +35,7 @@ it("displays initial when profile picture is not provided", () => {
     profilePictureURL: null,
   };
 
-  render(<AccountDetailsView account={accountWithoutProfilePictureURL} />);
+  render(withQueryClient(<AccountDetailsView account={accountWithoutProfilePictureURL} />));
 
   screen.getByText("J");
 });
