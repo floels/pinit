@@ -1,6 +1,7 @@
 {
   "UNFORESEEN_ERROR": "An unforeseen error happened. Please try again later.",
   "LOGOUT_ERROR": "An error happened while we attempted to log you out.",
+  "ACCOUNT_DETAILS_FETCH_ERROR": "An error occurred while loading your account details.",
   "ACCOUNT_TYPE_PERSONAL": "Personal",
   "ACCOUNT_TYPE_BUSINESS": "Business"
 }
