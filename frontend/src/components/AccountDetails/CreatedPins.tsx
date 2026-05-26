@@ -4,6 +4,7 @@ import {
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import boardStyles from "../PinsBoard/PinsBoard.module.css";
 import styles from "./CreatedPins.module.css";
 import { PinWithFullDetails } from "@/lib/types/frontendTypes";
@@ -64,13 +65,9 @@ const CreatedPins = ({
         ))}
       </div>
       {shouldRenderEmptyMessage && (
-        <div className={boardStyles.errorMessage}>
-          <FontAwesomeIcon
-            icon={faTriangleExclamation}
-            size="xs"
-            className={boardStyles.errorMessageIcon}
-          />
-          {t("EMPTY_CREATED_PINS")}
+        <div className={styles.emptyMessage}>
+          {t("EMPTY_CREATED_PINS")}{" "}
+          <Link to="/pin-creation-tool">{t("EMPTY_CREATED_PINS_LINK")}</Link>
         </div>
       )}
       {isFetching && (

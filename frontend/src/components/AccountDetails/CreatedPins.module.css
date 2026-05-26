@@ -1,3 +1,9 @@
+.emptyMessage {
+  padding: 24px 16px;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-300);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));

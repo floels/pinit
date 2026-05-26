@@ -12,6 +12,7 @@ import PinDetails from "../public/locales/en/PinDetails.json";
 import AccountDetails from "../public/locales/en/AccountDetails.json";
 import BoardDetails from "../public/locales/en/BoardDetails.json";
 import PinCreation from "../public/locales/en/PinCreation.json";
+import CreatedPins from "../public/locales/en/CreatedPins.json";
 
 i18n.use(initReactI18next).init({
   lng: "en",
@@ -28,6 +29,7 @@ i18n.use(initReactI18next).init({
     "AccountDetails",
     "BoardDetails",
     "PinCreation",
+    "CreatedPins",
   ],
   defaultNS: "Common",
   resources: {
@@ -43,6 +45,7 @@ i18n.use(initReactI18next).init({
       AccountDetails,
       BoardDetails,
       PinCreation,
+      CreatedPins,
     },
   },
   interpolation: { escapeValue: false },
