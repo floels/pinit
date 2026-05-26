@@ -4,14 +4,17 @@ import en from "@/public/locales/en/LandingPageContent.json";
 import HeaderUnauthenticated from "./HeaderUnauthenticated";
 import { MemoryRouter } from "react-router-dom";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
+import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const renderComponent = (pathname = "/some-page") => {
   render(
-    <MemoryRouter initialEntries={[pathname]}>
-      <HeaderSearchBarContextProvider>
-        <HeaderUnauthenticated />
-      </HeaderSearchBarContextProvider>
-    </MemoryRouter>,
+    withQueryClient(
+      <MemoryRouter initialEntries={[pathname]}>
+        <HeaderSearchBarContextProvider>
+          <HeaderUnauthenticated />
+        </HeaderSearchBarContextProvider>
+      </MemoryRouter>,
+    ),
   );
 };
 

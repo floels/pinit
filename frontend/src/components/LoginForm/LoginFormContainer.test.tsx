@@ -6,6 +6,7 @@ import enCommon from "@/public/locales/en/Common.json";
 import { API_URL_OBTAIN_TOKEN } from "@/lib/constants";
 import { MOCK_API_RESPONSES, MOCK_API_RESPONSES_JSON } from "@/lib/testing-utils/mockAPIResponses";
 import { AuthContext } from "@/contexts/authContext";
+import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const typeInEmailInput = async (text: string) => {
   const emailInput = screen.getByLabelText(en.LoginForm.EMAIL);
@@ -37,11 +38,13 @@ const mockSetAccessToken = jest.fn();
 
 const renderComponent = () => {
   render(
-    <AuthContext.Provider
-      value={{ accessToken: null, setAccessToken: mockSetAccessToken, isAuthInitialized: false }}
-    >
-      <LoginFormContainer handleClickNoAccountYet={handleClickNoAccountYet} />
-    </AuthContext.Provider>,
+    withQueryClient(
+      <AuthContext.Provider
+        value={{ accessToken: null, setAccessToken: mockSetAccessToken, isAuthInitialized: false }}
+      >
+        <LoginFormContainer handleClickNoAccountYet={handleClickNoAccountYet} />
+      </AuthContext.Provider>,
+    ),
   );
 };
 

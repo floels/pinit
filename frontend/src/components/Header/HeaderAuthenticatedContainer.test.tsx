@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { screen, render, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import HeaderAuthenticatedContainer from "./HeaderAuthenticatedContainer";
-import { MockLocalStorage } from "@/lib/testing-utils/misc";
+import { MockLocalStorage, withQueryClient } from "@/lib/testing-utils/misc";
 import {
   API_URL_MY_ACCOUNT_DETAILS,
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
@@ -35,13 +35,15 @@ const renderComponent = ({
   account?: AccountWithPrivateDetails | null;
 } = {}) => {
   render(
-    <MemoryRouter>
-      <AccountContext.Provider value={{ account, setAccount: jest.fn() }}>
-        <HeaderSearchBarContextProvider>
-          <HeaderAuthenticatedContainer />
-        </HeaderSearchBarContextProvider>
-      </AccountContext.Provider>
-    </MemoryRouter>,
+    withQueryClient(
+      <MemoryRouter>
+        <AccountContext.Provider value={{ account, setAccount: jest.fn() }}>
+          <HeaderSearchBarContextProvider>
+            <HeaderAuthenticatedContainer />
+          </HeaderSearchBarContextProvider>
+        </AccountContext.Provider>
+      </MemoryRouter>,
+    ),
   );
 };
 

@@ -4,7 +4,7 @@ import en from "@/public/locales/en/PinsBoard.json";
 import PinsBoardContainer from "./PinsBoardContainer";
 import { ToastContainer } from "react-toastify";
 import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
-import { mockIntersectionObserver } from "@/lib/testing-utils/misc";
+import { mockIntersectionObserver, withQueryClient } from "@/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
@@ -31,13 +31,15 @@ beforeEach(() => {
 
 const renderComponent = () => {
   render(
-    <MemoryRouter>
-      <ToastContainer />
-      <PinsBoardContainer
-        initialPins={initialPins}
-        fetchPinsAPIRoute={API_URL_PIN_SUGGESTIONS}
-      />
-    </MemoryRouter>,
+    withQueryClient(
+      <MemoryRouter>
+        <ToastContainer />
+        <PinsBoardContainer
+          initialPins={initialPins}
+          fetchPinsAPIRoute={API_URL_PIN_SUGGESTIONS}
+        />
+      </MemoryRouter>,
+    ),
   );
 };
 

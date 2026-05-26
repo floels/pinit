@@ -23,6 +23,7 @@ import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_SERIALIZED,
 } from "@/lib/testing-utils/mockAPIResponses";
+import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const pin = MOCK_API_RESPONSES_SERIALIZED[API_URL_PIN_SUGGESTIONS].results[0];
 
@@ -55,16 +56,18 @@ const renderComponent = () => {
   };
 
   render(
-    <MemoryRouter>
-      <AccountContext.Provider value={accountContext}>
-        <ToastContainer />
-        <PinThumbnailContainer
-          pin={pin}
-          isInFirstColumn={false}
-          isInLastColumn={false}
-        />
-      </AccountContext.Provider>
-    </MemoryRouter>,
+    withQueryClient(
+      <MemoryRouter>
+        <AccountContext.Provider value={accountContext}>
+          <ToastContainer />
+          <PinThumbnailContainer
+            pin={pin}
+            isInFirstColumn={false}
+            isInLastColumn={false}
+          />
+        </AccountContext.Provider>
+      </MemoryRouter>,
+    ),
   );
 };
 
@@ -83,7 +86,7 @@ const StatefulWrapper = () => {
 };
 
 const renderComponentWithState = () => {
-  render(<StatefulWrapper />);
+  render(withQueryClient(<StatefulWrapper />));
 };
 
 it("displays 'Save' button only upon hover", () => {
