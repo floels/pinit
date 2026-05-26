@@ -1,10 +1,10 @@
 import { render, waitFor, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import CreatedPins from "./CreatedPins";
 import { AccountContext } from "@/contexts/accountContext";
 import { AuthContext } from "@/contexts/authContext";
 import { ToastContainer } from "react-toastify";
-import { mockIntersectionObserver } from "@/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_SERIALIZED,
@@ -36,10 +36,6 @@ Object.defineProperty(window, "innerWidth", {
   writable: true,
   configurable: true,
   value: VIEWPORT_WIDTH_PX,
-});
-
-beforeEach(() => {
-  mockIntersectionObserver();
 });
 
 const renderComponent = (username = "johndoe") => {
@@ -80,7 +76,6 @@ it("renders pin thumbnails and titles after successful fetch", async () => {
     expect(thumbnails).toHaveLength(createdPins.length);
   });
 
-  // All pin titles should be visible
   for (const pin of createdPins) {
     if (pin.title) {
       screen.getByText(pin.title);
@@ -94,9 +89,6 @@ it("shows loading spinner while fetching", async () => {
 
   renderComponent("johndoe");
 
-  // The first fetch triggers immediately on mount
-  // (the sentinel fires but boardIsEmpty=true, so it won't trigger scroll)
-  // We need to wait a tick and check for the spinner
   await waitFor(() => {
     screen.getByTestId("created-pins-loading-spinner");
   });
@@ -119,13 +111,57 @@ it("shows error message on failed fetch", async () => {
 it("shows empty message when no pins are returned", async () => {
   fetchMock.mockOnceIf(
     `${API_URL_CREATED_PINS}/johndoe/pins/?page=1`,
-    JSON.stringify({ results: [] }),
+    JSON.stringify({ count: 0, next: null, previous: null, results: [] }),
   );
 
   renderComponent("johndoe");
 
   await waitFor(() => {
     screen.getByText(en.EMPTY_CREATED_PINS);
+  });
+});
+
+it("shows next-page button and fetches page 2 when there is a next page", async () => {
+  const page1Response = JSON.stringify({
+    count: 10,
+    next: `${API_URL_CREATED_PINS}/johndoe/pins/?page=2`,
+    previous: null,
+    results: MOCK_API_RESPONSES_SERIALIZED[CREATED_PINS_URL].results.map(
+      (pin) => ({
+        unique_id: pin.id,
+        image_url: pin.imageURL,
+        title: pin.title,
+        description: pin.description ?? "",
+        author: {
+          username: pin.author.username,
+          display_name: pin.author.displayName,
+          initial: pin.author.initial,
+          profile_picture_url: pin.author.profilePictureURL,
+        },
+      }),
+    ),
+  });
+
+  fetchMock.mockOnceIf(
+    `${API_URL_CREATED_PINS}/johndoe/pins/?page=1`,
+    page1Response,
+  );
+  fetchMock.mockOnceIf(
+    `${API_URL_CREATED_PINS}/johndoe/pins/?page=2`,
+    MOCK_API_RESPONSES[CREATED_PINS_URL],
+  );
+
+  renderComponent("johndoe");
+
+  const nextButton = await screen.findByTestId("created-pins-next-page");
+  expect(nextButton).not.toBeDisabled();
+
+  await userEvent.click(nextButton);
+
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${API_URL_CREATED_PINS}/johndoe/pins/?page=2`,
+    );
   });
 });
 

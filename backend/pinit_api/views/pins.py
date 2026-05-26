@@ -73,10 +73,6 @@ class PinView(views.APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Keep old name as alias for backward compatibility
-GetPinDetailsView = PinView
-
-
 class GetCreatedPinsView(generics.ListAPIView):
     serializer_class = PinWithFullDetailsReadSerializer
 

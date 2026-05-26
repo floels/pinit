@@ -20,6 +20,7 @@ const CreatedPins = ({ username }: CreatedPinsProps) => {
   const [pins, setPins] = useState<PinWithFullDetails[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [fetchFailed, setFetchFailed] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   const fetchCreatedPins = async (page: number) => {
     const url = appendQueryParam({
@@ -34,17 +35,20 @@ const CreatedPins = ({ username }: CreatedPinsProps) => {
 
     const responseData = await response.json();
 
-    return serializePinsWithFullDetails(responseData.results);
+    return {
+      pins: serializePinsWithFullDetails(responseData.results),
+      hasNextPage: responseData.next !== null,
+    };
   };
 
   const fetchCreatedPinsAndFallBack = async (page: number) => {
     setIsFetching(true);
     setFetchFailed(false);
 
-    let newPins: PinWithFullDetails[];
+    let result: { pins: PinWithFullDetails[]; hasNextPage: boolean };
 
     try {
-      newPins = await fetchCreatedPins(page);
+      result = await fetchCreatedPins(page);
     } catch {
       setFetchFailed(true);
       setIsFetching(false);
@@ -52,13 +56,20 @@ const CreatedPins = ({ username }: CreatedPinsProps) => {
     }
 
     setIsFetching(false);
-    setPins((currentPins) => (page === 1 ? newPins : [...currentPins, ...newPins]));
+    setPins(result.pins);
+    setHasNextPage(result.hasNextPage);
   };
 
-  const handleScrolledToBottom = () => {
-    if (!isFetching) {
-      setCurrentPage((previousPage) => previousPage + 1);
-    }
+  const handleNextPage = () => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    fetchCreatedPinsAndFallBack(nextPage);
+  };
+
+  const handlePreviousPage = () => {
+    const prevPage = currentPage - 1;
+    setCurrentPage(prevPage);
+    fetchCreatedPinsAndFallBack(prevPage);
   };
 
   const handlePinDeleted = (pinId: string) => {
@@ -78,15 +89,9 @@ const CreatedPins = ({ username }: CreatedPinsProps) => {
   };
 
   useEffect(() => {
-    fetchCreatedPinsAndFallBack(1);
     setCurrentPage(1);
+    fetchCreatedPinsAndFallBack(1);
   }, [username]);
-
-  useEffect(() => {
-    if (currentPage > 1) {
-      fetchCreatedPinsAndFallBack(currentPage);
-    }
-  }, [currentPage]);
 
   return (
     <CreatedPinsBoard
@@ -94,7 +99,10 @@ const CreatedPins = ({ username }: CreatedPinsProps) => {
       isFetching={isFetching}
       fetchFailed={fetchFailed}
       isOwnProfile={isOwnProfile}
-      onScrolledToBottom={handleScrolledToBottom}
+      currentPage={currentPage}
+      hasNextPage={hasNextPage}
+      onNextPage={handleNextPage}
+      onPreviousPage={handlePreviousPage}
       onPinDeleted={handlePinDeleted}
       onPinUpdated={handlePinUpdated}
     />

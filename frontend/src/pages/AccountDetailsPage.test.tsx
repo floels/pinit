@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import AccountDetailsPage from "./AccountDetailsPage";
-import { mockIntersectionObserver, withQueryClient } from "@/lib/testing-utils/misc";
+import { withQueryClient } from "@/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
@@ -23,7 +23,6 @@ const renderComponent = () => {
 
 beforeEach(() => {
   fetchMock.resetMocks();
-  mockIntersectionObserver();
 });
 
 it("fetches account details from the correct endpoint", () => {

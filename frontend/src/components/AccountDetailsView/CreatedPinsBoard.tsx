@@ -1,11 +1,11 @@
-import { useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTriangleExclamation,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import styles from "../PinsBoard/PinsBoard.module.css";
+import boardStyles from "../PinsBoard/PinsBoard.module.css";
+import styles from "./CreatedPinsBoard.module.css";
 import { PinWithFullDetails } from "@/lib/types/frontendTypes";
 import CreatedPinsGrid from "./CreatedPinsGrid";
 
@@ -14,7 +14,10 @@ type CreatedPinsBoardProps = {
   isFetching: boolean;
   fetchFailed: boolean;
   isOwnProfile: boolean;
-  onScrolledToBottom: () => void;
+  currentPage: number;
+  hasNextPage: boolean;
+  onNextPage: () => void;
+  onPreviousPage: () => void;
   onPinDeleted: (pinId: string) => void;
   onPinUpdated: (
     pinId: string,
@@ -28,75 +31,80 @@ const CreatedPinsBoard = ({
   isFetching,
   fetchFailed,
   isOwnProfile,
-  onScrolledToBottom,
+  currentPage,
+  hasNextPage,
+  onNextPage,
+  onPreviousPage,
   onPinDeleted,
   onPinUpdated,
 }: CreatedPinsBoardProps) => {
   const { t } = useTranslation("CreatedPins");
 
-  const scrolledToBottomSentinel = useRef(null);
-
-  const boardIsEmpty = pins.length === 0;
-
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        if (!boardIsEmpty) {
-          onScrolledToBottom();
-        }
-      }
-    });
-
-    if (scrolledToBottomSentinel.current) {
-      observer.observe(scrolledToBottomSentinel.current);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [boardIsEmpty, onScrolledToBottom]);
-
   const shouldRenderEmptyMessage =
     !isFetching && !fetchFailed && pins.length === 0;
 
+  const showPagination = !isFetching && !fetchFailed && (currentPage > 1 || hasNextPage);
+
   return (
-    <div className={styles.container}>
+    <div className={boardStyles.container}>
       <CreatedPinsGrid
         pins={pins}
         isOwnProfile={isOwnProfile}
         onPinDeleted={onPinDeleted}
         onPinUpdated={onPinUpdated}
       />
-      <div ref={scrolledToBottomSentinel} style={{ height: "1px" }} />
       {shouldRenderEmptyMessage && (
-        <div className={styles.errorMessage}>
+        <div className={boardStyles.errorMessage}>
           <FontAwesomeIcon
             icon={faTriangleExclamation}
             size="xs"
-            className={styles.errorMessageIcon}
+            className={boardStyles.errorMessageIcon}
           />
           {t("EMPTY_CREATED_PINS")}
         </div>
       )}
       {isFetching && (
-        <div className={styles.loadingIconContainer}>
+        <div className={boardStyles.loadingIconContainer}>
           <FontAwesomeIcon
             icon={faSpinner}
             size="2x"
             spin
-            className={styles.loadingSpinner}
+            className={boardStyles.loadingSpinner}
             data-testid="created-pins-loading-spinner"
           />
         </div>
       )}
       {fetchFailed && (
-        <div className={styles.errorMessage}>
+        <div className={boardStyles.errorMessage}>
           <FontAwesomeIcon
             icon={faTriangleExclamation}
             size="xs"
-            className={styles.errorMessageIcon}
+            className={boardStyles.errorMessageIcon}
           />
           {t("ERROR_FETCH_CREATED_PINS")}
+        </div>
+      )}
+      {showPagination && (
+        <div className={styles.pagination}>
+          <button
+            className={styles.pageButton}
+            onClick={onPreviousPage}
+            disabled={currentPage === 1}
+            data-testid="created-pins-previous-page"
+          >
+            {t("PAGINATION_PREVIOUS")}
+          </button>
+          <span className={styles.pageIndicator} data-testid="created-pins-page-indicator">
+            {currentPage}
+          </span>
+          <button
+            className={styles.pageButton}
+            onClick={onNextPage}
+            disabled={!hasNextPage}
+            data-testid="created-pins-next-page"
+          >
+            {t("PAGINATION_NEXT")}
+          </button>
         </div>
       )}
     </div>

@@ -173,6 +173,9 @@ export const MOCK_API_RESPONSES_JSON = {
     description: "Description for account of John Doe.",
   },
   [CREATED_PINS_URL]: {
+    count: 5,
+    next: null,
+    previous: null,
     results: Array.from({ length: 5 }, (_, index) => ({
       unique_id: String(index + 10).padStart(18, "0"),
       image_url:

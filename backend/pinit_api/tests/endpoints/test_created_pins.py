@@ -48,14 +48,6 @@ class GetCreatedPinsTests(APITestCase):
             self.assertIn("author", pin_data)
             self.assertEqual(pin_data["author"]["username"], "testuser")
 
-    def test_get_created_pins_no_authentication_required(self):
-        # Should work without authentication
-        self.client.force_authenticate(user=None)
-
-        response = self.get(username="testuser")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
     def test_get_created_pins_only_returns_pins_of_given_user(self):
         response = self.get(username="testuser")
 

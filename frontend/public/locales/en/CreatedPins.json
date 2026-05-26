@@ -10,5 +10,7 @@
   "EDIT_SAVE_BUTTON": "Save",
   "EDIT_DELETE_BUTTON": "Delete",
   "EDIT_SAVE_ERROR": "An error occurred while saving this pin.",
-  "EDIT_DELETE_ERROR": "An error occurred while deleting this pin."
+  "EDIT_DELETE_ERROR": "An error occurred while deleting this pin.",
+  "PAGINATION_PREVIOUS": "Previous",
+  "PAGINATION_NEXT": "Next"
 }
