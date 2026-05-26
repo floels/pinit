@@ -4,10 +4,13 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const createTestQueryClient = () =>
+export const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
       queries: {
+        retry: false,
+      },
+      mutations: {
         retry: false,
       },
     },

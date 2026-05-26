@@ -2,11 +2,9 @@ import { useState } from "react";
 import {
   ERROR_CODE_INVALID_PASSWORD,
   ERROR_CODE_INVALID_EMAIL,
-  ERROR_CODE_FETCH_FAILED,
-  API_URL_OBTAIN_TOKEN,
 } from "../../lib/constants";
 import { isValidEmail, isValidPassword } from "../../lib/utils/validation";
-import { useAuthContext } from "@/contexts/authContext";
+import { useLogin } from "@/lib/hooks/useLogin";
 import LoginForm, { FormErrors } from "./LoginForm";
 
 type LoginFormContainerProps = {
@@ -32,7 +30,7 @@ const computeFormErrors = (values: { email: string; password: string }) => {
 const LoginFormContainer = ({
   handleClickNoAccountYet,
 }: LoginFormContainerProps) => {
-  const { setAccessToken } = useAuthContext();
+  const loginMutation = useLogin();
 
   const [credentials, setCredentials] = useState({
     email: "",
@@ -42,7 +40,6 @@ const LoginFormContainer = ({
     email: "MISSING_EMAIL",
   });
   const [showFormErrors, setShowFormErrors] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -59,64 +56,15 @@ const LoginFormContainer = ({
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    fetchTokens();
-  };
-
-  const fetchTokens = async () => {
     setShowFormErrors(true);
 
     if (formErrors.email || formErrors.password) {
       return;
     }
 
-    setIsLoading(true);
-
-    let loginData;
-
-    try {
-      loginData = await fetchTokensAndThrow();
-    } catch (error) {
-      updateFormErrorsFromFetchError({ error: error as Error });
-      return;
-    } finally {
-      setIsLoading(false);
-    }
-
-    setAccessToken(loginData.access_token);
-  };
-
-  const fetchTokensAndThrow = async () => {
-    const requestBody = JSON.stringify({
-      email: credentials.email,
-      password: credentials.password,
+    loginMutation.mutate(credentials, {
+      onError: (error) => updateFormErrorsFromFetchError({ error: error as Error }),
     });
-
-    let response;
-
-    try {
-      response = await fetch(API_URL_OBTAIN_TOKEN, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: requestBody,
-        credentials: "include",
-      });
-    } catch {
-      throw new Error(ERROR_CODE_FETCH_FAILED);
-    }
-
-    if (!response.ok) {
-      const data = await response.json();
-
-      if (data?.errors?.length > 0) {
-        const firstErrorCode = data.errors[0]?.code;
-
-        throw new Error(firstErrorCode);
-      }
-
-      throw new Error();
-    }
-
-    return response.json();
   };
 
   const updateFormErrorsFromFetchError = ({ error }: { error: Error }) => {
@@ -139,7 +87,7 @@ const LoginFormContainer = ({
       credentials={credentials}
       formErrors={formErrors}
       showFormErrors={showFormErrors}
-      isLoading={isLoading}
+      isLoading={loginMutation.isPending}
       handleInputChange={handleInputChange}
       handleSubmit={handleSubmit}
       handleClickNoAccountYet={handleClickNoAccountYet}

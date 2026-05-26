@@ -14,6 +14,7 @@ import { API_URL_CREATE_PIN, API_URL_PIN_IMAGE_UPLOAD_URL } from "@/lib/constant
 import { FetchMock } from "jest-fetch-mock";
 import { ToastContainer } from "react-toastify";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
+import { withQueryClient } from "@/lib/testing-utils/misc";
 
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
@@ -46,10 +47,12 @@ const expectInputFieldsToBeDisabled = () => {
 
 const renderComponent = () => {
   render(
-    <MemoryRouter>
-      <ToastContainer />
-      <PinCreationViewContainer />
-    </MemoryRouter>,
+    withQueryClient(
+      <MemoryRouter>
+        <ToastContainer />
+        <PinCreationViewContainer />
+      </MemoryRouter>,
+    ),
   );
 };
 

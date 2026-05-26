@@ -4,14 +4,17 @@ import BoardDetailsView from "./BoardDetailsView";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_BOARD_DETAILS } from "@/lib/constants";
 import en from "@/public/locales/en/BoardDetails.json";
+import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const board = MOCK_API_RESPONSES_SERIALIZED[API_URL_BOARD_DETAILS];
 
 const renderComponent = () => {
   render(
-    <MemoryRouter>
-      <BoardDetailsView board={board} />
-    </MemoryRouter>,
+    withQueryClient(
+      <MemoryRouter>
+        <BoardDetailsView board={board} />
+      </MemoryRouter>,
+    ),
   );
 };
 

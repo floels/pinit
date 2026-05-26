@@ -2,14 +2,16 @@ import en from "@/public/locales/en/LandingPageContent.json";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import FifthFold from "./FifthFold";
+import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const mockOnClickBackToTop = jest.fn();
 
-const fifthFold = <FifthFold onClickBackToTop={mockOnClickBackToTop} />;
+const renderComponent = () =>
+  render(withQueryClient(<FifthFold onClickBackToTop={mockOnClickBackToTop} />));
 
 it(`should switch to login form upon click on 'Already have an account',
 and back to signup form upon click on 'No account yet'`, async () => {
-  render(fifthFold);
+  renderComponent();
 
   const alreadyHaveAccountButton = screen.getByText(
     en.SignupForm.ALREADY_HAVE_ACCOUNT_CTA,
@@ -25,7 +27,7 @@ and back to signup form upon click on 'No account yet'`, async () => {
 });
 
 it("calls onClickBackToTop when corresponding button is clicked", async () => {
-  render(fifthFold);
+  renderComponent();
 
   const backToTopButton = screen.getByTestId("back-to-top-button");
 

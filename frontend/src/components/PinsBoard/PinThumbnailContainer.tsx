@@ -9,9 +9,8 @@ import PinThumbnail from "./PinThumbnail";
 import CreateBoardModal from "./CreateBoardModal";
 import BoardCreatedToastMessage from "./BoardCreatedToastMessage";
 import { useEffect, useState } from "react";
-import { API_URL_SAVE_PIN } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
-import { throwIfKO } from "@/lib/utils/fetch";
+import { useSavePin } from "@/lib/hooks/useSavePin";
 
 type PinThumbnailContainerProps = {
   pin: PinWithAuthorDetails;
@@ -27,12 +26,12 @@ const PinThumbnailContainer = ({
   const { t } = useTranslation("PinsBoard");
 
   const { account, setAccount } = useAccountContext();
+  const savePinMutation = useSavePin();
 
   const boards = account?.boards || [];
 
   const [isImageHovered, setIsImageHovered] = useState(false);
   const [isSaveFlyoutOpen, setIsSaveFlyoutOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [indexBoardWhereJustSaved, setIndexBoardWhereJustSaved] = useState<
     number | null
   >(null);
@@ -101,49 +100,22 @@ const PinThumbnailContainer = ({
     };
   };
 
-  const savePinInBoard = async ({
+  const savePinInBoard = ({
     boardIndex,
     pin,
   }: {
     boardIndex: number;
     pin: PinWithAuthorDetails;
   }) => {
-    const board = boards[boardIndex];
+    const board: BoardWithBasicDetails = boards[boardIndex];
 
-    setIsSaving(true);
-
-    try {
-      await fetchSavePinInBoard({ board, pin });
-    } catch {
-      handleSaveError();
-      return;
-    } finally {
-      setIsSaving(false);
-    }
-
-    handleSaveSuccess({ boardIndex });
-  };
-
-  const fetchSavePinInBoard = async ({
-    board,
-    pin,
-  }: {
-    board: BoardWithBasicDetails;
-    pin: PinWithAuthorDetails;
-  }) => {
-    const requestBody = JSON.stringify({
-      pin_id: pin.id,
-      board_id: board.id,
-    });
-
-    const response = await fetch(API_URL_SAVE_PIN, {
-      method: "POST",
-      body: requestBody,
-    });
-
-    throwIfKO(response);
-
-    return response;
+    savePinMutation.mutate(
+      { pinId: pin.id, boardId: board.id },
+      {
+        onSuccess: () => handleSaveSuccess({ boardIndex }),
+        onError: handleSaveError,
+      },
+    );
   };
 
   const handleSaveSuccess = ({ boardIndex }: { boardIndex: number }) => {
@@ -205,7 +177,7 @@ const PinThumbnailContainer = ({
         boards={boards}
         isImageHovered={isImageHovered}
         isSaveFlyoutOpen={isSaveFlyoutOpen}
-        isSaving={isSaving}
+        isSaving={savePinMutation.isPending}
         indexBoardWhereJustSaved={indexBoardWhereJustSaved}
         isMoreActionsDropdownOpen={isMoreActionsDropdownOpen}
         handleMouseEnterImage={handleMouseEnterImage}

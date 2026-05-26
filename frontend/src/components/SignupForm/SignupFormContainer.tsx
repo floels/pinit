@@ -1,8 +1,6 @@
 import { useState } from "react";
 import {
-  API_URL_SIGN_UP,
   ERROR_CODE_EMAIL_ALREADY_SIGNED_UP,
-  ERROR_CODE_FETCH_FAILED,
   ERROR_CODE_INVALID_BIRTHDATE,
   ERROR_CODE_INVALID_EMAIL,
   ERROR_CODE_INVALID_PASSWORD,
@@ -12,9 +10,8 @@ import {
   isValidEmail,
   isValidPassword,
 } from "../../lib/utils/validation";
-import { useAuthContext } from "@/contexts/authContext";
+import { useSignup } from "@/lib/hooks/useSignup";
 import SignupForm, { FormErrors } from "./SignupForm";
-import { ResponseKOError } from "@/lib/customErrors";
 
 type SignupFormContainerProps = {
   handleClickAlreadyHaveAccount: () => void;
@@ -47,7 +44,7 @@ const computeFormErrors = (values: {
 const SignupFormContainer = ({
   handleClickAlreadyHaveAccount,
 }: SignupFormContainerProps) => {
-  const { setAccessToken } = useAuthContext();
+  const signupMutation = useSignup();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -58,7 +55,6 @@ const SignupFormContainer = ({
     email: "MISSING_EMAIL",
   });
   const [showFormErrors, setShowFormErrors] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -72,62 +68,21 @@ const SignupFormContainer = ({
     setShowFormErrors(false);
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setShowFormErrors(true);
 
     if (formErrors.email || formErrors.password || formErrors.birthdate) {
-      // Invalid inputs: no need to make a request
       return;
     }
 
-    setIsLoading(true);
-
-    let signupData;
-
-    try {
-      signupData = await fetchSignup();
-    } catch (error) {
-      const errorCode = (error as Error).message;
-      updateFormErrorsFromErrorCode(errorCode);
-      return;
-    }
-
-    setAccessToken(signupData.access_token);
-  };
-
-  const fetchSignup = async () => {
-    const requestBody = JSON.stringify(formData);
-
-    let response;
-
-    try {
-      response = await fetch(API_URL_SIGN_UP, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: requestBody,
-        credentials: "include",
-      });
-    } catch {
-      throw new Error(ERROR_CODE_FETCH_FAILED);
-    } finally {
-      setIsLoading(false);
-    }
-
-    if (!response.ok) {
-      const data = await response.json();
-
-      if (data?.errors?.length > 0) {
-        const firstErrorCode = data.errors[0]?.code;
-
-        throw new ResponseKOError(firstErrorCode);
-      }
-
-      throw new ResponseKOError();
-    }
-
-    return response.json();
+    signupMutation.mutate(formData, {
+      onError: (error) => {
+        const errorCode = (error as Error).message;
+        updateFormErrorsFromErrorCode(errorCode);
+      },
+    });
   };
 
   const updateFormErrorsFromErrorCode = (errorCode: string) => {
@@ -155,7 +110,7 @@ const SignupFormContainer = ({
       formData={formData}
       handleInputChange={handleInputChange}
       handleSubmit={handleSubmit}
-      isLoading={isLoading}
+      isLoading={signupMutation.isPending}
       handleClickAlreadyHaveAccount={handleClickAlreadyHaveAccount}
       showFormErrors={showFormErrors}
     />

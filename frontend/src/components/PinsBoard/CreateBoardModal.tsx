@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useFetchWithAuth } from "@/lib/hooks/useFetchWithAuth";
-import { throwIfKO } from "@/lib/utils/fetch";
-import { API_URL_CREATE_BOARD } from "@/lib/constants";
+import { useCreateBoard } from "@/lib/hooks/useCreateBoard";
 import { Board, PinWithAuthorDetails } from "@/lib/types/frontendTypes";
-import { BoardFromAPI } from "@/lib/types/backendTypes";
 import OverlayModal from "@/components/OverlayModal/OverlayModal";
 import LabelledTextInput from "@/components/LabelledTextInput/LabelledTextInput";
 import styles from "./CreateBoardModal.module.css";
@@ -17,51 +14,29 @@ type CreateBoardModalProps = {
 
 const CreateBoardModal = ({ pin, onClose, onSuccess }: CreateBoardModalProps) => {
   const { t } = useTranslation("PinsBoard");
-  const fetchWithAuth = useFetchWithAuth();
+  const createBoardMutation = useCreateBoard();
 
   const [boardName, setBoardName] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setBoardName(event.target.value);
-    setErrorMessage(null);
+    createBoardMutation.reset();
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!boardName.trim()) return;
 
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
-    let responseData: BoardFromAPI;
-
-    try {
-      const response = await fetchWithAuth(API_URL_CREATE_BOARD, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: boardName.trim(), pin_id: pin.id }),
-      });
-
-      throwIfKO(response);
-
-      responseData = await response.json();
-    } catch {
-      setErrorMessage(t("CREATE_BOARD_ERROR_MESSAGE"));
-      setIsSubmitting(false);
-      return;
-    }
-
-    setIsSubmitting(false);
-
-    onSuccess({
-      id: responseData.unique_id,
-      name: responseData.name,
-      slug: responseData.slug,
-    });
+    createBoardMutation.mutate(
+      { name: boardName.trim(), pinId: pin.id },
+      { onSuccess },
+    );
   };
+
+  const errorMessage = createBoardMutation.isError
+    ? t("CREATE_BOARD_ERROR_MESSAGE")
+    : null;
 
   const nameInput = (
     <div className={styles.inputWrapper}>
@@ -84,6 +59,8 @@ const CreateBoardModal = ({ pin, onClose, onSuccess }: CreateBoardModalProps) =>
       )}
     </div>
   );
+
+  const isSubmitting = createBoardMutation.isPending;
 
   const submitButtonText = isSubmitting
     ? t("CREATE_BOARD_SUBMITTING_BUTTON_TEXT")

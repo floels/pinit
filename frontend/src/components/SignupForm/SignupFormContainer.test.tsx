@@ -6,6 +6,7 @@ import enCommon from "@/public/locales/en/Common.json";
 import { API_URL_SIGN_UP } from "@/lib/constants";
 import { MOCK_API_RESPONSES, MOCK_API_RESPONSES_JSON } from "@/lib/testing-utils/mockAPIResponses";
 import { AuthContext } from "@/contexts/authContext";
+import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const handleClickAlreadyHaveAccount = () => {}; // NB: this behavior will be tested in <HeaderUnauthenticatedClient />
 
@@ -13,13 +14,15 @@ const mockSetAccessToken = jest.fn();
 
 const renderComponent = () => {
   render(
-    <AuthContext.Provider
-      value={{ accessToken: null, setAccessToken: mockSetAccessToken, isAuthInitialized: false }}
-    >
-      <SignupFormContainer
-        handleClickAlreadyHaveAccount={handleClickAlreadyHaveAccount}
-      />
-    </AuthContext.Provider>,
+    withQueryClient(
+      <AuthContext.Provider
+        value={{ accessToken: null, setAccessToken: mockSetAccessToken, isAuthInitialized: false }}
+      >
+        <SignupFormContainer
+          handleClickAlreadyHaveAccount={handleClickAlreadyHaveAccount}
+        />
+      </AuthContext.Provider>,
+    ),
   );
 };
 
