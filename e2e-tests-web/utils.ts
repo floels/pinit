@@ -15,7 +15,7 @@ export const loginAsTestUser = async ({
 }: {
   context: BrowserContext;
 }): Promise<void> => {
-  const response = await fetch(`${BACKEND_API_URL}/token/web/obtain/`, {
+  const response = await fetch(`${BACKEND_API_URL}/token/web/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

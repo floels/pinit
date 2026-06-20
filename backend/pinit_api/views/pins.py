@@ -86,8 +86,8 @@ class GetCreatedPinsView(generics.ListAPIView):
 class SavePinView(views.APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        pin_unique_id = request.data.get("pin_id")
+    def post(self, request, unique_id):
+        pin_unique_id = unique_id
         board_unique_id = request.data.get("board_id")
 
         pin = Pin.objects.filter(unique_id=pin_unique_id).first()

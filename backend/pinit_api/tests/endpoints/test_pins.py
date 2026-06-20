@@ -93,8 +93,10 @@ class SavePinTests(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.board.author.owner)
 
-    def post(self, request_payload=None):
-        return self.client.post("/api/save-pin/", request_payload, format="json")
+    def post(self, pin_id=None, board_id=None):
+        return self.client.post(
+            f"/api/pins/{pin_id}/saves/", {"board_id": board_id}, format="json"
+        )
 
     def check_board_last_pin_added_at(self, board=None):
         board.refresh_from_db()
@@ -113,12 +115,9 @@ class SavePinTests(APITestCase):
         )
 
     def test_save_pin_happy_path(self):
-        request_payload = {
-            "pin_id": self.pin_to_save.unique_id,
-            "board_id": self.board.unique_id,
-        }
-
-        response = self.post(request_payload=request_payload)
+        response = self.post(
+            pin_id=self.pin_to_save.unique_id, board_id=self.board.unique_id
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -133,12 +132,9 @@ class SavePinTests(APITestCase):
         self.check_pin_save_last_saved_at(created_pin_in_board)
 
     def test_save_pin_already_saved(self):
-        request_payload = {
-            "pin_id": self.pin_already_saved.unique_id,
-            "board_id": self.board.unique_id,
-        }
-
-        response = self.post(request_payload=request_payload)
+        response = self.post(
+            pin_id=self.pin_already_saved.unique_id, board_id=self.board.unique_id
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -151,12 +147,9 @@ class SavePinTests(APITestCase):
     def test_save_pin_doesnt_exist(self):
         non_existing_pin_id = 100_000_000_000_000_000
 
-        request_payload = {
-            "pin_id": non_existing_pin_id,
-            "board_id": self.board.unique_id,
-        }
-
-        response = self.post(request_payload=request_payload)
+        response = self.post(
+            pin_id=non_existing_pin_id, board_id=self.board.unique_id
+        )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -169,12 +162,9 @@ class SavePinTests(APITestCase):
     def test_save_board_doesnt_exist(self):
         non_existing_board_id = 100_000_000_000_000
 
-        request_payload = {
-            "pin_id": self.pin_to_save.unique_id,
-            "board_id": non_existing_board_id,
-        }
-
-        response = self.post(request_payload=request_payload)
+        response = self.post(
+            pin_id=self.pin_to_save.unique_id, board_id=non_existing_board_id
+        )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -187,12 +177,9 @@ class SavePinTests(APITestCase):
         self.assertEqual(self.board.pins.count(), 1)
 
     def test_save_board_not_owned(self):
-        request_payload = {
-            "pin_id": self.pin_to_save.unique_id,
-            "board_id": self.board_not_owned.unique_id,
-        }
-
-        response = self.post(request_payload=request_payload)
+        response = self.post(
+            pin_id=self.pin_to_save.unique_id, board_id=self.board_not_owned.unique_id
+        )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -204,8 +191,7 @@ class SavePinTests(APITestCase):
 
     def test_save_pin_unauthenticated(self):
         self.client.force_authenticate(user=None)
-        response = self.post(request_payload={
-            "pin_id": self.pin_to_save.unique_id,
-            "board_id": self.board.unique_id,
-        })
+        response = self.post(
+            pin_id=self.pin_to_save.unique_id, board_id=self.board.unique_id
+        )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -51,7 +51,7 @@ class PinCreationTests(APITestCase):
 
     def post(self, data=None):
         return self.client.post(
-            "/api/create-pin/",
+            "/api/pins/",
             data or self.request_payload,
             format="json",
         )

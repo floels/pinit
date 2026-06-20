@@ -44,7 +44,7 @@ class SearchSuggestionsTests(APITestCase):
         )
 
     def get(self, search=""):
-        return self.client.get("/api/search-suggestions/", {"search": search})
+        return self.client.get("/api/search/suggestions/", {"search": search})
 
     def test_get_search_suggestions_missing_search_param(self):
         response = self.get(search="")

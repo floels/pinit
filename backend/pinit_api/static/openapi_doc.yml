@@ -91,9 +91,9 @@ paths:
                             Error code. One of:
                             * `account_not_found`: No account found for this username
                             * `board_not_found`: No board found for this slug
-  /api/create-pin/:
+  /api/pins/:
     post:
-      operationId: create-pin/
+      operationId: pins/
       description: Create a new pin.
       tags:
         - Pins
@@ -123,9 +123,9 @@ paths:
                 $ref: '#/components/schemas/Pin'
         '401':
           description: Failed authentication
-  /api/pin-suggestions/:
+  /api/pins/suggestions/:
     get:
-      operationId: pin-suggestions/
+      operationId: pins/suggestions/
       description: Get the list of pin suggestions for the authenticated user.
       parameters:
         - name: page
@@ -168,26 +168,29 @@ paths:
           description: Success
         '404':
           description: No pin found for provided ID
-  /api/save-pin/:
+  /api/pins/{unique_id}/saves/:
     post:
-      operationId: save-pin/
+      operationId: pins/{unique_id}/saves/
       description: Save a pin in a board.
+      parameters:
+        - name: unique_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of Pin to save
+          example: "369169980854002"
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                pin_id:
-                  type: string
-                  description: ID of Pin to save
-                  example: "369169980854002"
                 board_id:
                   type: string
                   description: ID of board in which to save Pin
                   example: "441312392807868"
               required:
-                - pin_id
                 - board_id
       tags:
         - Pins
@@ -265,9 +268,9 @@ paths:
           description: Success
         '400':
           description: No search term provided
-  /api/search-suggestions/:
+  /api/search/suggestions/:
     get:
-      operationId: search-suggestions/
+      operationId: search/suggestions/
       description: Get the list of search term suggestions, given an incomplete search term.
       parameters:
       - in: query
@@ -297,9 +300,9 @@ paths:
                     example: ["man", "mana", "manage", "manager"]
         '400':
           description: No search term provided
-  /api/signup/:
+  /api/accounts/:
     post:
-      operationId: signup/
+      operationId: accounts/
       description: |-
         Create a new account (mobile). Returns access and refresh tokens in the response body.
       tags:
@@ -359,9 +362,9 @@ paths:
                             * `invalid_password`: invalid password
                             * `invalid_birthdate`: invalid birth date
                             * `email_already_signed_up`: email is already signed up
-  /api/signup/web/:
+  /api/accounts/web/:
     post:
-      operationId: signup/web/
+      operationId: accounts/web/
       description: |-
         Create a new account (web). Returns the access token in the response body.
         The refresh token is set as an HttpOnly `refreshToken` cookie.
@@ -428,9 +431,9 @@ paths:
                             * `invalid_password`: invalid password
                             * `invalid_birthdate`: invalid birth date
                             * `email_already_signed_up`: email is already signed up
-  /api/token/obtain/:
+  /api/token/:
     post:
-      operationId: token/obtain/
+      operationId: token/
       description: |-
         Obtain a pair of access and refresh JWT authentication tokens (mobile).
       tags:
@@ -496,9 +499,9 @@ paths:
                 $ref: '#/components/schemas/TokenPairResponse'
         '401':
           description: Demo account not found
-  /api/token/web/obtain/:
+  /api/token/web/:
     post:
-      operationId: token/web/obtain/
+      operationId: token/web/
       description: |-
         Obtain authentication tokens (web). Returns the access token in the response body.
         The refresh token is set as an HttpOnly `refreshToken` cookie.
@@ -661,9 +664,8 @@ paths:
                           type: string
                           description: |-
                             Error code: `invalid_refresh_token`
-  /api/token/web/logout/:
-    post:
-      operationId: token/web/logout/
+    delete:
+      operationId: token/web/logout
       description: |-
         Log out the current user (web) by clearing the `refreshToken` HttpOnly cookie.
       tags:
