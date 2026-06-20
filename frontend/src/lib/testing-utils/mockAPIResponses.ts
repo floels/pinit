@@ -10,7 +10,6 @@ import {
   API_URL_PIN_IMAGE_UPLOAD_URL,
   API_URL_PIN_SUGGESTIONS,
   API_URL_REFRESH_TOKEN,
-  API_URL_SAVE_PIN,
   API_URL_SEARCH,
   API_URL_SEARCH_SUGGESTIONS,
   API_URL_SIGN_UP,
@@ -102,10 +101,6 @@ export const MOCK_API_RESPONSES_JSON = {
     image_url:
       "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
     title: "Pin title",
-  },
-  [API_URL_SAVE_PIN]: {
-    board_id: "000000000000000001",
-    pin_id: "000000000000000001",
   },
   [API_URL_CREATE_BOARD]: {
     unique_id: "000000000000000003",

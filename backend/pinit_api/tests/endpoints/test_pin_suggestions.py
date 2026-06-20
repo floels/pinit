@@ -99,7 +99,7 @@ class GetPinSuggestionsUnauthenticatedTests(APITestCase):
         self.client = APIClient()
 
     def test_get_pin_suggestions_unauthenticated(self):
-        response = self.client.get("/api/pin-suggestions/")
+        response = self.client.get("/api/pins/suggestions/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
