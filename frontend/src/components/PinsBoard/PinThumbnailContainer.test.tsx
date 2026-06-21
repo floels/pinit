@@ -14,8 +14,8 @@ import userEvent from "@testing-library/user-event";
 import {
   API_URL_CREATE_BOARD,
   API_URL_MY_ACCOUNT_DETAILS,
+  API_URL_PIN_DETAILS,
   API_URL_PIN_SUGGESTIONS,
-  API_URL_SAVE_PIN,
 } from "@/lib/constants";
 import en from "@/public/locales/en/PinsBoard.json";
 import { ToastContainer } from "react-toastify";
@@ -26,6 +26,7 @@ import {
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const pin = MOCK_API_RESPONSES_SERIALIZED[API_URL_PIN_SUGGESTIONS].results[0];
+const savePinUrl = `${API_URL_PIN_DETAILS}/${pin.id}/saves/`;
 
 const account = MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
 
@@ -177,8 +178,8 @@ successful save`, async () => {
   const firstBoardButton = getFirstBoardButton();
 
   fetchMock.mockOnceIf(
-    API_URL_SAVE_PIN,
-    MOCK_API_RESPONSES[API_URL_SAVE_PIN],
+    savePinUrl,
+    JSON.stringify({ board_id: "000000000000000001", pin_id: pin.id }),
   );
 
   await userEvent.click(firstBoardButton);
@@ -199,7 +200,7 @@ it("displays appropriate error toast upon KO response on saving pin", async () =
 
   const firstBoardButton = getFirstBoardButton();
 
-  fetchMock.mockOnceIf(API_URL_SAVE_PIN, "{}", { status: 404 });
+  fetchMock.mockOnceIf(savePinUrl, "{}", { status: 404 });
 
   await userEvent.click(firstBoardButton);
 

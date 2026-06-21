@@ -1,5 +1,5 @@
 from django.conf import settings
-from rest_framework import status
+from rest_framework import status, views
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
@@ -61,36 +61,34 @@ def obtain_token_pair_mobile(request):
     return Response(get_tokens_data(user))
 
 
-@api_view(["POST"])
-def obtain_token_pair_web(request):
-    user, error = get_user_from_credentials(
-        request.data.get("email"), request.data.get("password")
-    )
+class TokenWebView(views.APIView):
+    def post(self, request):
+        user, error = get_user_from_credentials(
+            request.data.get("email"), request.data.get("password")
+        )
 
-    if error:
-        return error
+        if error:
+            return error
 
-    tokens_data = get_tokens_data(user)
-    response = Response(
-        {
-            "access_token": tokens_data["access_token"],
-            "access_token_expiration_utc": tokens_data["access_token_expiration_utc"],
-        }
-    )
-    set_refresh_token_cookie(response, tokens_data["refresh_token"])
-    return response
+        tokens_data = get_tokens_data(user)
+        response = Response(
+            {
+                "access_token": tokens_data["access_token"],
+                "access_token_expiration_utc": tokens_data["access_token_expiration_utc"],
+            }
+        )
+        set_refresh_token_cookie(response, tokens_data["refresh_token"])
+        return response
 
+    def delete(self, request):
+        refresh_token_str = request.COOKIES.get(REFRESH_TOKEN_COOKIE_NAME)
 
-@api_view(["POST"])
-def log_out_web(request):
-    refresh_token_str = request.COOKIES.get(REFRESH_TOKEN_COOKIE_NAME)
+        if refresh_token_str:
+            try:
+                RefreshToken(refresh_token_str).blacklist()
+            except TokenError:
+                pass
 
-    if refresh_token_str:
-        try:
-            RefreshToken(refresh_token_str).blacklist()
-        except TokenError:
-            pass
-
-    response = Response(status=status.HTTP_200_OK)
-    response.delete_cookie(REFRESH_TOKEN_COOKIE_NAME, path="/")
-    return response
+        response = Response(status=status.HTTP_200_OK)
+        response.delete_cookie(REFRESH_TOKEN_COOKIE_NAME, path="/")
+        return response

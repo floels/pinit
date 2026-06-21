@@ -47,7 +47,7 @@ class PinImageUploadUrlTests(APITestCase):
         super().tearDown()
 
     def get(self, file_extension=None):
-        url = "/api/pin-image-upload-url/"
+        url = "/api/pins/upload-url/"
         if file_extension is not None:
             url += f"?file_extension={file_extension}"
         return self.client.get(url)

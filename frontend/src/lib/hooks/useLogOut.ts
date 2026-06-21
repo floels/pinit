@@ -11,7 +11,7 @@ export const useLogOut = () => {
   const { mutateAsync } = useMutation({
     mutationFn: async () => {
       await fetch(API_URL_LOG_OUT, {
-        method: "POST",
+        method: "DELETE",
         credentials: "include",
       });
     },

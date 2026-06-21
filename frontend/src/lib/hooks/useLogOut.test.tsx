@@ -37,7 +37,7 @@ beforeEach(() => {
   (window as Window & { location: { href: string } }).location = { href: "" };
 });
 
-it("calls logout endpoint with POST and credentials include", async () => {
+it("calls logout endpoint with DELETE and credentials include", async () => {
   fetchMock.mockResponseOnce("{}");
 
   const { result } = renderHook(() => useLogOut(), { wrapper });
@@ -48,7 +48,7 @@ it("calls logout endpoint with POST and credentials include", async () => {
 
   expect(fetch).toHaveBeenCalledWith(
     API_URL_LOG_OUT,
-    expect.objectContaining({ method: "POST", credentials: "include" }),
+    expect.objectContaining({ method: "DELETE", credentials: "include" }),
   );
 });
 

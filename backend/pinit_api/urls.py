@@ -20,29 +20,28 @@ urlpatterns = [
     path("health/", lambda request: JsonResponse({"status": "ok"}), name="health"),
     path("doc/", TemplateView.as_view(template_name="redoc.html"), name="doc"),
     # TODO: include 'mobile' in the URL path for all mobile auth endpoints (e.g. 'token/refresh/' -> 'token/mobile/refresh/')
-    path("signup/", signup.sign_up_mobile, name="sign_up_mobile"),
+    path("accounts/", signup.sign_up_mobile, name="sign_up_mobile"),
+    path("accounts/web/", signup.sign_up_web, name="sign_up_web"),
     path(
-        "token/obtain/",
+        "token/",
         authentication.obtain_token_pair_mobile,
         name="obtain_token",
+    ),
+    path(
+        "token/web/",
+        authentication.TokenWebView.as_view(),
+        name="web_token",
     ),
     path(
         "token/refresh/",
         token_refresh.RefreshTokenMobileView.as_view(),
         name="refresh_token",
     ),
-    path("signup/web/", signup.sign_up_web, name="sign_up_web"),
-    path(
-        "token/web/obtain/",
-        authentication.obtain_token_pair_web,
-        name="web_obtain_token",
-    ),
     path(
         "token/web/refresh/",
         token_refresh.RefreshTokenWebView.as_view(),
         name="web_refresh_token",
     ),
-    path("token/web/logout/", authentication.log_out_web, name="log_out_web"),
     path(
         "accounts/me/",
         accounts.GetMyAccountDetailsView.as_view(),
@@ -54,23 +53,38 @@ urlpatterns = [
         name="get_account_details",
     ),
     path(
-        "pins/<str:unique_id>/",
-        pins.PinView.as_view(),
-        name="get_pin_details",
-    ),
-    path(
         "accounts/<str:username>/pins/",
         pins.GetCreatedPinsView.as_view(),
         name="get_created_pins",
     ),
     path(
-        "pin-suggestions/",
+        "pins/",
+        pin_creation.CreatePinView.as_view(),
+        name="create_pin",
+    ),
+    path(
+        "pins/suggestions/",
         pin_suggestions.GetPinSuggestionsView.as_view(),
         name="get_pin_suggestions",
     ),
+    path(
+        "pins/upload-url/",
+        pin_image_upload_url.GetPinImageUploadUrlView.as_view(),
+        name="get_pin_image_upload_url",
+    ),
+    path(
+        "pins/<str:unique_id>/",
+        pins.PinView.as_view(),
+        name="get_pin_details",
+    ),
+    path(
+        "pins/<str:unique_id>/saves/",
+        pins.SavePinView.as_view(),
+        name="save_pin",
+    ),
     path("search/", search.search_pins, name="search_pins"),
     path(
-        "search-suggestions/",
+        "search/suggestions/",
         search_suggestions.get_search_suggestions,
         name="get_search_suggestions",
     ),
@@ -83,16 +97,5 @@ urlpatterns = [
         "boards/<str:username>/<str:slug>/",
         boards.GetBoardDetailsView.as_view(),
         name="get_board_details",
-    ),
-    path(
-        "pin-image-upload-url/",
-        pin_image_upload_url.GetPinImageUploadUrlView.as_view(),
-        name="get_pin_image_upload_url",
-    ),
-    path("create-pin/", pin_creation.CreatePinView.as_view(), name="create_pin"),
-    path(
-        "save-pin/",
-        pins.SavePinView.as_view(),
-        name="save_pin",
     ),
 ]

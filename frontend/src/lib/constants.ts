@@ -1,18 +1,17 @@
 export const API_BASE_URL =
   process.env.BACKEND_URL ?? "http://127.0.0.1:8000/api";
 
-export const API_URL_SIGN_UP = `${API_BASE_URL}/signup/web/`;
-export const API_URL_OBTAIN_TOKEN = `${API_BASE_URL}/token/web/obtain/`;
+export const API_URL_SIGN_UP = `${API_BASE_URL}/accounts/web/`;
+export const API_URL_OBTAIN_TOKEN = `${API_BASE_URL}/token/web/`;
 export const API_URL_REFRESH_TOKEN = `${API_BASE_URL}/token/web/refresh/`;
-export const API_URL_LOG_OUT = `${API_BASE_URL}/token/web/logout/`;
+export const API_URL_LOG_OUT = `${API_BASE_URL}/token/web/`;
 
 export const API_URL_MY_ACCOUNT_DETAILS = `${API_BASE_URL}/accounts/me/`;
-export const API_URL_PIN_SUGGESTIONS = `${API_BASE_URL}/pin-suggestions/`;
+export const API_URL_PIN_SUGGESTIONS = `${API_BASE_URL}/pins/suggestions/`;
 export const API_URL_SEARCH = `${API_BASE_URL}/search/`;
-export const API_URL_SEARCH_SUGGESTIONS = `${API_BASE_URL}/search-suggestions/`;
-export const API_URL_PIN_IMAGE_UPLOAD_URL = `${API_BASE_URL}/pin-image-upload-url/`;
-export const API_URL_CREATE_PIN = `${API_BASE_URL}/create-pin/`;
-export const API_URL_SAVE_PIN = `${API_BASE_URL}/save-pin/`;
+export const API_URL_SEARCH_SUGGESTIONS = `${API_BASE_URL}/search/suggestions/`;
+export const API_URL_PIN_IMAGE_UPLOAD_URL = `${API_BASE_URL}/pins/upload-url/`;
+export const API_URL_CREATE_PIN = `${API_BASE_URL}/pins/`;
 export const API_URL_CREATE_BOARD = `${API_BASE_URL}/boards/`;
 
 export const API_URL_PIN_DETAILS = `${API_BASE_URL}/pins`;

@@ -25,7 +25,7 @@ class GetPinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
         self.check_response_first_page(response=response)
 
     def get(self, page=1):
-        return self.client.get("/api/pin-suggestions/", {"page": page})
+        return self.client.get("/api/pins/suggestions/", {"page": page})
 
     def check_response_first_page(self, response=None):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -99,7 +99,7 @@ class GetPinSuggestionsUnauthenticatedTests(APITestCase):
         self.client = APIClient()
 
     def test_get_pin_suggestions_unauthenticated(self):
-        response = self.client.get("/api/pin-suggestions/")
+        response = self.client.get("/api/pins/suggestions/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
