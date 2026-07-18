@@ -22,7 +22,7 @@ make up           # from this directory (`backend/`)
 
 The API will then be served at `http://localhost:8000/api`.
 
-To run the frontend as well, run `make up` from the repo root.
+To run the web app as well, run `make up` from the repo root.
 
 ## Running tests
 

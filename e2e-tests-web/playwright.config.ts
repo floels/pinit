@@ -30,7 +30,7 @@ export default defineConfig({
 
   webServer: {
     command: "pnpm dev",
-    cwd: path.resolve(__dirname, "../frontend"),
+    cwd: path.resolve(__dirname, "../web"),
     url: "http://127.0.0.1:3000",
     reuseExistingServer: true,
   },

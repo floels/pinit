@@ -334,9 +334,9 @@ which would otherwise cause an infinite loop.
 
 ### `deploy-frontend`
 
-1. **Build** — `pnpm build` in `frontend/`, with `ENVIRONMENT=staging` and `BACKEND_URL` injected
+1. **Build** — `pnpm build` in `web/`, with `ENVIRONMENT=staging` and `BACKEND_URL` injected
    at build time via Vite's `define`. These become compile-time constants in the bundle.
-2. **Sync to S3** — `aws s3 sync frontend/dist s3://pinit-staging-frontend --delete` uploads the
+2. **Sync to S3** — `aws s3 sync web/dist s3://pinit-staging-frontend --delete` uploads the
    new build and removes any files that no longer exist.
 3. **Invalidate CloudFront** — Forces CloudFront edge nodes to fetch the new assets on the next
    request, rather than serving the previously cached version.
@@ -588,7 +588,7 @@ The frontend S3 bucket is empty until CI runs. Build and sync it manually once:
 
 ```bash
 # From the repo root
-cd frontend
+cd web
 ENVIRONMENT=staging BACKEND_URL=<STAGING_BACKEND_URL> pnpm build
 
 aws s3 sync dist s3://pinit-staging-frontend --delete

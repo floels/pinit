@@ -1,6 +1,7 @@
-# Frontend
+# Web
 
-Vite + React SPA for the PinIt platform.
+Vite + React SPA — the web frontend for the PinIt platform. (The mobile
+app lives in [`../mobile`](../mobile).)
 
 ## Stack
 
@@ -13,7 +14,7 @@ Vite + React SPA for the PinIt platform.
 ## Structure
 
 ```
-frontend/
+web/
 ├── src/
 │   ├── main.tsx         # Entry point — React root + global providers
 │   ├── router.tsx       # React Router configuration

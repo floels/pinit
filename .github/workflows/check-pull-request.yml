@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      web: ${{ steps.filter.outputs.web }}
       e2e: ${{ steps.filter.outputs.e2e }}
       mobile: ${{ steps.filter.outputs.mobile }}
     steps:
@@ -27,8 +27,8 @@ jobs:
             backend:
               - 'backend/**'
               - '.github/workflows/check-pull-request.yml'
-            frontend:
-              - 'frontend/**'
+            web:
+              - 'web/**'
               - '.github/workflows/check-pull-request.yml'
             e2e:
               - 'e2e-tests-web/**'
@@ -62,13 +62,13 @@ jobs:
       - name: Shut down Docker container
         run: docker compose -f docker-compose.test.yml down
 
-  frontend-checks:
+  web-checks:
     needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
+    if: needs.detect-changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: web
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
