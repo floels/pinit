@@ -12,8 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      web: ${{ steps.filter.outputs.web }}
       e2e: ${{ steps.filter.outputs.e2e }}
+      mobile: ${{ steps.filter.outputs.mobile }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -26,11 +27,14 @@ jobs:
             backend:
               - 'backend/**'
               - '.github/workflows/check-pull-request.yml'
-            frontend:
-              - 'frontend/**'
+            web:
+              - 'web/**'
               - '.github/workflows/check-pull-request.yml'
             e2e:
               - 'e2e-tests-web/**'
+              - '.github/workflows/check-pull-request.yml'
+            mobile:
+              - 'mobile/**'
               - '.github/workflows/check-pull-request.yml'
 
   backend-checks:
@@ -58,13 +62,13 @@ jobs:
       - name: Shut down Docker container
         run: docker compose -f docker-compose.test.yml down
 
-  frontend-checks:
+  web-checks:
     needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
+    if: needs.detect-changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: web
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -122,3 +126,36 @@ jobs:
         run: pnpm type-check
 
       # NB: we don't actually run the E2E tests in the CI for now.
+
+  mobile-checks:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Type-check
+        run: yarn tsc
+
+      - name: Run component tests
+        run: yarn jest --coverage --runInBand
+
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: mobile/coverage/coverage-final.json

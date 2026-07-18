@@ -72,7 +72,7 @@ class ObtainTokenMobileTests(AuthenticationTests):
         self.check_response_data_happy_path(response_data=response_data)
 
     def post(self, request_payload=None):
-        return self.client.post("/api/token/", request_payload, format="json")
+        return self.client.post("/api/token/mobile/", request_payload, format="json")
 
     def check_response_data_happy_path(self, response_data=None):
         access_token = response_data["access_token"]
