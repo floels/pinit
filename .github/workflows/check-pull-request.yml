@@ -14,6 +14,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
       e2e: ${{ steps.filter.outputs.e2e }}
+      mobile: ${{ steps.filter.outputs.mobile }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -31,6 +32,9 @@ jobs:
               - '.github/workflows/check-pull-request.yml'
             e2e:
               - 'e2e-tests-web/**'
+              - '.github/workflows/check-pull-request.yml'
+            mobile:
+              - 'mobile/**'
               - '.github/workflows/check-pull-request.yml'
 
   backend-checks:
@@ -122,3 +126,36 @@ jobs:
         run: pnpm type-check
 
       # NB: we don't actually run the E2E tests in the CI for now.
+
+  mobile-checks:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Type-check
+        run: yarn tsc
+
+      - name: Run component tests
+        run: yarn jest --coverage --runInBand
+
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: mobile/coverage/coverage-final.json
