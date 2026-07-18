@@ -10,9 +10,7 @@ jest.mock("expo-secure-store");
 jest.mock(
   "@/src/navigators/AuthenticatedNavigator/AuthenticatedNavigator",
   () => {
-    const View = jest.requireActual(
-      "react-native/Libraries/Components/View/View",
-    );
+    const View = jest.requireActual("react-native").View;
 
     return () => <View testID="mocked-authenticated-navigator" />;
   },
@@ -21,9 +19,7 @@ jest.mock(
 jest.mock(
   "@/src/navigators/UnauthenticatedNavigator/UnauthenticatedNavigator",
   () => {
-    const View = jest.requireActual(
-      "react-native/Libraries/Components/View/View",
-    );
+    const View = jest.requireActual("react-native").View;
 
     return () => <View testID="mocked-unauthenticated-navigator" />;
   },

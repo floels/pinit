@@ -1,7 +1,7 @@
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import styles from "./ToastAnchor.styles";
 

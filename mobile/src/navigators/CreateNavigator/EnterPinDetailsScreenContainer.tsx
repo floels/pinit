@@ -1,5 +1,5 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
-import * as MediaLibrary from "expo-media-library";
+import * as MediaLibrary from "expo-media-library/legacy";
 import mime from "mime";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

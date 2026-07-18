@@ -1,6 +1,6 @@
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { RouteProp } from "@react-navigation/native";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import ProfileRouteTabBarIcon from "./ProfileRouteTabBarIcon";
 

@@ -18,7 +18,7 @@ import {
 } from "@/src/lib/testing-utils/mockAPIResponses";
 import enTranslations from "@/translations/en.json";
 
-jest.mock("expo-media-library", () => ({
+jest.mock("expo-media-library/legacy", () => ({
   getAssetInfoAsync: () => ({
     localUri: "file:///my/image/path.jpeg",
   }),

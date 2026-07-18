@@ -1,7 +1,7 @@
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect } from "react";
 import { Image, View } from "react-native";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import styles from "./ProfileRouteTabBarIcon.styles";
 

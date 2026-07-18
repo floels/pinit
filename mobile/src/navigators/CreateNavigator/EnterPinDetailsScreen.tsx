@@ -1,6 +1,6 @@
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import { useTranslation } from "react-i18next";
 import { View, Text, TouchableOpacity, Image, TextInput } from "react-native";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import styles from "./EnterPinDetailsScreen.styles";
 

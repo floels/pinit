@@ -1,12 +1,11 @@
-import { renderHook } from "@testing-library/react-hooks";
-import { waitFor } from "@testing-library/react-native";
-import * as MediaLibrary from "expo-media-library";
+import { renderHook, waitFor } from "@testing-library/react-native";
+import * as MediaLibrary from "expo-media-library/legacy";
 
 import { useCameraRollPhotos } from "../../src/hooks/useCameraRollPhotos";
 
 const photosInCameraRoll = [{ uri: "test-uri-1" }, { uri: "test-uri-2" }];
 
-jest.mock("expo-media-library", () => ({
+jest.mock("expo-media-library/legacy", () => ({
   usePermissions: jest.fn(),
   getAssetsAsync: () => ({
     assets: [{ uri: "test-uri-1" }, { uri: "test-uri-2" }],

@@ -1,3 +1,4 @@
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import {
   Text,
   View,
@@ -6,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import styles, { SIDE_PADDING } from "./PinDetailsView.styles";
 import BlinkingDots from "../BlinkingDots/BlinkingDots";

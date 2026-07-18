@@ -50,6 +50,13 @@ const renderComponent = () => {
   );
 };
 
+beforeEach(() => {
+  // Since RN 0.86, an unmocked `Image.getSize` reaches a native module that is
+  // unavailable under Jest and throws. Default it to a no-op; tests that rely on
+  // its success callback override it below.
+  Image.getSize = jest.fn();
+});
+
 it("calls 'handlePressClose' when user presses the close button", async () => {
   renderComponent();
 

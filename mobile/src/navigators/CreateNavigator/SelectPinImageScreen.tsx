@@ -1,7 +1,7 @@
-import { Asset } from "expo-media-library";
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
+import { Asset } from "expo-media-library/legacy";
 import { useTranslation } from "react-i18next";
 import { TouchableOpacity, View, Text } from "react-native";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import styles from "./SelectPinImageScreen.styles";
 

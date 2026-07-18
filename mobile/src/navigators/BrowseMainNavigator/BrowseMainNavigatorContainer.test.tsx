@@ -16,12 +16,9 @@ import { MOCK_API_RESPONSES_SERIALIZED } from "@/src/lib/testing-utils/mockAPIRe
 jest.mock(
   "@/src/navigators/BrowseMainNavigator/BrowseMainNavigator.tsx",
   () => {
-    const View = jest.requireActual(
-      "react-native/Libraries/Components/View/View",
-    );
-    const TouchableOpacity = jest.requireActual(
-      "react-native/Libraries/Components/Touchable/TouchableOpacity",
-    );
+    const View = jest.requireActual("react-native").View;
+    const TouchableOpacity =
+      jest.requireActual("react-native").TouchableOpacity;
 
     return (props: any) => (
       <View>

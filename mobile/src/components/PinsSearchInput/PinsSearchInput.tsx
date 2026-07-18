@@ -1,7 +1,7 @@
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import { Ref, forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import { View, TouchableOpacity, Text, TextInput } from "react-native";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import styles from "./PinsSearchInput.styles";
 import SearchSuggestionsList from "./SearchSuggestionsList";

@@ -1,5 +1,4 @@
-// See https://callstack.github.io/react-native-testing-library/docs/getting-started#additional-jest-matchers:
-import "@testing-library/react-native/extend-expect";
+// Built-in Jest matchers are included automatically since @testing-library/react-native v13:
 import fetchMock from "jest-fetch-mock";
 
 import enTranslations from "@/translations/en.json";
