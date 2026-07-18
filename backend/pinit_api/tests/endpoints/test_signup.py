@@ -202,7 +202,9 @@ class SignupTestsMixin:
 
 class SignupMobileTests(SignupTestsMixin, TestCase):
     def post(self, request_payload):
-        return self.client.post("/api/accounts/", request_payload, format="json")
+        return self.client.post(
+            "/api/accounts/mobile/", request_payload, format="json"
+        )
 
     def check_response_happy_path(self, response):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

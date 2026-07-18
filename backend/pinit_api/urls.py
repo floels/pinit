@@ -19,11 +19,10 @@ from .views import (
 urlpatterns = [
     path("health/", lambda request: JsonResponse({"status": "ok"}), name="health"),
     path("doc/", TemplateView.as_view(template_name="redoc.html"), name="doc"),
-    # TODO: include 'mobile' in the URL path for all mobile auth endpoints (e.g. 'token/refresh/' -> 'token/mobile/refresh/')
-    path("accounts/", signup.sign_up_mobile, name="sign_up_mobile"),
+    path("accounts/mobile/", signup.sign_up_mobile, name="sign_up_mobile"),
     path("accounts/web/", signup.sign_up_web, name="sign_up_web"),
     path(
-        "token/",
+        "token/mobile/",
         authentication.obtain_token_pair_mobile,
         name="obtain_token",
     ),
@@ -33,7 +32,7 @@ urlpatterns = [
         name="web_token",
     ),
     path(
-        "token/refresh/",
+        "token/mobile/refresh/",
         token_refresh.RefreshTokenMobileView.as_view(),
         name="refresh_token",
     ),

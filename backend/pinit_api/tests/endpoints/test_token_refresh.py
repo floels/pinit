@@ -37,7 +37,9 @@ class RefreshTokenMobileTests(AuthenticationTests):
         self.check_access_token_expiration_utc(access_token_expiration_utc)
 
     def post(self, request_payload=None):
-        return self.client.post("/api/token/refresh/", request_payload, format="json")
+        return self.client.post(
+            "/api/token/mobile/refresh/", request_payload, format="json"
+        )
 
     def test_refresh_token_wrong_refresh_token(self):
         request_payload = {"refresh_token": "wrong.refresh.token"}
