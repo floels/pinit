@@ -10,8 +10,7 @@ import CreateNavigator from "@/src/navigators/CreateNavigator/CreateNavigator";
 
 export type AuthenticatedNavigatorParamList = {
   "Authenticated.Browse":
-    | undefined
-    | { createdPin: Pin; createdPinImageAspectRatio: number };
+    undefined | { createdPin: Pin; createdPinImageAspectRatio: number };
   "Authenticated.Create": undefined;
 };
 

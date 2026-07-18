@@ -13,9 +13,7 @@ import {
 import { pressButton } from "@/src/lib/testing-utils/misc";
 
 jest.mock("@/src/components/LoadingOverlay/LoadingOverlay", () => {
-  const View = jest.requireActual(
-    "react-native/Libraries/Components/View/View",
-  );
+  const View = jest.requireActual("react-native").View;
 
   return () => <View testID="mocked-loading-overlay" />;
 });

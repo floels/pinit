@@ -1,4 +1,4 @@
-import * as MediaLibrary from "expo-media-library";
+import * as MediaLibrary from "expo-media-library/legacy";
 import { useState, useEffect } from "react";
 
 const NUMBER_CAMERA_ROLL_PHOTOS_FETCHED = 500;

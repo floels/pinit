@@ -1,3 +1,4 @@
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import { useTranslation } from "react-i18next";
 import {
   ScrollView,
@@ -7,7 +8,6 @@ import {
   NativeScrollEvent,
   Animated,
 } from "react-native";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import PinThumbnailsGrid from "./PinThumbnailsGrid";
 import styles from "./PinsBoard.styles";

@@ -1,5 +1,5 @@
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import { View } from "react-native";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import styles from "./LoadingOverlay.styles";
 

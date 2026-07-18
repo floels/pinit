@@ -32,9 +32,7 @@ jest.mock("expo-secure-store", () => ({
 })); // needed to be able to fetch with authentication
 
 jest.mock("@/src/components/PinsBoard/PinThumbnail", () => {
-  const View = jest.requireActual(
-    "react-native/Libraries/Components/View/View",
-  );
+  const View = jest.requireActual("react-native").View;
 
   return (props: any) => (
     <View
@@ -45,9 +43,7 @@ jest.mock("@/src/components/PinsBoard/PinThumbnail", () => {
 });
 
 jest.mock("@/src/components/Spinner/Spinner", () => {
-  const View = jest.requireActual(
-    "react-native/Libraries/Components/View/View",
-  );
+  const View = jest.requireActual("react-native").View;
 
   return (props: any) => <View testID="mocked-spinner" />;
 });

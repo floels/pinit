@@ -1,4 +1,5 @@
-import { Asset } from "expo-media-library";
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
+import { Asset } from "expo-media-library/legacy";
 import {
   Dimensions,
   FlatList,
@@ -6,7 +7,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import styles, { SPACE_BETWEEN_COLUMNS } from "./CameraRollView.styles";
 

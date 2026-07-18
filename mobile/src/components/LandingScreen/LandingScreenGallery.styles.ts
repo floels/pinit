@@ -14,7 +14,10 @@ const styles = StyleSheet.create({
     width: "30%",
   },
   image: {
-    //width: "100%",
+    width: "100%",
+    // A percentage width gives the image no intrinsic height, so pin it with an
+    // aspect ratio (width / height); 0.7 keeps the pins portrait-oriented.
+    aspectRatio: 0.7,
     resizeMode: "cover",
     marginBottom: 10,
     borderRadius: 20,

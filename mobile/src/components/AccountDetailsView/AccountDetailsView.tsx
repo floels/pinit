@@ -1,6 +1,6 @@
+import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import { Text, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import FontAwesome5Icon from "react-native-vector-icons/FontAwesome5";
 
 import styles from "./AccountDetailsView.styles";
 import AccountPictures from "./AccountPictures";
