@@ -18,12 +18,6 @@ import {
 } from "@/src/lib/testing-utils/mockAPIResponses";
 import enTranslations from "@/translations/en.json";
 
-jest.mock("expo-media-library/legacy", () => ({
-  getAssetInfoAsync: () => ({
-    localUri: "file:///my/image/path.jpeg",
-  }),
-}));
-
 jest.mock("mime", () => ({
   getType: () => "image/jpeg",
 }));
@@ -47,7 +41,10 @@ const mockHandleCreateSuccess = jest.fn();
 const renderComponent = (
   { route }: any = {
     route: {
-      params: { selectedImageURI: "ph://AAAA", providedImageAspectRatio: 1.5 },
+      params: {
+        selectedImageURI: "file:///my/image/path.jpeg",
+        providedImageAspectRatio: 1.5,
+      },
     },
   },
 ) => {
@@ -164,7 +161,10 @@ it("fetches image size itself if aspect ratio wasn't provided", async () => {
 
   renderComponent({
     route: {
-      params: { selectedImageURI: "ph://AAAA", providedImageAspectRatio: null },
+      params: {
+        selectedImageURI: "file:///my/image/path.jpeg",
+        providedImageAspectRatio: null,
+      },
     },
   });
 

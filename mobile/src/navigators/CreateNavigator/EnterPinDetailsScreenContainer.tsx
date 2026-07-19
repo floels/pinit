@@ -1,5 +1,4 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
-import * as MediaLibrary from "expo-media-library/legacy";
 import mime from "mime";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -55,28 +54,21 @@ const EnterPinDetailsScreenContainer = ({
     }
   }, [providedImageAspectRatio]);
 
-  const handleSubmit = async () => {
-    const formData = await buildFormData();
+  const handleSubmit = () => {
+    const formData = buildFormData();
 
     postFormDataAndUpdateUI(formData);
   };
 
-  const buildFormData = async () => {
+  const buildFormData = () => {
     const formData = new FormData();
 
-    // The "selectedImageURI" has format: "ph://...-...-...-..."
-    // For some reason, passing this URI to 'formData.append(...)'
-    // triggers an error: "No suitable URL request handler found for ph-upload".
-    // We circumvent it by passing the URI returned by 'MediaLibrary.getAssetInfoAsync'
-    // instead, as suggested in the following GitHub issue message:
-    // https://github.com/react-native-cameraroll/react-native-cameraroll/issues/52#issuecomment-564641652
-    const imageMediaLibraryURI = await getImageMediaLibraryURI();
-
-    const imageMIMEType =
-      mime.getType(imageMediaLibraryURI || "") || "image/jpeg";
+    // "selectedImageURI" is already a "file://" URI (resolved by
+    // useCameraRollPhotos), so it can be uploaded directly.
+    const imageMIMEType = mime.getType(selectedImageURI) || "image/jpeg";
 
     formData.append("image_file", {
-      uri: imageMediaLibraryURI,
+      uri: selectedImageURI,
       name: "image_file",
       type: imageMIMEType,
     } as any); // We need to disable type-checking here to avoid
@@ -85,16 +77,6 @@ const EnterPinDetailsScreenContainer = ({
     formData.append("description", pinDescription);
 
     return formData;
-  };
-
-  const getImageMediaLibraryURI = async () => {
-    const imageURIWithoutPrefix = selectedImageURI.slice(5); // the part after "ph://"
-
-    const mediaLibraryAssetInfo = await MediaLibrary.getAssetInfoAsync(
-      imageURIWithoutPrefix,
-    );
-
-    return mediaLibraryAssetInfo.localUri;
   };
 
   const postFormDataAndUpdateUI = async (formData: FormData) => {

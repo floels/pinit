@@ -1,19 +1,31 @@
-import * as MediaLibrary from "expo-media-library/legacy";
+import {
+  AssetField,
+  MediaType,
+  Query,
+  usePermissions,
+} from "expo-media-library";
 import { useState, useEffect } from "react";
 
 const NUMBER_CAMERA_ROLL_PHOTOS_FETCHED = 500;
 
+export type CameraRollPhoto = {
+  // A "file://" URI resolved from the asset. React Native's <Image> cannot load
+  // the raw "ph://" asset URIs, so we resolve each to its on-disk file URI, which
+  // also happens to be directly uploadable (no "ph://" upload workaround needed).
+  uri: string;
+};
+
 export const useCameraRollPhotos = () => {
-  const [cameraRollPhotos, setCameraRollPhotos] = useState<
-    MediaLibrary.Asset[]
-  >([]);
+  const [cameraRollPhotos, setCameraRollPhotos] = useState<CameraRollPhoto[]>(
+    [],
+  );
 
   const [refusedCameraRollAccess, setRefusedCameraRollAccess] = useState(false);
 
   const [
     cameraRollAccessPermissionResponse,
     requestCameraRollAccessPermission,
-  ] = MediaLibrary.usePermissions();
+  ] = usePermissions();
 
   const getCameraRollPhotos = async () => {
     if (cameraRollAccessPermissionResponse?.accessPrivileges !== "all") {
@@ -25,12 +37,16 @@ export const useCameraRollPhotos = () => {
       }
     }
 
-    const { assets } = await MediaLibrary.getAssetsAsync({
-      mediaType: "photo",
-      first: NUMBER_CAMERA_ROLL_PHOTOS_FETCHED,
-    });
+    const assets = await new Query()
+      .eq(AssetField.MEDIA_TYPE, MediaType.IMAGE)
+      .limit(NUMBER_CAMERA_ROLL_PHOTOS_FETCHED)
+      .exe();
 
-    setCameraRollPhotos(assets);
+    const photos = await Promise.all(
+      assets.map(async (asset) => ({ uri: await asset.getUri() })),
+    );
+
+    setCameraRollPhotos(photos);
   };
 
   useEffect(() => {

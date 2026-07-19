@@ -1,5 +1,4 @@
 import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
-import { Asset } from "expo-media-library/legacy";
 import {
   Dimensions,
   FlatList,
@@ -10,8 +9,10 @@ import {
 
 import styles, { SPACE_BETWEEN_COLUMNS } from "./CameraRollView.styles";
 
+import { CameraRollPhoto } from "@/src/hooks/useCameraRollPhotos";
+
 type CameraRollViewProps = {
-  cameraRollPhotos: Asset[];
+  cameraRollPhotos: CameraRollPhoto[];
   selectedImageIndex: number | null;
   getPressHandlerForImage: ({
     imageIndex,
