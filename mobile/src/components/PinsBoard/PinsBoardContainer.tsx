@@ -59,14 +59,14 @@ const PinsBoardContainer = ({
   const [hasJustRefreshed, setHasJustRefreshed] = useState(false);
   const [refreshError, setRefreshError] = useState("");
 
-  const onNextPage = async () => {
+  const onNextPage = async (page: number) => {
     setIsFetchingMorePins(true);
     resetAllErrors();
 
     let nextPinsAndAspectRatios;
 
     try {
-      nextPinsAndAspectRatios = await fetchNextPinsAndImageRatios();
+      nextPinsAndAspectRatios = await fetchNextPinsAndImageRatios(page);
     } catch (error) {
       if (error instanceof Response401Error) {
         dispatch({ type: "GOT_401_RESPONSE" });
@@ -100,7 +100,7 @@ const PinsBoardContainer = ({
     let firstPinsAndAspectRatios;
 
     try {
-      firstPinsAndAspectRatios = await fetchNextPinsAndImageRatios();
+      firstPinsAndAspectRatios = await fetchNextPinsAndImageRatios(1);
     } catch (error) {
       if (error instanceof Response401Error) {
         dispatch({ type: "GOT_401_RESPONSE" });
@@ -126,8 +126,8 @@ const PinsBoardContainer = ({
     setPinImageAspectRatios(firstPinsImageRatios);
   };
 
-  const fetchNextPinsAndImageRatios = async () => {
-    const nextPins = await fetchNextPins();
+  const fetchNextPinsAndImageRatios = async (page: number) => {
+    const nextPins = await fetchNextPins(page);
 
     const nextPinsImageAspectRatios = await fetchImageRatios({
       pins: nextPins,
@@ -136,11 +136,11 @@ const PinsBoardContainer = ({
     return { nextPins, nextPinsImageAspectRatios };
   };
 
-  const fetchNextPins = async () => {
+  const fetchNextPins = async (page: number) => {
     const endpointWithPageParameter = appendQueryParam({
       url: fetchEndpoint,
       key: "page",
-      value: currentPage.toString(),
+      value: page.toString(),
     });
 
     const newPinsResponse = await fetchWithAuthenticationIfNeeded(
@@ -174,7 +174,7 @@ const PinsBoardContainer = ({
     pins: PinWithAuthorDetails[];
   }): Promise<(number | null)[]> => {
     const buildGetSizePromiseForPin = (pin: PinWithAuthorDetails) => {
-      return new Promise((resolve, reject) => {
+      return new Promise<number | null>((resolve) => {
         const imageURL = pin.imageURL;
 
         Image.getSize(
@@ -183,8 +183,11 @@ const PinsBoardContainer = ({
             const aspectRatio = width / height;
             resolve(aspectRatio);
           },
-          (error) => {
-            reject(error);
+          // A single image failing to size (404, transient error, unsupported
+          // URI) must not discard the whole page; resolve null and let
+          // PinThumbnailsGrid skip that pin.
+          () => {
+            resolve(null);
           },
         );
       });
@@ -192,9 +195,7 @@ const PinsBoardContainer = ({
 
     const aspectRatioPromises = pins.map(buildGetSizePromiseForPin);
 
-    const imageRatios = await Promise.all(aspectRatioPromises);
-
-    return imageRatios as (number | null)[];
+    return Promise.all(aspectRatioPromises);
   };
 
   const resetAllErrors = () => {
@@ -250,13 +251,14 @@ const PinsBoardContainer = ({
   useEffect(() => {
     setCurrentPage(1);
     setPins([]);
-    onNextPage();
+    setPinImageAspectRatios([]);
+    onNextPage(1);
   }, [fetchEndpoint]);
 
   // React to user scrolling down to next page:
   useEffect(() => {
     if (currentPage > 1) {
-      onNextPage();
+      onNextPage(currentPage);
     }
   }, [currentPage]);
 

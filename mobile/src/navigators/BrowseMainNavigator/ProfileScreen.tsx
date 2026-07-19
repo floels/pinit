@@ -11,14 +11,18 @@ import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
 import {
   ACCESS_TOKEN_EXPIRATION_DATE_STORAGE_KEY,
   ACCESS_TOKEN_STORAGE_KEY,
+  PROFILE_PICTURE_URL_STORAGE_KEY,
   REFRESH_TOKEN_STORAGE_KEY,
 } from "@/src/lib/constants";
 
 const clearTokensData = async () => {
   await Promise.all([
-    await SecureStore.deleteItemAsync(ACCESS_TOKEN_STORAGE_KEY),
-    await SecureStore.deleteItemAsync(REFRESH_TOKEN_STORAGE_KEY),
-    await AsyncStorage.removeItem(ACCESS_TOKEN_EXPIRATION_DATE_STORAGE_KEY),
+    SecureStore.deleteItemAsync(ACCESS_TOKEN_STORAGE_KEY),
+    SecureStore.deleteItemAsync(REFRESH_TOKEN_STORAGE_KEY),
+    AsyncStorage.removeItem(ACCESS_TOKEN_EXPIRATION_DATE_STORAGE_KEY),
+    // Also clear the cached profile picture so it doesn't leak into the next
+    // account that logs in on this device.
+    AsyncStorage.removeItem(PROFILE_PICTURE_URL_STORAGE_KEY),
   ]);
 };
 

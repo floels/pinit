@@ -15,9 +15,10 @@ export type SearchNavigatorParamList = {
   };
 };
 
-const SearchNavigator = () => {
-  const StackNavigator = createStackNavigator<SearchNavigatorParamList>();
+// Created at module scope so it isn't rebuilt (and the tree remounted) on every render.
+const StackNavigator = createStackNavigator<SearchNavigatorParamList>();
 
+const SearchNavigator = () => {
   return (
     <StackNavigator.Navigator
       screenOptions={{

@@ -20,11 +20,12 @@ export type BrowseNavigatorParamList = {
   };
 };
 
+// Created at module scope so it isn't rebuilt (and the tree remounted) on every render.
+const StackNavigator = createStackNavigator<BrowseNavigatorParamList>();
+
 const BrowseNavigator = (props: BrowseNavigatorProps) => {
   const { createdPin, createdPinImageAspectRatio } = props.route.params || {}; // 'route.params'
   // is undefined, unless when we just created a pin.
-
-  const StackNavigator = createStackNavigator<BrowseNavigatorParamList>();
 
   return (
     <StackNavigator.Navigator screenOptions={{ headerShown: false }}>

@@ -19,9 +19,10 @@ type CreateNavigatorProps = {
   navigation: NavigationProp<AuthenticatedNavigatorParamList>;
 };
 
-const CreateNavigator = (props: CreateNavigatorProps) => {
-  const StackNavigator = createStackNavigator<CreatePinNavigatorParamList>();
+// Created at module scope so it isn't rebuilt (and the tree remounted) on every render.
+const StackNavigator = createStackNavigator<CreatePinNavigatorParamList>();
 
+const CreateNavigator = (props: CreateNavigatorProps) => {
   const handleCreateSuccess = ({
     createdPin,
     createdPinImageAspectRatio,

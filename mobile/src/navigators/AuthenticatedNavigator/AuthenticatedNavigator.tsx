@@ -14,10 +14,10 @@ export type AuthenticatedNavigatorParamList = {
   "Authenticated.Create": undefined;
 };
 
-const AuthenticatedNavigator = () => {
-  const StackNavigator =
-    createStackNavigator<AuthenticatedNavigatorParamList>();
+// Created at module scope so it isn't rebuilt (and the tree remounted) on every render.
+const StackNavigator = createStackNavigator<AuthenticatedNavigatorParamList>();
 
+const AuthenticatedNavigator = () => {
   return (
     <StackNavigator.Navigator
       screenOptions={{

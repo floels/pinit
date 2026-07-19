@@ -8,9 +8,10 @@ export type UnauthenticatedNavigatorParamList = {
   "Unauthenticated.Login": undefined;
 };
 
-const UnauthenticatedNavigator = () => {
-  const StackNavigator = createStackNavigator();
+// Created at module scope so it isn't rebuilt (and the tree remounted) on every render.
+const StackNavigator = createStackNavigator();
 
+const UnauthenticatedNavigator = () => {
   return (
     <StackNavigator.Navigator screenOptions={{ headerShown: false }}>
       <StackNavigator.Screen
