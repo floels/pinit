@@ -1,6 +1,5 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
-import * as MediaLibrary from "expo-media-library/legacy";
-import mime from "mime";
+import { File, UploadType } from "expo-file-system";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image } from "react-native";
@@ -9,10 +8,20 @@ import Toast from "react-native-toast-message";
 import { CreatePinNavigatorParamList } from "./CreateNavigator";
 import EnterPinDetailsScreen from "./EnterPinDetailsScreen";
 
-import { API_BASE_URL, API_ENDPOINT_CREATE_PIN } from "@/src/lib/constants";
+import {
+  API_BASE_URL,
+  API_ENDPOINT_CREATE_PIN,
+  API_ENDPOINT_PIN_IMAGE_UPLOAD_URL,
+} from "@/src/lib/constants";
 import { Pin } from "@/src/lib/types";
 import { fetchWithAuthentication, throwIfKO } from "@/src/lib/utils/fetch";
 import { serializePin } from "@/src/lib/utils/serializers";
+
+// The backend's presigned-upload endpoint only accepts JPEG and PNG.
+const CONTENT_TYPE_BY_EXTENSION: { [extension: string]: string } = {
+  ".jpg": "image/jpeg",
+  ".png": "image/png",
+};
 
 type EnterPinDetailsScreenContainerProps = {
   navigation: NavigationProp<CreatePinNavigatorParamList>;
@@ -55,55 +64,19 @@ const EnterPinDetailsScreenContainer = ({
     }
   }, [providedImageAspectRatio]);
 
-  const handleSubmit = async () => {
-    const formData = await buildFormData();
-
-    postFormDataAndUpdateUI(formData);
+  const handleSubmit = () => {
+    uploadImageAndCreatePin();
   };
 
-  const buildFormData = async () => {
-    const formData = new FormData();
-
-    // The "selectedImageURI" has format: "ph://...-...-...-..."
-    // For some reason, passing this URI to 'formData.append(...)'
-    // triggers an error: "No suitable URL request handler found for ph-upload".
-    // We circumvent it by passing the URI returned by 'MediaLibrary.getAssetInfoAsync'
-    // instead, as suggested in the following GitHub issue message:
-    // https://github.com/react-native-cameraroll/react-native-cameraroll/issues/52#issuecomment-564641652
-    const imageMediaLibraryURI = await getImageMediaLibraryURI();
-
-    const imageMIMEType =
-      mime.getType(imageMediaLibraryURI || "") || "image/jpeg";
-
-    formData.append("image_file", {
-      uri: imageMediaLibraryURI,
-      name: "image_file",
-      type: imageMIMEType,
-    } as any); // We need to disable type-checking here to avoid
-    // an unjustified TypeScript error.
-    formData.append("title", pinTitle);
-    formData.append("description", pinDescription);
-
-    return formData;
-  };
-
-  const getImageMediaLibraryURI = async () => {
-    const imageURIWithoutPrefix = selectedImageURI.slice(5); // the part after "ph://"
-
-    const mediaLibraryAssetInfo = await MediaLibrary.getAssetInfoAsync(
-      imageURIWithoutPrefix,
-    );
-
-    return mediaLibraryAssetInfo.localUri;
-  };
-
-  const postFormDataAndUpdateUI = async (formData: FormData) => {
+  const uploadImageAndCreatePin = async () => {
     setIsPosting(true);
 
     let createdPin;
 
     try {
-      createdPin = await postFormData(formData);
+      const imageFileKey = await uploadImageToS3();
+
+      createdPin = await createPin(imageFileKey);
     } catch {
       handlePostError();
       return;
@@ -118,12 +91,43 @@ const EnterPinDetailsScreenContainer = ({
     });
   };
 
-  const postFormData = async (formData: FormData) => {
+  // Pin images are uploaded straight to S3 through a presigned URL, then the
+  // pin is created referencing the uploaded object by its key (mirrors the web
+  // client). See backend `GetPinImageUploadUrlView` / `CreatePinView`.
+  const uploadImageToS3 = async () => {
+    const fileExtension = getImageFileExtension();
+
+    const uploadURLResponse = await fetchWithAuthentication(
+      `${API_BASE_URL}/${API_ENDPOINT_PIN_IMAGE_UPLOAD_URL}?file_extension=${fileExtension}`,
+    );
+    throwIfKO(uploadURLResponse);
+
+    const { upload_url, image_file_key } = await uploadURLResponse.json();
+
+    const uploadResult = await new File(selectedImageURI).upload(upload_url, {
+      httpMethod: "PUT",
+      uploadType: UploadType.BINARY_CONTENT,
+      headers: { "Content-Type": CONTENT_TYPE_BY_EXTENSION[fileExtension] },
+    });
+
+    if (uploadResult.status < 200 || uploadResult.status >= 300) {
+      throw new Error(`S3 upload failed with status ${uploadResult.status}`);
+    }
+
+    return image_file_key as string;
+  };
+
+  const createPin = async (imageFileKey: string) => {
     const response = await fetchWithAuthentication(
       `${API_BASE_URL}/${API_ENDPOINT_CREATE_PIN}`,
       {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: pinTitle,
+          description: pinDescription,
+          image_file_key: imageFileKey,
+        }),
       },
     );
 
@@ -132,6 +136,17 @@ const EnterPinDetailsScreenContainer = ({
     const responseData = await response.json();
 
     return serializePin(responseData);
+  };
+
+  const getImageFileExtension = () => {
+    const match = selectedImageURI.toLowerCase().match(/\.(jpe?g|png)$/);
+
+    if (!match) {
+      // Anything other than JPEG/PNG is rejected by the backend.
+      throw new Error(`Unsupported image file: ${selectedImageURI}`);
+    }
+
+    return match[1] === "png" ? ".png" : ".jpg";
   };
 
   const handlePostError = () => {
