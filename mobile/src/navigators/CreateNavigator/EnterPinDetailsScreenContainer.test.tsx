@@ -4,22 +4,29 @@ import {
   userEvent,
   waitFor,
 } from "@testing-library/react-native";
-import { FetchMock } from "jest-fetch-mock";
+import { File } from "expo-file-system";
 import { Image } from "react-native";
 import Toast from "react-native-toast-message";
 
 import EnterPinDetailsScreenContainer from "./EnterPinDetailsScreenContainer";
 
-import { API_BASE_URL, API_ENDPOINT_CREATE_PIN } from "@/src/lib/constants";
-import { MockFormData, pressButton } from "@/src/lib/testing-utils/misc";
+import {
+  API_BASE_URL,
+  API_ENDPOINT_CREATE_PIN,
+  API_ENDPOINT_PIN_IMAGE_UPLOAD_URL,
+} from "@/src/lib/constants";
+import { pressButton } from "@/src/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
 } from "@/src/lib/testing-utils/mockAPIResponses";
 import enTranslations from "@/translations/en.json";
 
-jest.mock("mime", () => ({
-  getType: () => "image/jpeg",
+const mockUpload = jest.fn();
+
+jest.mock("expo-file-system", () => ({
+  File: jest.fn().mockImplementation(() => ({ upload: mockUpload })),
+  UploadType: { BINARY_CONTENT: 0, MULTIPART: 1 },
 }));
 
 jest.mock("expo-secure-store", () => ({
@@ -31,6 +38,15 @@ jest.mock("react-native-toast-message", () => ({
 }));
 
 Image.getSize = jest.fn();
+
+const MockFile = File as unknown as jest.Mock;
+
+const uploadURLEndpoint = `${API_BASE_URL}/${API_ENDPOINT_PIN_IMAGE_UPLOAD_URL}`;
+const createPinEndpoint = `${API_BASE_URL}/${API_ENDPOINT_CREATE_PIN}`;
+
+const MOCK_UPLOAD_URL =
+  "https://s3.example.test/pins/pin_image_abc.jpg?sig=xyz";
+const MOCK_IMAGE_FILE_KEY = "pins/pin_image_abc.jpg";
 
 const mockNavigation = {
   goBack: jest.fn(),
@@ -57,7 +73,20 @@ const renderComponent = (
   );
 };
 
-const createPinEndpoint = `${API_BASE_URL}/${API_ENDPOINT_CREATE_PIN}`;
+// Queues the two backend responses the create flow expects: the presigned
+// upload URL, then the pin-creation response.
+const mockBackendResponses = ({ createInit = { status: 201 } } = {}) => {
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      upload_url: MOCK_UPLOAD_URL,
+      image_file_key: MOCK_IMAGE_FILE_KEY,
+    }),
+  );
+  fetchMock.mockResponseOnce(
+    MOCK_API_RESPONSES[API_ENDPOINT_CREATE_PIN],
+    createInit,
+  );
+};
 
 const typeInTitleInput = async (input: string) => {
   const titleInput = screen.getByTestId("pin-title-input");
@@ -71,13 +100,16 @@ const typeInDescriptionInput = async (input: string) => {
   await userEvent.type(descriptionInput, input);
 };
 
-(global.FormData as any) = MockFormData;
-
 beforeEach(() => {
   fetchMock.resetMocks();
+  mockUpload.mockReset();
+  mockUpload.mockResolvedValue({ status: 200, body: "", headers: {} });
+  MockFile.mockClear();
 });
 
-it("calls 'fetch' with proper arguments upon pressing 'Create'", async () => {
+it("uploads the image via a presigned URL then creates the pin", async () => {
+  mockBackendResponses();
+
   renderComponent();
 
   await typeInTitleInput("My pin title");
@@ -86,40 +118,49 @@ it("calls 'fetch' with proper arguments upon pressing 'Create'", async () => {
   pressButton({ testID: "create-pin-submit-button" });
 
   await waitFor(() => {
-    expect(fetch).toHaveBeenCalledWith(
+    // 1. Requests a presigned upload URL for the image's extension.
+    expect(fetch).toHaveBeenNthCalledWith(
+      1,
+      `${uploadURLEndpoint}?file_extension=.jpg`,
+      expect.objectContaining({
+        headers: { Authorization: "Bearer access_token" },
+      }),
+    );
+
+    // 2. Uploads the file's bytes straight to S3 via the presigned URL.
+    expect(MockFile).toHaveBeenCalledWith("file:///my/image/path.jpeg");
+    expect(mockUpload).toHaveBeenCalledWith(
+      MOCK_UPLOAD_URL,
+      expect.objectContaining({
+        httpMethod: "PUT",
+        headers: { "Content-Type": "image/jpeg" },
+      }),
+    );
+
+    // 3. Creates the pin referencing the uploaded object by its key.
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
       createPinEndpoint,
       expect.objectContaining({
         method: "POST",
         headers: {
           Authorization: "Bearer access_token",
+          "Content-Type": "application/json",
         },
-        body: expect.anything(),
+        body: JSON.stringify({
+          title: "My pin title",
+          description: "My pin description",
+          image_file_key: MOCK_IMAGE_FILE_KEY,
+        }),
       }),
     );
-
-    const fetchCall = (fetch as FetchMock).mock.calls[0] as any;
-    const formData = fetchCall[1].body;
-
-    expect(formData.entries.title).toBe("My pin title");
-    expect(formData.entries.description).toBe("My pin description");
-    expect(formData.entries.image_file).toEqual({
-      uri: "file:///my/image/path.jpeg",
-      name: "image_file",
-      type: "image/jpeg",
-    });
   });
 });
 
 it("calls 'handleCreateSuccess' with proper arguments upon successful pin creation", async () => {
-  renderComponent();
+  mockBackendResponses();
 
-  fetchMock.mockOnceIf(
-    createPinEndpoint,
-    MOCK_API_RESPONSES[API_ENDPOINT_CREATE_PIN],
-    {
-      status: 201,
-    },
-  );
+  renderComponent();
 
   pressButton({ testID: "create-pin-submit-button" });
 
@@ -135,10 +176,10 @@ it("calls 'handleCreateSuccess' with proper arguments upon successful pin creati
   });
 });
 
-it("displays error response toast upon KO response", async () => {
-  renderComponent();
+it("displays error response toast upon KO create response", async () => {
+  mockBackendResponses({ createInit: { status: 400 } });
 
-  fetchMock.mockOnceIf(createPinEndpoint, "{}", { status: 400 });
+  renderComponent();
 
   pressButton({ testID: "create-pin-submit-button" });
 
@@ -152,12 +193,31 @@ it("displays error response toast upon KO response", async () => {
   });
 });
 
+it("displays error response toast when the S3 upload fails", async () => {
+  mockBackendResponses();
+  mockUpload.mockResolvedValue({ status: 403, body: "", headers: {} });
+
+  renderComponent();
+
+  pressButton({ testID: "create-pin-submit-button" });
+
+  await waitFor(() => {
+    expect(Toast.show).toHaveBeenLastCalledWith(
+      expect.objectContaining({ type: "pinCreationError" }),
+    );
+  });
+  // The pin must not be created if the image failed to upload.
+  expect(fetch).not.toHaveBeenCalledWith(createPinEndpoint, expect.anything());
+});
+
 it("fetches image size itself if aspect ratio wasn't provided", async () => {
   const fetchedAspectRatio = 1.2;
 
   (Image.getSize as jest.Mock).mockImplementationOnce((_, success) => {
     success(100, 100 / fetchedAspectRatio);
   });
+
+  mockBackendResponses();
 
   renderComponent({
     route: {
@@ -167,14 +227,6 @@ it("fetches image size itself if aspect ratio wasn't provided", async () => {
       },
     },
   });
-
-  fetchMock.mockOnceIf(
-    createPinEndpoint,
-    JSON.stringify(MOCK_API_RESPONSES[API_ENDPOINT_CREATE_PIN]),
-    {
-      status: 201,
-    },
-  );
 
   pressButton({ testID: "create-pin-submit-button" });
 
