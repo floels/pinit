@@ -1,24 +1,9 @@
-import { useState } from "react";
-
-import AccessTokenRefresher from "./AccessTokenRefresher";
 import AccountDetailsFetcher from "./AccountDetailsFetcher";
 
+// The access token is now refreshed by the navigation gate before the
+// authenticated tree mounts (see NavigationContainer), so the only remaining
+// authenticated-setup step is fetching the current account's details.
 const AuthenticatedSetupBuilder = () => {
-  const [isFetchingRefreshedToken, setIsFetchingRefreshedToken] =
-    useState(true);
-
-  const handleFinishedFetchingRefreshToken = () => {
-    setIsFetchingRefreshedToken(false);
-  };
-
-  if (isFetchingRefreshedToken) {
-    return (
-      <AccessTokenRefresher
-        handleFinishedFetching={handleFinishedFetchingRefreshToken}
-      />
-    );
-  }
-
   return <AccountDetailsFetcher />;
 };
 

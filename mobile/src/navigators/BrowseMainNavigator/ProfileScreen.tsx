@@ -1,5 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View, TouchableOpacity, Text } from "react-native";
@@ -8,21 +6,7 @@ import styles from "./ProfileScreen.styles";
 
 import LoadingOverlay from "@/src/components/LoadingOverlay/LoadingOverlay";
 import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
-import {
-  ACCESS_TOKEN_EXPIRATION_DATE_STORAGE_KEY,
-  ACCESS_TOKEN_STORAGE_KEY,
-  PROFILE_PICTURE_URL_STORAGE_KEY,
-  REFRESH_TOKEN_STORAGE_KEY,
-} from "@/src/lib/constants";
-
-const clearTokensData = async () => {
-  await Promise.all([
-    SecureStore.deleteItemAsync(ACCESS_TOKEN_STORAGE_KEY),
-    SecureStore.deleteItemAsync(REFRESH_TOKEN_STORAGE_KEY),
-    AsyncStorage.removeItem(ACCESS_TOKEN_EXPIRATION_DATE_STORAGE_KEY),
-    AsyncStorage.removeItem(PROFILE_PICTURE_URL_STORAGE_KEY),
-  ]);
-};
+import { clearStoredAuthData } from "@/src/lib/utils/authentication";
 
 const ProfileScreen = () => {
   const { t } = useTranslation();
@@ -35,7 +19,7 @@ const ProfileScreen = () => {
     setIsClearingTokensData(true);
 
     try {
-      await clearTokensData();
+      await clearStoredAuthData();
     } catch {
       // Fail silently:
       setIsClearingTokensData(false);

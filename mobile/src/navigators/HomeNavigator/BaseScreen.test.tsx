@@ -21,6 +21,13 @@ jest.mock("expo-secure-store", () => ({
   getItemAsync: () => "access_token",
 })); // needed to be able to fetch with authentication
 
+// This screen also mounts the account-details fetcher; mock it out so its
+// request doesn't interfere with the pins-board fetch this test cares about.
+jest.mock(
+  "@/src/components/AuthenticatedSetupBuilder/AuthenticatedSetupBuilder",
+  () => () => null,
+);
+
 Image.getSize = jest.fn();
 
 const pinImagesWidth = 100;

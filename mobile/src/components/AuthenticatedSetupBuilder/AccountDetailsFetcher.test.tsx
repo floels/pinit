@@ -20,10 +20,12 @@ import {
 jest.mock("expo-secure-store", () => ({
   getItemAsync: jest.fn(),
   setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
 }));
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
   setItem: jest.fn(),
+  removeItem: jest.fn(),
 }));
 
 const mockAuthenticationContextDispatch = jest.fn();

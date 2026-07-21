@@ -9,6 +9,7 @@ import {
   PROFILE_PICTURE_URL_STORAGE_KEY,
 } from "@/src/lib/constants";
 import { Response401Error } from "@/src/lib/customErrors";
+import { clearStoredAuthData } from "@/src/lib/utils/authentication";
 import { fetchWithAuthentication, throwIfKO } from "@/src/lib/utils/fetch";
 import { serializeAccountWithPrivateDetails } from "@/src/lib/utils/serializers";
 
@@ -23,6 +24,7 @@ const AccountDetailsFetcher = () => {
       accountDetails = await fetchAccountDetails();
     } catch (error) {
       if (error instanceof Response401Error) {
+        await clearStoredAuthData();
         authenticationContext.dispatch({ type: "GOT_401_RESPONSE" });
         return;
       }
