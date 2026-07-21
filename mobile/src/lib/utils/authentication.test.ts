@@ -13,6 +13,7 @@ import {
   TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS,
   clearStoredAuthData,
   ensureFreshAccessToken,
+  refreshAccessToken,
 } from "@/src/lib/utils/authentication";
 
 jest.mock("expo-secure-store", () => ({
@@ -86,6 +87,51 @@ describe("ensureFreshAccessToken", () => {
     fetchMock.mockResponseOnce("{}", { status: 401 });
 
     const result = await ensureFreshAccessToken();
+
+    expect(result).toBe(false);
+  });
+});
+
+describe("refreshAccessToken", () => {
+  it("refreshes and persists the token regardless of the local expiry, then returns true", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        access_token: "new-access-token",
+        access_token_expiration_utc: "2999-01-01T00:00:00Z",
+      }),
+    );
+
+    const result = await refreshAccessToken();
+
+    expect(result).toBe(true);
+    // It does not consult the local expiration date — it always attempts a
+    // refresh (used when the server has already rejected the access token):
+    expect(AsyncStorage.getItem).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledWith(
+      refreshEndpoint,
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      ACCESS_TOKEN_STORAGE_KEY,
+      "new-access-token",
+    );
+  });
+
+  it("returns false when there is no refresh token to refresh with", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(null);
+
+    const result = await refreshAccessToken();
+
+    expect(result).toBe(false);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("returns false when the refresh request fails", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
+    fetchMock.mockResponseOnce("{}", { status: 401 });
+
+    const result = await refreshAccessToken();
 
     expect(result).toBe(false);
   });

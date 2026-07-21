@@ -126,13 +126,22 @@ that tracks `isCheckingAccessToken` and `isAuthenticated`.
    expiry, and dispatches `LOGGED_IN`.
 3. **Authenticated requests.** `fetchWithAuthentication`
    ([`src/lib/utils/fetch.ts`](src/lib/utils/fetch.ts)) attaches
-   `Authorization: Bearer <access token>` read from secure store. Because the
-   gate refreshed first, these requests use a fresh token.
-4. **401 handling.** If an authenticated request still returns 401 (e.g. the
-   token was revoked mid-session), the app clears **all** stored auth data via
-   `clearStoredAuthData()` and dispatches `GOT_401_RESPONSE`, returning to login.
-   Clearing the tokens matters: otherwise a dead token would bounce the user in
-   and out of the app on the next launch.
+   `Authorization: Bearer <access token>` read from secure store. The gate
+   refreshes proactively, but if a request still comes back **401** (clock skew,
+   a token invalidated server-side, or an access-token lifetime shorter than a
+   session), `fetchWithAuthentication` transparently calls `refreshAccessToken()`
+   once, persists the new token, and **retries the request** with it. The caller
+   never sees the 401 unless the refresh itself fails. This "reactive" refresh
+   mirrors the web app's `useFetchWithAuth` and is what lets the access token be
+   short-lived without logging users out mid-session.
+4. **401 handling.** A 401 only reaches the caller when the reactive refresh
+   above _also_ failed — i.e. the session is genuinely dead (no refresh token, or
+   the refresh request was itself rejected). In that case the consumer
+   ([`useMyAccountDetails`](src/hooks/useMyAccountDetails.ts),
+   [`PinsBoardContainer`](src/components/PinsBoard/PinsBoardContainer.tsx)) clears
+   **all** stored auth data via `clearStoredAuthData()` and dispatches
+   `GOT_401_RESPONSE`, returning to login. Clearing the tokens matters: otherwise
+   a dead token would bounce the user in and out of the app on the next launch.
 5. **Logout.**
    [`ProfileScreen`](src/navigators/BrowseMainNavigator/ProfileScreen.tsx) calls
    `clearStoredAuthData()` and dispatches `LOGGED_OUT`.

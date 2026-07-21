@@ -9,7 +9,7 @@ import {
   PROFILE_PICTURE_URL_STORAGE_KEY,
   REFRESH_TOKEN_STORAGE_KEY,
 } from "@/src/lib/constants";
-import { throwIfKO } from "@/src/lib/utils/fetch";
+import { ResponseKOError } from "@/src/lib/customErrors";
 
 export const TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS = 60 * 60 * 1000; // i.e. 1 hour
 
@@ -61,6 +61,16 @@ export const ensureFreshAccessToken = async (): Promise<boolean> => {
     return true;
   }
 
+  return refreshAccessToken();
+};
+
+// Unconditionally attempts to obtain a new access token from the stored refresh
+// token, persisting it on success. Returns `true` when the session is usable
+// afterwards and `false` when it could not be refreshed (no refresh token, or
+// the refresh request failed), meaning the caller should treat the session as
+// ended. Unlike `ensureFreshAccessToken`, this ignores the local expiration
+// date — use it when the server has already rejected the access token (401).
+export const refreshAccessToken = async (): Promise<boolean> => {
   const refreshToken = await SecureStore.getItemAsync(
     REFRESH_TOKEN_STORAGE_KEY,
   );
@@ -125,7 +135,9 @@ const fetchRefreshedAccessToken = async ({
     },
   );
 
-  throwIfKO(response);
+  if (!response.ok) {
+    throw new ResponseKOError();
+  }
 
   const responseData = await response.json();
 
