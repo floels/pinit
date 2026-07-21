@@ -11,7 +11,12 @@ import {
 } from "@/src/lib/constants";
 import { ResponseKOError } from "@/src/lib/customErrors";
 
-export const TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS = 60 * 60 * 1000; // i.e. 1 hour
+// Small buffer so the launch gate proactively refreshes an access token that is
+// about to expire, rather than letting the first authenticated request race
+// expiry. It must stay well below the access-token lifetime (15 min, see the
+// backend's SIMPLE_JWT config); the reactive on-401 refresh in `fetch.ts` is the
+// safety net for anything that slips through.
+export const TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS = 2 * 60 * 1000; // i.e. 2 minutes
 
 export const persistTokensData = async ({
   accessToken,

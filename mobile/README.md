@@ -114,7 +114,7 @@ that tracks `isCheckingAccessToken` and `isAuthenticated`.
    - No token → render the unauthenticated (login) tree.
    - Token present → `ensureFreshAccessToken()` refreshes it _before_ entering
      the authenticated tree, when the stored expiry is missing or within
-     `TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS` (1 hour) of expiring. Refreshing
+     `TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS` (2 minutes) of expiring. Refreshing
      up front — rather than concurrently with the first authenticated request —
      avoids a race where a screen fires a request with a stale token and gets a
      spurious 401. If the session can't be refreshed (no refresh token, or the
