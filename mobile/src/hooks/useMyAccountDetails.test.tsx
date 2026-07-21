@@ -11,6 +11,7 @@ import { AuthenticationContext } from "@/src/contexts/authenticationContext";
 import {
   API_BASE_URL,
   API_ENDPOINT_MY_ACCOUNT_DETAILS,
+  API_ENDPOINT_REFRESH_TOKEN,
   PROFILE_PICTURE_URL_STORAGE_KEY,
 } from "@/src/lib/constants";
 import {
@@ -21,6 +22,7 @@ import {
 
 jest.mock("expo-secure-store", () => ({
   getItemAsync: jest.fn(() => Promise.resolve("access_token")),
+  setItemAsync: jest.fn(),
   deleteItemAsync: jest.fn(),
 }));
 
@@ -30,6 +32,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 }));
 
 const accountDetailsEndpoint = `${API_BASE_URL}/${API_ENDPOINT_MY_ACCOUNT_DETAILS}`;
+const refreshTokenEndpoint = `${API_BASE_URL}/${API_ENDPOINT_REFRESH_TOKEN}`;
 
 const mockDispatch = jest.fn();
 const mockSetAccount = jest.fn();
@@ -66,6 +69,8 @@ beforeEach(() => {
   mockDispatch.mockReset();
   mockSetAccount.mockReset();
   (AsyncStorage.setItem as jest.Mock).mockReset();
+  (SecureStore.getItemAsync as jest.Mock).mockClear();
+  (SecureStore.setItemAsync as jest.Mock).mockReset();
   (SecureStore.deleteItemAsync as jest.Mock).mockReset();
 });
 
@@ -89,8 +94,45 @@ it("sets the account and caches the profile picture upon successful fetch", asyn
   );
 });
 
-it("clears stored auth data and logs out upon a 401 response", async () => {
-  fetchMock.mockOnceIf(accountDetailsEndpoint, "{}", { status: 401 });
+it("refreshes the token and retries without logging out upon a recoverable 401", async () => {
+  let accountCallCount = 0;
+
+  fetchMock.mockResponse(async (request) => {
+    if (request.url === refreshTokenEndpoint) {
+      return JSON.stringify({
+        access_token: "new_access_token",
+        access_token_expiration_utc: "2099-01-01T00:00:00Z",
+      });
+    }
+
+    // The account-details endpoint rejects the stale token once, then succeeds
+    // on the retry with the freshly refreshed token.
+    accountCallCount += 1;
+
+    if (accountCallCount === 1) {
+      return { status: 401, body: "{}" };
+    }
+
+    return MOCK_API_RESPONSES[API_ENDPOINT_MY_ACCOUNT_DETAILS];
+  });
+
+  renderUseMyAccountDetails();
+
+  await waitFor(() => {
+    expect(mockSetAccount).toHaveBeenCalledWith(
+      MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_MY_ACCOUNT_DETAILS],
+    );
+  });
+  // The recoverable 401 must not have logged the user out, and the refreshed
+  // access token must have been persisted:
+  expect(mockDispatch).not.toHaveBeenCalledWith({ type: "GOT_401_RESPONSE" });
+  expect(SecureStore.setItemAsync).toHaveBeenCalled();
+});
+
+it("clears stored auth data and logs out when a 401 cannot be recovered", async () => {
+  // Both the account fetch and the subsequent refresh return 401, so the
+  // session is genuinely dead and the user should be logged out.
+  fetchMock.mockResponse("{}", { status: 401 });
 
   renderUseMyAccountDetails();
 
