@@ -153,9 +153,4 @@ jobs:
         run: yarn tsc
 
       - name: Run component tests
-        run: yarn jest --coverage --runInBand
-
-      - name: Upload coverage report to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          files: mobile/coverage/coverage-final.json
+        run: yarn jest --runInBand
