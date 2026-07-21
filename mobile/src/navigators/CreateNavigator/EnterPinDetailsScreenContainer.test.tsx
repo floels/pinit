@@ -37,9 +37,24 @@ jest.mock("react-native-toast-message", () => ({
   show: jest.fn(),
 }));
 
+jest.mock("expo-image-manipulator", () => ({
+  SaveFormat: { JPEG: "jpeg", PNG: "png", WEBP: "webp" },
+  ImageManipulator: {
+    manipulate: jest.fn(() => ({
+      renderAsync: () =>
+        Promise.resolve({
+          saveAsync: () =>
+            Promise.resolve({ uri: "file:///converted/image.jpg" }),
+        }),
+    })),
+  },
+}));
+
 Image.getSize = jest.fn();
 
 const MockFile = File as unknown as jest.Mock;
+
+const MOCK_JPEG_URI = "file:///converted/image.jpg";
 
 const uploadURLEndpoint = `${API_BASE_URL}/${API_ENDPOINT_PIN_IMAGE_UPLOAD_URL}`;
 const createPinEndpoint = `${API_BASE_URL}/${API_ENDPOINT_CREATE_PIN}`;
@@ -127,8 +142,8 @@ it("uploads the image via a presigned URL then creates the pin", async () => {
       }),
     );
 
-    // 2. Uploads the file's bytes straight to S3 via the presigned URL.
-    expect(MockFile).toHaveBeenCalledWith("file:///my/image/path.jpeg");
+    // 2. Uploads the JPEG-converted file's bytes straight to S3.
+    expect(MockFile).toHaveBeenCalledWith(MOCK_JPEG_URI);
     expect(mockUpload).toHaveBeenCalledWith(
       MOCK_UPLOAD_URL,
       expect.objectContaining({
