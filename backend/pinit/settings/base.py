@@ -111,8 +111,14 @@ STORAGES = {
     },
 }
 
+# The access token is a stateless, non-revocable bearer token, so it is kept
+# short-lived to bound the window in which a leaked one is usable. Both clients
+# refresh transparently: the web app and the mobile app refresh proactively
+# before expiry and reactively on a 401 (refresh + retry), so a short lifetime
+# does not surface to the user as a logout. The refresh token is long-lived and
+# is what keeps a session alive across the short access-token windows.
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
 }
 
