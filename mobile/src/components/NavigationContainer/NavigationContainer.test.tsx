@@ -47,7 +47,9 @@ beforeEach(() => {
 
 it("renders authenticated navigator when a fresh access token is found", async () => {
   (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("access-token");
-  (AsyncStorage.getItem as jest.Mock).mockResolvedValue(DISTANT_EXPIRATION_DATE);
+  (AsyncStorage.getItem as jest.Mock).mockResolvedValue(
+    DISTANT_EXPIRATION_DATE,
+  );
 
   renderComponent();
 
