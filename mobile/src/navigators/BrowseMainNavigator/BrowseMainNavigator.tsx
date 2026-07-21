@@ -64,14 +64,14 @@ const screenOptions = ({
   };
 };
 
+const TabNavigator = createBottomTabNavigator<BrowseMainNavigatorParamList>();
+
 const BrowseMainNavigator = ({
   isCreateSelectModalVisible,
   handlePressCreatePin,
   handleCloseCreateSelectModal,
   createTabPressListener,
 }: BrowseMainNavigatorProps) => {
-  const TabNavigator = createBottomTabNavigator<BrowseMainNavigatorParamList>();
-
   return (
     <>
       <TabNavigator.Navigator screenOptions={screenOptions}>

@@ -15,9 +15,9 @@ export type SearchNavigatorParamList = {
   };
 };
 
-const SearchNavigator = () => {
-  const StackNavigator = createStackNavigator<SearchNavigatorParamList>();
+const StackNavigator = createStackNavigator<SearchNavigatorParamList>();
 
+const SearchNavigator = () => {
   return (
     <StackNavigator.Navigator
       screenOptions={{

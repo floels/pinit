@@ -29,10 +29,10 @@ export type PinNavigatorParamList = {
   };
 };
 
+const StackNavigator = createStackNavigator<PinNavigatorParamList>();
+
 const PinNavigator = ({ route }: PinNavigatorProps) => {
   const { pin, pinImageAspectRatio } = route.params;
-
-  const StackNavigator = createStackNavigator<PinNavigatorParamList>();
 
   return (
     <StackNavigator.Navigator

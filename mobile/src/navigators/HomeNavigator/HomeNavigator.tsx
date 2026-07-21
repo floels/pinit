@@ -13,9 +13,9 @@ export type HomeNavigatorParamList = {
   };
 };
 
-const HomeNavigator = () => {
-  const StackNavigator = createStackNavigator<HomeNavigatorParamList>();
+const StackNavigator = createStackNavigator<HomeNavigatorParamList>();
 
+const HomeNavigator = () => {
   return (
     <StackNavigator.Navigator
       screenOptions={{

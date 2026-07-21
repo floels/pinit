@@ -19,9 +19,9 @@ type CreateNavigatorProps = {
   navigation: NavigationProp<AuthenticatedNavigatorParamList>;
 };
 
-const CreateNavigator = (props: CreateNavigatorProps) => {
-  const StackNavigator = createStackNavigator<CreatePinNavigatorParamList>();
+const StackNavigator = createStackNavigator<CreatePinNavigatorParamList>();
 
+const CreateNavigator = (props: CreateNavigatorProps) => {
   const handleCreateSuccess = ({
     createdPin,
     createdPinImageAspectRatio,

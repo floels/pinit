@@ -20,11 +20,11 @@ export type BrowseNavigatorParamList = {
   };
 };
 
+const StackNavigator = createStackNavigator<BrowseNavigatorParamList>();
+
 const BrowseNavigator = (props: BrowseNavigatorProps) => {
   const { createdPin, createdPinImageAspectRatio } = props.route.params || {}; // 'route.params'
   // is undefined, unless when we just created a pin.
-
-  const StackNavigator = createStackNavigator<BrowseNavigatorParamList>();
 
   return (
     <StackNavigator.Navigator screenOptions={{ headerShown: false }}>

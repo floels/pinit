@@ -212,21 +212,29 @@ it("displays error message upon 400 response when fetching initial pins", async 
   });
 });
 
-it("displays error message upon error in 'Image.getSize()' when fetching initial pins", async () => {
+it("still renders the other pins when a single image fails to size", async () => {
   fetchMock.mockOnceIf(
     `${pinSuggestionsEndpoint}?page=1`,
     MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
   );
 
+  // The first pin's image fails to size; the remaining pins size successfully.
   (Image.getSize as jest.Mock).mockImplementationOnce((_, __, error) => {
     error(new Error());
   });
 
   renderComponent();
 
+  // A single failed image must not discard the whole page: the other pins
+  // still render, and no error message is shown.
   await waitFor(() => {
-    screen.getByText(enTranslations.Common.ERROR_FETCH_MORE_PINS);
+    expect(
+      screen.getAllByTestId(/mocked-pin-thumbnail-/).length,
+    ).toBeGreaterThan(0);
   });
+  expect(
+    screen.queryByText(enTranslations.Common.ERROR_FETCH_MORE_PINS),
+  ).toBeNull();
 });
 
 it(`refreshes pins when pulling to refresh, and does not refresh

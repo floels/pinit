@@ -14,10 +14,9 @@ export type AuthenticatedNavigatorParamList = {
   "Authenticated.Create": undefined;
 };
 
-const AuthenticatedNavigator = () => {
-  const StackNavigator =
-    createStackNavigator<AuthenticatedNavigatorParamList>();
+const StackNavigator = createStackNavigator<AuthenticatedNavigatorParamList>();
 
+const AuthenticatedNavigator = () => {
   return (
     <StackNavigator.Navigator
       screenOptions={{

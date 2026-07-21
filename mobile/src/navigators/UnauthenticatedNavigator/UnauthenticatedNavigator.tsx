@@ -8,9 +8,9 @@ export type UnauthenticatedNavigatorParamList = {
   "Unauthenticated.Login": undefined;
 };
 
-const UnauthenticatedNavigator = () => {
-  const StackNavigator = createStackNavigator();
+const StackNavigator = createStackNavigator();
 
+const UnauthenticatedNavigator = () => {
   return (
     <StackNavigator.Navigator screenOptions={{ headerShown: false }}>
       <StackNavigator.Screen
