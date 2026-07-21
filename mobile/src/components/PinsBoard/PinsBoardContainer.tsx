@@ -7,6 +7,7 @@ import PinsBoard, { THRESHOLD_PULL_TO_REFRESH } from "./PinsBoard";
 import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
 import { Response401Error, ResponseKOError } from "@/src/lib/customErrors";
 import { PinWithAuthorDetails } from "@/src/lib/types";
+import { clearStoredAuthData } from "@/src/lib/utils/authentication";
 import { fetchWithAuthentication } from "@/src/lib/utils/fetch";
 import { serializePinsWithAuthorDetails } from "@/src/lib/utils/serializers";
 import { appendQueryParam } from "@/src/lib/utils/strings";
@@ -69,6 +70,7 @@ const PinsBoardContainer = ({
       nextPinsAndAspectRatios = await fetchNextPinsAndImageRatios(page);
     } catch (error) {
       if (error instanceof Response401Error) {
+        await clearStoredAuthData();
         dispatch({ type: "GOT_401_RESPONSE" });
         return;
       }
@@ -103,6 +105,7 @@ const PinsBoardContainer = ({
       firstPinsAndAspectRatios = await fetchNextPinsAndImageRatios(1);
     } catch (error) {
       if (error instanceof Response401Error) {
+        await clearStoredAuthData();
         dispatch({ type: "GOT_401_RESPONSE" });
         return;
       }

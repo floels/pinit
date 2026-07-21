@@ -29,6 +29,7 @@ const SCROLL_VIEW_HEIGHT = (MOCKED_PIN_THUMBNAIL_HEIGHT * 50) / 2;
 
 jest.mock("expo-secure-store", () => ({
   getItemAsync: () => "access_token",
+  deleteItemAsync: jest.fn(), // used by clearStoredAuthData on a 401
 })); // needed to be able to fetch with authentication
 
 jest.mock("@/src/components/PinsBoard/PinThumbnail", () => {

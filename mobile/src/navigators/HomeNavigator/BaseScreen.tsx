@@ -3,8 +3,8 @@ import { View } from "react-native";
 
 import styles from "./BaseScreen.styles";
 
-import AuthenticatedSetupBuilder from "@/src/components/AuthenticatedSetupBuilder/AuthenticatedSetupBuilder";
 import PinsBoardContainer from "@/src/components/PinsBoard/PinsBoardContainer";
+import { useMyAccountDetails } from "@/src/hooks/useMyAccountDetails";
 import {
   API_BASE_URL,
   API_ENDPOINT_PIN_SUGGESTIONS,
@@ -17,6 +17,8 @@ type HomeScreenProps = {
 };
 
 const BaseScreen = ({ navigation }: HomeScreenProps) => {
+  useMyAccountDetails();
+
   const getTapHandlerForPin =
     ({
       pin,
@@ -36,7 +38,6 @@ const BaseScreen = ({ navigation }: HomeScreenProps) => {
 
   return (
     <View style={styles.container}>
-      <AuthenticatedSetupBuilder />
       <PinsBoardContainer
         fetchEndpoint={pinSuggestionsEndpoint}
         shouldAuthenticate

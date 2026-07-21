@@ -5,6 +5,10 @@ import { useEffect } from "react";
 import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
 import { Colors } from "@/src/global.styles";
 import { ACCESS_TOKEN_STORAGE_KEY } from "@/src/lib/constants";
+import {
+  clearStoredAuthData,
+  ensureFreshAccessToken,
+} from "@/src/lib/utils/authentication";
 import AuthenticatedNavigator from "@/src/navigators/AuthenticatedNavigator/AuthenticatedNavigator";
 import UnauthenticatedNavigator from "@/src/navigators/UnauthenticatedNavigator/UnauthenticatedNavigator";
 
@@ -24,6 +28,25 @@ const NavigatorContainer = () => {
     }
 
     if (!accessToken) {
+      dispatch({ type: "CHECKED_NO_ACCESS_TOKEN" });
+      return;
+    }
+
+    // Refresh the token (if it's near expiry) *before* entering the
+    // authenticated tree, so authenticated screens never fire a request with a
+    // stale token and get logged out by a spurious 401. If the session can't be
+    // refreshed, clear the stale tokens and go to the login screen instead of
+    // flashing the authenticated UI and bouncing back.
+    let hasValidSession;
+
+    try {
+      hasValidSession = await ensureFreshAccessToken();
+    } catch {
+      hasValidSession = false;
+    }
+
+    if (!hasValidSession) {
+      await clearStoredAuthData();
       dispatch({ type: "CHECKED_NO_ACCESS_TOKEN" });
       return;
     }
