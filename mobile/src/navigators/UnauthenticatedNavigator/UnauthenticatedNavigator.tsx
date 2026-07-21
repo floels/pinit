@@ -8,7 +8,6 @@ export type UnauthenticatedNavigatorParamList = {
   "Unauthenticated.Login": undefined;
 };
 
-// Created at module scope so it isn't rebuilt (and the tree remounted) on every render.
 const StackNavigator = createStackNavigator();
 
 const UnauthenticatedNavigator = () => {

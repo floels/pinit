@@ -29,7 +29,6 @@ export type PinNavigatorParamList = {
   };
 };
 
-// Created at module scope so it isn't rebuilt (and the tree remounted) on every render.
 const StackNavigator = createStackNavigator<PinNavigatorParamList>();
 
 const PinNavigator = ({ route }: PinNavigatorProps) => {

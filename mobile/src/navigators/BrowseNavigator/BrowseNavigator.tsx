@@ -20,7 +20,6 @@ export type BrowseNavigatorParamList = {
   };
 };
 
-// Created at module scope so it isn't rebuilt (and the tree remounted) on every render.
 const StackNavigator = createStackNavigator<BrowseNavigatorParamList>();
 
 const BrowseNavigator = (props: BrowseNavigatorProps) => {

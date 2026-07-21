@@ -13,8 +13,6 @@ export type HomeNavigatorParamList = {
   };
 };
 
-// Created at module scope: creating the navigator inside the component body
-// gives it a new component identity on every render, remounting the whole tree.
 const StackNavigator = createStackNavigator<HomeNavigatorParamList>();
 
 const HomeNavigator = () => {

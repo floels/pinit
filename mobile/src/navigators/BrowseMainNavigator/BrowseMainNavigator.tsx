@@ -64,9 +64,6 @@ const screenOptions = ({
   };
 };
 
-// Created at module scope: building the navigator in the component body gives it
-// a new identity on every render, remounting the whole tab tree (e.g. each time
-// the Create-select modal toggles) and resetting the active tab + nested state.
 const TabNavigator = createBottomTabNavigator<BrowseMainNavigatorParamList>();
 
 const BrowseMainNavigator = ({

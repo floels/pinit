@@ -14,7 +14,6 @@ export type AuthenticatedNavigatorParamList = {
   "Authenticated.Create": undefined;
 };
 
-// Created at module scope so it isn't rebuilt (and the tree remounted) on every render.
 const StackNavigator = createStackNavigator<AuthenticatedNavigatorParamList>();
 
 const AuthenticatedNavigator = () => {
