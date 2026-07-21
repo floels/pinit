@@ -1,5 +1,6 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import { File, UploadType } from "expo-file-system";
+import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image } from "react-native";
@@ -16,12 +17,6 @@ import {
 import { Pin } from "@/src/lib/types";
 import { fetchWithAuthentication, throwIfKO } from "@/src/lib/utils/fetch";
 import { serializePin } from "@/src/lib/utils/serializers";
-
-// The backend's presigned-upload endpoint only accepts JPEG and PNG.
-const CONTENT_TYPE_BY_EXTENSION: { [extension: string]: string } = {
-  ".jpg": "image/jpeg",
-  ".png": "image/png",
-};
 
 type EnterPinDetailsScreenContainerProps = {
   navigation: NavigationProp<CreatePinNavigatorParamList>;
@@ -95,19 +90,21 @@ const EnterPinDetailsScreenContainer = ({
   // pin is created referencing the uploaded object by its key (mirrors the web
   // client). See backend `GetPinImageUploadUrlView` / `CreatePinView`.
   const uploadImageToS3 = async () => {
-    const fileExtension = getImageFileExtension();
+    // Normalize to JPEG so HEIC (the default iOS camera format) and other
+    // formats upload as something the backend accepts (it only allows jpg/png).
+    const jpegURI = await convertToJpeg(selectedImageURI);
 
     const uploadURLResponse = await fetchWithAuthentication(
-      `${API_BASE_URL}/${API_ENDPOINT_PIN_IMAGE_UPLOAD_URL}?file_extension=${fileExtension}`,
+      `${API_BASE_URL}/${API_ENDPOINT_PIN_IMAGE_UPLOAD_URL}?file_extension=.jpg`,
     );
     throwIfKO(uploadURLResponse);
 
     const { upload_url, image_file_key } = await uploadURLResponse.json();
 
-    const uploadResult = await new File(selectedImageURI).upload(upload_url, {
+    const uploadResult = await new File(jpegURI).upload(upload_url, {
       httpMethod: "PUT",
       uploadType: UploadType.BINARY_CONTENT,
-      headers: { "Content-Type": CONTENT_TYPE_BY_EXTENSION[fileExtension] },
+      headers: { "Content-Type": "image/jpeg" },
     });
 
     if (uploadResult.status < 200 || uploadResult.status >= 300) {
@@ -115,6 +112,16 @@ const EnterPinDetailsScreenContainer = ({
     }
 
     return image_file_key as string;
+  };
+
+  const convertToJpeg = async (uri: string) => {
+    const context = ImageManipulator.manipulate(uri);
+    const renderedImage = await context.renderAsync();
+    const { uri: jpegURI } = await renderedImage.saveAsync({
+      format: SaveFormat.JPEG,
+    });
+
+    return jpegURI;
   };
 
   const createPin = async (imageFileKey: string) => {
@@ -136,17 +143,6 @@ const EnterPinDetailsScreenContainer = ({
     const responseData = await response.json();
 
     return serializePin(responseData);
-  };
-
-  const getImageFileExtension = () => {
-    const match = selectedImageURI.toLowerCase().match(/\.(jpe?g|png)$/);
-
-    if (!match) {
-      // Anything other than JPEG/PNG is rejected by the backend.
-      throw new Error(`Unsupported image file: ${selectedImageURI}`);
-    }
-
-    return match[1] === "png" ? ".png" : ".jpg";
   };
 
   const handlePostError = () => {
