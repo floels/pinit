@@ -24,35 +24,35 @@ configuration that keeps the cluster in sync with this repo.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  GitHub                                                  │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │  push to main                                      │  │
-│  │      │                                             │  │
-│  │      ▼                                             │  │
-│  │  GitHub Actions (deploy-staging.yml)               │  │
-│  │  ┌─────────────────┐  ┌────────────────────────┐  │  │
-│  │  │  deploy-backend  │  │   deploy-frontend       │  │
-│  │  │                 │  │                         │  │
-│  │  │ docker build    │  │ pnpm build              │  │
-│  │  │ docker push ECR │  │ aws s3 sync             │  │
-│  │  │ kustomize edit  │  │ cloudfront invalidation │  │
-│  │  │ git commit+push │  └───────────┬─────────────┘  │
-│  │  └────────┬────────┘              │                 │  │
-│  └───────────┼───────────────────────┼─────────────────┘  │
-└─────────────┼───────────────────────┼─────────────────────┘
-              │ image tag              │ static assets
-              │ commit to repo         │
-              ▼                        ▼
-┌─────────────────────┐    ┌──────────────────────┐
-│  ECR (pinit-api)    │    │  S3 (frontend bucket)│
-└─────────────────────┘    └──────────┬───────────┘
-                                       │
-                            ┌──────────▼───────────┐
+│  GitHub                                                 │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │  push to main                                     │  │
+│  │     │                                             │  │
+│  │     ▼                                             │  │
+│  │  GitHub Actions (deploy-staging.yml)              │  │
+│  │  ┌─────────────────┐  ┌─────────────────────────┐ │  │
+│  │  │  deploy-backend │  │  deploy-frontend        │ │  │
+│  │  │                 │  │                         │ │  │
+│  │  │ docker build    │  │ pnpm build              │ │  │
+│  │  │ docker push ECR │  │ aws s3 sync             │ │  │
+│  │  │ kustomize edit  │  │ cloudfront invalidation │ │  │
+│  │  │ git commit+push │  └────────────┬────────────┘ │  │
+│  │  └────────┬────────┘               │              │  │
+│  └───────────┼────────────────────────┼──────────────┘  │
+└──────────────┼────────────────────────┼─────────────────┘
+               │ image tag              │ static assets
+               │ commit to repo         │
+               ▼                        ▼
+    ┌─────────────────────┐ ┌───────────────────────┐
+    │  ECR (pinit-api)    │ │  S3 (frontend bucket) │
+    └─────────────────────┘ └───────────┬───────────┘
+                                        │
+                            ┌───────────▼───────────┐
                             │  CloudFront           │
-                            └──────────────────────┘
+                            └───────────────────────┘
 
-              ArgoCD detects the tag commit
-              ▼
+               ArgoCD detects the tag commit
+               ▼
 ┌─────────────────────────────────────────────────────────┐
 │  EKS cluster (pinit-staging)                            │
 │                                                         │
@@ -73,14 +73,14 @@ configuration that keeps the cluster in sync with this repo.
 │  • External Secrets Operator     (syncs Secrets Manager)│
 │  • ArgoCD                        (GitOps controller)    │
 └─────────────────────────────────────────────────────────┘
-              │
-              │  private subnets
-              ▼
+               │
+               │ private subnets
+               ▼
 ┌─────────────────────────────────────────────────────────┐
 │  RDS PostgreSQL (pinit-staging)                         │
 └─────────────────────────────────────────────────────────┘
 
-              S3 (pinit-staging-pins)  ← pin image uploads
+                S3 (pinit-staging-pins)  ← pin image uploads
 ```
 
 **Key design choices:**
