@@ -1,4 +1,4 @@
-.PHONY: up up-detached up-backend seed test-backend test-web test-e2e test-mobile mobile-ios
+.PHONY: up up-detached up-backend launch-backend launch-web launch-ios seed test-backend test-web test-e2e test-mobile mobile-ios
 
 up:
 	docker compose -f docker-compose.local.yml up --build
@@ -8,6 +8,16 @@ up-detached:
 
 up-backend:
 	$(MAKE) -C backend up
+
+launch-backend:
+	docker compose -f docker-compose.local.yml up --build --detach db moto s3_cors_proxy elasticsearch backend
+
+launch-web:
+	docker compose -f docker-compose.local.yml up --build --detach
+
+launch-ios:
+	docker compose -f docker-compose.local.yml up --build --detach db moto s3_cors_proxy elasticsearch backend
+	corepack yarn@1.22.22 --cwd mobile install && corepack yarn@1.22.22 --cwd mobile ios
 
 seed:
 	docker compose -f docker-compose.local.yml exec backend python manage.py seed_database_local
