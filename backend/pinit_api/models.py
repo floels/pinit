@@ -1,7 +1,32 @@
-import random
+import uuid
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from pinit_api.lib.utils.user_manager import UserManager
+
+
+class UUIDModel(models.Model):
+    """Abstract base giving a model a public, URL-safe UUID identifier.
+
+    ``unique_id`` is unique by construction (uuid4), so it needs no
+    collision-checking, retry loop, or per-save generation logic — the value is
+    assigned by the field default at instantiation.
+    """
+
+    unique_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def get_by_unique_id(cls, unique_id):
+        """Return the instance for ``unique_id``, or ``None`` if it is missing
+        or not a well-formed UUID (so malformed input yields a graceful 404
+        rather than a 500 from the field's UUID parsing)."""
+        try:
+            return cls.objects.filter(unique_id=unique_id).first()
+        except (ValidationError, ValueError):
+            return None
 
 
 class User(AbstractBaseUser):
@@ -54,35 +79,18 @@ class Account(models.Model):
         return f"Account {self.username}"
 
 
-class Pin(models.Model):
-    unique_id = models.CharField(max_length=18, unique=True, editable=False)
+class Pin(UUIDModel):
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200, null=True, blank=True)
     image_url = models.URLField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE)
 
-    def save(self, *args, **kwargs):
-        if not self.unique_id:
-            self.unique_id = self.generate_unique_id()
-        super(Pin, self).save(*args, **kwargs)
-
-    @staticmethod
-    def generate_unique_id():
-        while True:
-            tentative_unique_id = random.randint(
-                100_000_000_000_000_000, 999_999_999_999_999_999
-            )
-            tentative_unique_id_string = str(tentative_unique_id)
-            if not Pin.objects.filter(unique_id=tentative_unique_id_string).exists():
-                return tentative_unique_id_string
-
     def __str__(self):
         return f"Pin {self.unique_id}"
 
 
-class Board(models.Model):
-    unique_id = models.CharField(max_length=15, unique=True, editable=False)
+class Board(UUIDModel):
     created_at = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=200)
     slug = models.CharField(max_length=200, null=True, blank=True)
@@ -92,21 +100,6 @@ class Board(models.Model):
 
     class Meta:
         unique_together = (("author", "slug"),)
-
-    def save(self, *args, **kwargs):
-        if not self.unique_id:
-            self.unique_id = self.generate_unique_id()
-        super(Board, self).save(*args, **kwargs)
-
-    @staticmethod
-    def generate_unique_id():
-        while True:
-            tentative_unique_id = random.randint(
-                100_000_000_000_000, 999_999_999_999_999
-            )
-            tentative_unique_id_string = str(tentative_unique_id)
-            if not Board.objects.filter(unique_id=tentative_unique_id_string).exists():
-                return tentative_unique_id_string
 
     def __str__(self):
         return f"Board {self.unique_id}"

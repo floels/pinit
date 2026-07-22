@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 
 // Matches the unique_id set by the seed_e2e_database management command
-const SEEDED_PIN_ID = "e2etestpin000001";
+const SEEDED_PIN_ID = "e2e70001-0000-4000-8000-000000000001";
 
 test("shows pin details for an existing pin", async ({ page }) => {
   await page.goto(`/pin/${SEEDED_PIN_ID}`);
