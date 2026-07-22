@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import HeaderSearchBarContainer, {
   AUTOCOMPLETE_DEBOUNCE_TIME_MS,
 } from "./HeaderSearchBarContainer";
@@ -13,8 +13,8 @@ import {
 
 const mockNavigate = jest.fn();
 
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
+jest.mock("react-router", () => ({
+  ...jest.requireActual("react-router"),
   useNavigate: () => mockNavigate,
 }));
 

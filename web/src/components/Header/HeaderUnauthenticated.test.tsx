@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import en from "@/public/locales/en/LandingPageContent.json";
 import HeaderUnauthenticated from "./HeaderUnauthenticated";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 

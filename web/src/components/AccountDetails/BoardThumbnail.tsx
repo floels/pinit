@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { BoardWithBasicDetails } from "@/lib/types/frontendTypes";
 import styles from "./BoardThumbnail.module.css";
 

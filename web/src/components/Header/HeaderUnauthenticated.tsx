@@ -4,7 +4,7 @@ import LoginFormContainer from "../LoginForm/LoginFormContainer";
 import SignupFormContainer from "../SignupForm/SignupFormContainer";
 import styles from "./HeaderUnauthenticated.module.css";
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import HeaderSearchBarContainer from "./HeaderSearchBarContainer";
 
 const HeaderUnauthenticated = () => {

@@ -1,7 +1,7 @@
 import React from "react";
 import userEvent from "@testing-library/user-event";
 import { screen, render, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import HeaderAuthenticatedContainer from "./HeaderAuthenticatedContainer";
 import { MockLocalStorage, withQueryClient } from "@/lib/testing-utils/misc";
 import {

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { useAuthContext } from "@/contexts/authContext";

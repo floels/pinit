@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import HomePage from "./HomePage";
 import { withQueryClient, mockIntersectionObserver } from "@/lib/testing-utils/misc";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";

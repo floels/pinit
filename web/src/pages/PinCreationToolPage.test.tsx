@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import PinCreationToolPage from "./PinCreationToolPage";
 import { AuthContext } from "@/contexts/authContext";
 

@@ -5,7 +5,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import PinCreationViewContainer from "./PinCreationViewContainer";
 import en from "@/public/locales/en/PinCreation.json";
 import { act } from "react";
@@ -16,12 +16,12 @@ import { ToastContainer } from "react-toastify";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
+jest.mock("react-router", () => ({
+  ...jest.requireActual("react-router"),
   useBlocker: jest.fn(),
 }));
 
-import { useBlocker } from "react-router-dom";
+import { useBlocker } from "react-router";
 
 const mockImageFile = new File(["mockImage"], "MockImage.png", {
   type: "image/png",

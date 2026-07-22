@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 import { useAuthContext } from "@/contexts/authContext";
 import PinCreationViewContainer from "@/components/PinCreationView/PinCreationViewContainer";
 

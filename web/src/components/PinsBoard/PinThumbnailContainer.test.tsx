@@ -5,7 +5,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import PinThumbnailContainer from "./PinThumbnailContainer";
 import { AccountContext, AccountContextType } from "@/contexts/accountContext";
 import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";

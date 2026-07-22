@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import LandingPageContent from "./LandingPageContent";
 import userEvent from "@testing-library/user-event";
 
