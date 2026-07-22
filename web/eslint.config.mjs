@@ -21,21 +21,11 @@ export default [
     },
   },
   {
-    files: ["**/*.test.{ts,tsx}", "setupJest.js", "setupJestAfterEnv.js"],
+    files: ["**/*.test.{ts,tsx}", "setupTests.ts", "reactI18nextMock.ts"],
     languageOptions: {
       sourceType: "module",
-      globals: { ...globals.jest },
+      globals: { ...globals.jest, vi: "readonly", fetchMock: "readonly" },
     },
     rules: { "no-global-assign": "off" },
-  },
-  {
-    files: ["jest.config.js", "esmDepTransformer.js"],
-    languageOptions: {
-      sourceType: "commonjs",
-      globals: { ...globals.node },
-    },
-    rules: {
-      "@typescript-eslint/no-require-imports": "off",
-    },
   },
 ];

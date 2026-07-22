@@ -2,6 +2,7 @@
 // Inspired by https://github.com/TkDodo/testing-react-query/blob/main/src/tests/utils.tsx
 // referenced in https://tkdodo.eu/blog/testing-react-query#putting-it-all-together
 
+import { vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export const createTestQueryClient = () =>
@@ -28,15 +29,20 @@ export const withQueryClient = (children: React.ReactElement) => {
 
 // Mock the IntersectionObserver, used notably in 'components/PinsBoard' tests
 export const mockIntersectionObserver = () => {
-  global.IntersectionObserver = jest.fn(() => ({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn(),
-    root: null,
-    rootMargin: "",
-    thresholds: [],
-    takeRecords: () => [],
-  }));
+  // A regular function (not an arrow) so it can be used as a constructor:
+  // Vitest invokes the mock implementation with `new`, and arrow functions
+  // are not constructable.
+  global.IntersectionObserver = vi.fn(function () {
+    return {
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: vi.fn(),
+      root: null,
+      rootMargin: "",
+      thresholds: [],
+      takeRecords: () => [],
+    };
+  }) as unknown as typeof IntersectionObserver;
 };
 
 // A generic mock for local storage:

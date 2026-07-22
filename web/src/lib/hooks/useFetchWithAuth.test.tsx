@@ -4,10 +4,10 @@ import { useFetchWithAuth } from "./useFetchWithAuth";
 import { API_URL_REFRESH_TOKEN } from "../constants";
 import { AuthContext } from "@/contexts/authContext";
 
-const mockSetAccessToken = jest.fn();
-const mockLogOut = jest.fn();
+const mockSetAccessToken = vi.fn();
+const { mockLogOut } = vi.hoisted(() => ({ mockLogOut: vi.fn() }));
 
-jest.mock("@/lib/hooks/useLogOut", () => ({
+vi.mock("@/lib/hooks/useLogOut", () => ({
   useLogOut: () => mockLogOut,
 }));
 
@@ -29,7 +29,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 beforeEach(() => {
   fetchMock.resetMocks();
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 it("returns the response directly when status is not 401", async () => {

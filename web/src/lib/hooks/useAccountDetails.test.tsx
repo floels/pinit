@@ -13,15 +13,15 @@ import {
   MOCK_API_RESPONSES_SERIALIZED,
 } from "@/lib/testing-utils/mockAPIResponses";
 
-const mockLogOut = jest.fn();
+const { mockLogOut } = vi.hoisted(() => ({ mockLogOut: vi.fn() }));
 
-jest.mock("@/lib/hooks/useLogOut", () => ({
+vi.mock("@/lib/hooks/useLogOut", () => ({
   useLogOut: () => mockLogOut,
 }));
 
 localStorage = new MockLocalStorage();
 
-const mockSetAccount = jest.fn();
+const mockSetAccount = vi.fn();
 const MOCK_ACCESS_TOKEN = "mock.access.token";
 
 beforeEach(() => {
@@ -46,7 +46,7 @@ const renderHookInContext = ({
 } = {}) => {
   render(
     <AuthContext.Provider
-      value={{ accessToken, setAccessToken: jest.fn(), isAuthInitialized }}
+      value={{ accessToken, setAccessToken: vi.fn(), isAuthInitialized }}
     >
       <AccountContext.Provider value={{ account: null, setAccount: mockSetAccount }}>
         {withQueryClient(<TestComponent />)}

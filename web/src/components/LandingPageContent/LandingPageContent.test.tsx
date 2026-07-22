@@ -13,7 +13,7 @@ const renderComponent = () => {
 
 // Since the <FifthFold /> component relies on `useRouter` and other
 // specific methods, we mock the whole component for simplicity:
-jest.mock("@/components/LandingPageContent/FifthFold", () => {
+vi.mock("@/components/LandingPageContent/FifthFold", () => {
   const MockedFifthFold = ({ onClickBackToTop }: { onClickBackToTop: () => void }) => (
     <div>
       <button
@@ -25,11 +25,11 @@ jest.mock("@/components/LandingPageContent/FifthFold", () => {
 
   MockedFifthFold.displayName = "FifthFold";
 
-  return MockedFifthFold;
+  return { default: MockedFifthFold };
 });
 
 it("scrolls hero into view on mount", () => {
-  const mockScrollIntoView = jest.fn();
+  const mockScrollIntoView = vi.fn();
   window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
 
   renderComponent();
@@ -39,7 +39,7 @@ it("scrolls hero into view on mount", () => {
 });
 
 it("scrolls to second fold when user clicks on the hero carret", async () => {
-  const mockScrollIntoView = jest.fn();
+  const mockScrollIntoView = vi.fn();
   window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
 
   renderComponent();
@@ -53,7 +53,7 @@ it("scrolls to second fold when user clicks on the hero carret", async () => {
 });
 
 it("scrolls back to top upon click on 'back to top'", async () => {
-  const mockScrollIntoView = jest.fn();
+  const mockScrollIntoView = vi.fn();
   window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
 
   renderComponent();

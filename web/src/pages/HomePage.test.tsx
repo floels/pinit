@@ -8,12 +8,12 @@ import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
 import { AuthContext } from "@/contexts/authContext";
 import en from "@/public/locales/en/HomePageContent.json";
 
-jest.mock("@/components/LandingPageContent/LandingPageContent", () => {
+vi.mock("@/components/LandingPageContent/LandingPageContent", () => {
   const MockedLandingPageContent = () => (
     <div data-testid="landing-page-content" />
   );
   MockedLandingPageContent.displayName = "LandingPageContent";
-  return MockedLandingPageContent;
+  return { default: MockedLandingPageContent };
 });
 
 const mockAccessToken = "mock-access-token";
@@ -26,7 +26,7 @@ const renderComponent = ({ accessToken = null }: { accessToken?: string | null }
 
   render(
     withQueryClient(
-      <AuthContext.Provider value={{ accessToken, setAccessToken: jest.fn() }}>
+      <AuthContext.Provider value={{ accessToken, setAccessToken: vi.fn() }}>
         <RouterProvider router={router} />
       </AuthContext.Provider>,
     ),

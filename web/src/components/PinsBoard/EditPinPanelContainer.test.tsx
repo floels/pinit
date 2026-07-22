@@ -13,7 +13,7 @@ const account = MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
 
 const authContext = {
   accessToken: "mock.access.token",
-  setAccessToken: jest.fn(),
+  setAccessToken: vi.fn(),
   isAuthInitialized: true,
 };
 
@@ -35,9 +35,9 @@ const testPin = {
   },
 };
 
-const mockOnClose = jest.fn();
-const mockOnSave = jest.fn();
-const mockOnDelete = jest.fn();
+const mockOnClose = vi.fn();
+const mockOnSave = vi.fn();
+const mockOnDelete = vi.fn();
 
 const renderComponent = (pin = testPin) => {
   render(
@@ -59,7 +59,7 @@ const renderComponent = (pin = testPin) => {
 };
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 it("renders with pin data pre-filled", () => {

@@ -26,7 +26,7 @@ const renderComponent = () => {
           pins={pins}
           isFetching={false}
           fetchFailed={false}
-          onScrolledToBottom={jest.fn()}
+          onScrolledToBottom={vi.fn()}
         />
       </MemoryRouter>,
     ),
@@ -71,7 +71,7 @@ it("renders empty results message when pins table is empty", () => {
         pins={[]}
         isFetching={false}
         fetchFailed={false}
-        onScrolledToBottom={jest.fn()}
+        onScrolledToBottom={vi.fn()}
         emptyResultsMessageKey="PinsSearch.NO_RESULTS"
       />,
     ),

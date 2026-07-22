@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import FifthFold from "./FifthFold";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
-const mockOnClickBackToTop = jest.fn();
+const mockOnClickBackToTop = vi.fn();
 
 const renderComponent = () =>
   render(withQueryClient(<FifthFold onClickBackToTop={mockOnClickBackToTop} />));

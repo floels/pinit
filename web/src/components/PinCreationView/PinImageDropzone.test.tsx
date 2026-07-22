@@ -3,9 +3,9 @@ import PinImageDropzone from "./PinImageDropzone";
 import en from "@/public/locales/en/PinCreation.json";
 import { act } from "react";
 
-const mockOnFileDropped = jest.fn();
+const mockOnFileDropped = vi.fn();
 
-const mockOnClickDeleteImage = jest.fn();
+const mockOnClickDeleteImage = vi.fn();
 
 const renderComponent = ({
   imagePreviewURL,
