@@ -8,6 +8,10 @@ INDEX_MAPPINGS = {
         "unique_id": {"type": "keyword"},
         "title": {"type": "text", "analyzer": "english"},
         "description": {"type": "text", "analyzer": "english"},
+        # Analyzed with the (non-stemming) standard analyzer and made aggregatable
+        # via fielddata, so the search-suggestions endpoint can run a terms
+        # aggregation over its word tokens to build autocomplete suggestions.
+        "suggest_text": {"type": "text", "analyzer": "standard", "fielddata": True},
         "image_url": {"type": "keyword", "index": False},
         "created_at": {"type": "date"},
         "author": {
