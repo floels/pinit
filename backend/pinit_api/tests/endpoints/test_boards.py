@@ -1,3 +1,6 @@
+from unittest.mock import patch
+
+from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.test import APITestCase
 from ..testing_utils.factories import AccountFactory, BoardFactory, PinFactory
@@ -73,6 +76,47 @@ class CreateBoardViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.json()["slug"], "my-board-3")
+
+    def test_slug_collision_race_is_retried(self):
+        # Simulate a concurrent request winning the slug between the
+        # uniqueness check and the create() call: the first insert is rejected
+        # by the DB unique constraint, the view must retry rather than 500.
+        real_create = Board.objects.create
+        slugs_attempted = []
+
+        def flaky_create(*args, **kwargs):
+            slugs_attempted.append(kwargs.get("slug"))
+            if len(slugs_attempted) == 1:
+                raise IntegrityError("duplicate key value violates unique constraint")
+            return real_create(*args, **kwargs)
+
+        with patch.object(Board.objects, "create", side_effect=flaky_create):
+            response = self.post({"name": "My Board"})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(slugs_attempted), 2)
+        self.assertEqual(response.json()["slug"], "my-board")
+
+    def test_persistent_slug_collision_does_not_loop_forever(self):
+        with patch.object(
+            Board.objects, "create", side_effect=IntegrityError("duplicate")
+        ) as mock_create:
+            with self.assertRaises(IntegrityError):
+                self.post({"name": "My Board"})
+
+        # Retried at least once, then gave up (bounded loop, no infinite retry).
+        self.assertGreater(mock_create.call_count, 1)
+
+    def test_board_not_persisted_when_pin_attach_fails(self):
+        # If a write partway through board creation fails, the board must not
+        # be left half-created.
+        with patch(
+            "pinit_api.views.boards.timezone.now", side_effect=RuntimeError("boom")
+        ):
+            with self.assertRaises(RuntimeError):
+                self.post({"name": "My Board", "pin_id": self.pin.unique_id})
+
+        self.assertFalse(Board.objects.filter(name="My Board").exists())
 
     def test_nonexistent_pin_returns_404(self):
         response = self.post({"name": "My Board", "pin_id": "000000000000000"})
