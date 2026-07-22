@@ -89,6 +89,7 @@ paths:
                   description: Board name
                 pin_id:
                   type: string
+                  format: uuid
                   description: ID of a pin to save in the board upon creation
               required:
                 - name
@@ -325,6 +326,7 @@ paths:
           name: unique_id
           schema:
             type: string
+            format: uuid
           description: ID of Pin
           required: true
       tags:
@@ -362,6 +364,7 @@ paths:
           name: unique_id
           schema:
             type: string
+            format: uuid
           description: ID of Pin
           required: true
       tags:
@@ -429,6 +432,7 @@ paths:
           name: unique_id
           schema:
             type: string
+            format: uuid
           description: ID of Pin
           required: true
       tags:
@@ -482,8 +486,9 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
           description: ID of Pin to save
-          example: "369169980854002"
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
       requestBody:
         content:
           application/json:
@@ -492,8 +497,9 @@ paths:
               properties:
                 board_id:
                   type: string
+                  format: uuid
                   description: ID of board in which to save Pin
-                  example: "441312392807868"
+                  example: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
               required:
                 - board_id
       tags:
@@ -512,12 +518,14 @@ paths:
                 properties:
                   pin_id:
                     type: string
+                    format: uuid
                     description: ID of saved pin
-                    example: "369169980854002"
+                    example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
                   board_id:
                     type: string
+                    format: uuid
                     description: ID of board in which pin was saved
-                    example: "441312392807868"
+                    example: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
         '401':
           description: Failed authentication
         '403':
@@ -1002,8 +1010,9 @@ components:
       properties:
         unique_id:
           type: string
+          format: uuid
           description: Board unique ID
-          example: "441312392807868"
+          example: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
         name:
           description: Board name
           type: string
@@ -1084,8 +1093,9 @@ components:
       properties:
         unique_id:
           type: string
+          format: uuid
           description: Pin unique ID
-          example: "837672678962535495"
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
         image_url:
           type: string
           format: uri

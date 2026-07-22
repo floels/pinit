@@ -48,7 +48,7 @@ class GetPinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
     def check_response_item_against_pin_object(self, response_item=None, pin=None):
         self.assertEqual(len(response_item), 4)
 
-        self.assertEqual(response_item["unique_id"], pin.unique_id)
+        self.assertEqual(response_item["unique_id"], str(pin.unique_id))
         self.assertEqual(response_item["image_url"], pin.image_url)
         self.assertEqual(response_item["title"], pin.title)
 

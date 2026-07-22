@@ -70,7 +70,7 @@ class PinCreationTests(APITestCase):
         response_data = response.json()
 
         self.assertEqual(len(response_data), 3)
-        self.assertEqual(response_data["unique_id"], created_pin.unique_id)
+        self.assertEqual(response_data["unique_id"], str(created_pin.unique_id))
         self.assertEqual(response_data["image_url"], created_pin.image_url)
         self.assertEqual(response_data["title"], created_pin.title)
 

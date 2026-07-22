@@ -17,7 +17,7 @@ from ..lib.constants import (
 
 class PinView(views.APIView):
     def get(self, request, unique_id):
-        pin = Pin.objects.filter(unique_id=unique_id).first()
+        pin = Pin.get_by_unique_id(unique_id)
         if not pin:
             return Response(
                 {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
@@ -30,7 +30,7 @@ class PinView(views.APIView):
         if not request.user.is_authenticated:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        pin = Pin.objects.filter(unique_id=unique_id).first()
+        pin = Pin.get_by_unique_id(unique_id)
         if not pin:
             return Response(
                 {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
@@ -56,7 +56,7 @@ class PinView(views.APIView):
         if not request.user.is_authenticated:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        pin = Pin.objects.filter(unique_id=unique_id).first()
+        pin = Pin.get_by_unique_id(unique_id)
         if not pin:
             return Response(
                 {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
@@ -90,11 +90,11 @@ class SavePinView(views.APIView):
         pin_unique_id = unique_id
         board_unique_id = request.data.get("board_id")
 
-        pin = Pin.objects.filter(unique_id=pin_unique_id).first()
+        pin = Pin.get_by_unique_id(pin_unique_id)
         if not pin:
             return self.get_response_pin_not_found()
 
-        board = Board.objects.filter(unique_id=board_unique_id).first()
+        board = Board.get_by_unique_id(board_unique_id)
         if not board:
             return self.get_response_board_not_found()
 

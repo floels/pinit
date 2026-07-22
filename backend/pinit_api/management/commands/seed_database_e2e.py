@@ -6,14 +6,14 @@ E2E_TEST_USER_PASSWORD = "testpassword123"
 E2E_TEST_USER_USERNAME = "e2etestuser"
 
 # Fixed unique IDs so E2E tests can reference known pins authored by the test user
-CREATED_PIN_TO_EDIT_UNIQUE_ID = "e2etestpin000002"
-CREATED_PIN_TO_DELETE_UNIQUE_ID = "e2etestpin000003"
+CREATED_PIN_TO_EDIT_UNIQUE_ID = "e2e70002-0000-4000-8000-000000000002"
+CREATED_PIN_TO_DELETE_UNIQUE_ID = "e2e70003-0000-4000-8000-000000000003"
 
 JOHNDOE_EMAIL = "john.doe@example.com"
 JOHNDOE_USERNAME = "johndoe"
 
 # Fixed unique_id so tests can reference a known pin
-TEST_PIN_UNIQUE_ID = "e2etestpin000001"
+TEST_PIN_UNIQUE_ID = "e2e70001-0000-4000-8000-000000000001"
 
 # Enough pins for the search test to return at least one result
 SEARCH_SEED_TERM = "playwrightuniquesearch"

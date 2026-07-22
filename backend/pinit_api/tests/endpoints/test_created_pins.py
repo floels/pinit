@@ -91,7 +91,7 @@ class GetCreatedPinsTests(APITestCase):
         self.assertIsNotNone(response_data.get("next"))
 
     def check_pin_data(self, pin_data, pin):
-        self.assertEqual(pin_data["unique_id"], pin.unique_id)
+        self.assertEqual(pin_data["unique_id"], str(pin.unique_id))
         self.assertEqual(pin_data["image_url"], pin.image_url)
         self.assertEqual(pin_data["title"], pin.title)
         self.assertEqual(pin_data["description"], pin.description)
@@ -126,7 +126,7 @@ class UpdatePinTests(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["title"], new_title)
         self.assertEqual(response_data["description"], new_description)
-        self.assertEqual(response_data["unique_id"], self.pin.unique_id)
+        self.assertEqual(response_data["unique_id"], str(self.pin.unique_id))
 
         self.pin.refresh_from_db()
         self.assertEqual(self.pin.title, new_title)

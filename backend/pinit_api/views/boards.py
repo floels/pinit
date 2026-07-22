@@ -36,7 +36,7 @@ class CreateBoardView(APIView):
 
         pin = None
         if pin_unique_id:
-            pin = Pin.objects.filter(unique_id=pin_unique_id).first()
+            pin = Pin.get_by_unique_id(pin_unique_id)
             if not pin:
                 return Response(
                     {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},

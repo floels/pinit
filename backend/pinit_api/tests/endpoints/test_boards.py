@@ -118,7 +118,7 @@ class GetBoardDetailsViewTests(APITestCase):
     def check_response_data_happy_path(self, response_data=None):
         self.assertEqual(len(response_data), 5)
 
-        self.assertEqual(response_data["unique_id"], self.board.unique_id)
+        self.assertEqual(response_data["unique_id"], str(self.board.unique_id))
         self.assertEqual(response_data["name"], self.board.name)
         self.assertEqual(response_data["slug"], self.board.slug)
 
@@ -150,7 +150,7 @@ class GetBoardDetailsViewTests(APITestCase):
     def check_pin_data(self, pin_data=None, pin=None):
         self.assertEqual(len(pin_data), 4)
 
-        self.assertEqual(pin_data["unique_id"], pin.unique_id)
+        self.assertEqual(pin_data["unique_id"], str(pin.unique_id))
         self.assertEqual(pin_data["image_url"], pin.image_url)
         self.assertEqual(pin_data["title"], pin.title)
 

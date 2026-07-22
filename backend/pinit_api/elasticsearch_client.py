@@ -18,7 +18,7 @@ def get_es_client():
 
 def build_pin_document(pin):
     return {
-        "unique_id": pin.unique_id,
+        "unique_id": str(pin.unique_id),
         "title": pin.title,
         "image_url": pin.image_url,
         "description": pin.description,
@@ -36,7 +36,7 @@ def index_pin(pin):
     try:
         get_es_client().index(
             index=PINS_INDEX,
-            id=pin.unique_id,
+            id=str(pin.unique_id),
             document=build_pin_document(pin),
         )
     except Exception:
@@ -45,6 +45,6 @@ def index_pin(pin):
 
 def delete_pin(unique_id):
     try:
-        get_es_client().delete(index=PINS_INDEX, id=unique_id)
+        get_es_client().delete(index=PINS_INDEX, id=str(unique_id))
     except Exception:
         logger.exception("Failed to delete pin %s from Elasticsearch", unique_id)
