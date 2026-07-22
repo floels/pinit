@@ -16,7 +16,3 @@ psycopg2-binary==2.9.12
 python-decouple==3.8
 pytz==2023.3.post1
 gunicorn==23.0.0
-
-# TODO: no imports or settings reference these — remove in a separate cleanup PR?
-django-filter==25.2
-coreapi==2.3.3
