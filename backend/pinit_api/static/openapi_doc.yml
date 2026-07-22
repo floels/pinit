@@ -26,6 +26,34 @@ paths:
                 $ref: '#/components/schemas/AccountWithPublicDetails'
         '404':
           description: No account found for this username
+  /api/accounts/{username}/pins/:
+    get:
+      operationId: accounts/<username>/pins/
+      description: Get the list of pins created by account with username 'username', ordered by most recently created.
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+        - name: page
+          in: query
+          description: Page number. Default is 1.
+          schema:
+            type: integer
+      tags:
+        - Accounts
+      security:
+        - null
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinWithFullDetailsPaginatedList'
+        '404':
+          description: No account found for this username
   /api/accounts/me/:
     get:
       operationId: accounts/me/
@@ -44,6 +72,69 @@ paths:
                 $ref: '#/components/schemas/AccountWithPrivateDetails'
         '401':
           description: Failed authentication
+  /api/boards/:
+    post:
+      operationId: boards/
+      description: Create a new board.
+      tags:
+        - Boards
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Board name
+                pin_id:
+                  type: string
+                  description: ID of a pin to save in the board upon creation
+              required:
+                - name
+      security:
+        - jwtAuth: []
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardBase'
+        '400':
+          description: Missing board name
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - board_name_required
+        '401':
+          description: Failed authentication
+        '404':
+          description: Pin not found for provided pin_id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - pin_not_found
   /api/boards/{username}/{slug}/:
     get:
       operationId: boards/<username>/<slug>/
@@ -94,24 +185,28 @@ paths:
   /api/pins/:
     post:
       operationId: pins/
-      description: Create a new pin.
+      description: Create a new pin. The image must be uploaded to S3 first via the
+        `GET /api/pins/upload-url/` endpoint; pass the returned `image_file_key` here.
       tags:
         - Pins
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
               properties:
-                image_file:
+                image_file_key:
                   type: string
-                  format: uri
+                  description: S3 key of the already-uploaded image, as returned by GET /api/pins/upload-url/
+                  example: pins/pin_image_3f2a1b4c5d6e7f8a9b0c1d2e3f4a5b6c.jpg
                 title:
                   type: string
+                  description: Pin title
                 description:
                   type: string
+                  description: Pin description
               required:
-              - image_file
+                - image_file_key
       security:
         - jwtAuth: []
       responses:
@@ -121,6 +216,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pin'
+        '400':
+          description: Missing or invalid image file key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - missing_pin_image_file
+                            - invalid_pin_image_file_key
+                          description: |-
+                            Error code. One of:
+                            * `missing_pin_image_file`: `image_file_key` field is missing
+                            * `invalid_pin_image_file_key`: `image_file_key` does not match the expected pattern
         '401':
           description: Failed authentication
   /api/pins/suggestions/:
@@ -144,10 +260,66 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PinWithAuthorDetailsPaginatedList'
+        '401':
+          description: Failed authentication
+  /api/pins/upload-url/:
+    get:
+      operationId: pins/upload-url/
+      description: Generate a pre-signed S3 URL for uploading a pin image directly
+        from the browser. Use the returned `upload_url` to PUT the image, then pass
+        the returned `image_file_key` to POST /api/pins/ to create the pin.
+      parameters:
+        - name: file_extension
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - .jpg
+              - .png
+          description: File extension of the image to upload
+      tags:
+        - Pins
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  upload_url:
+                    type: string
+                    format: uri
+                    description: Pre-signed S3 URL to PUT the image to
+                  image_file_key:
+                    type: string
+                    description: S3 key to pass to POST /api/pins/ after upload
+                    example: pins/pin_image_3f2a1b4c5d6e7f8a9b0c1d2e3f4a5b6c.jpg
+        '400':
+          description: Invalid or missing file extension
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - invalid_pin_image_file_extension
+        '401':
+          description: Failed authentication
   /api/pins/{unique_id}/:
     get:
-      operationId: pins/<unique_id>/
-      description: Get detailed information for pin with ID 'unique_id'
+      operationId: pins/<unique_id>/get/
+      description: Get detailed information for pin with ID 'unique_id'.
       parameters:
         - in: path
           name: unique_id
@@ -168,6 +340,138 @@ paths:
           description: Success
         '404':
           description: No pin found for provided ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - pin_not_found
+    patch:
+      operationId: pins/<unique_id>/patch/
+      description: Update the title and/or description of a pin. Only the pin's author can update it.
+      parameters:
+        - in: path
+          name: unique_id
+          schema:
+            type: string
+          description: ID of Pin
+          required: true
+      tags:
+        - Pins
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: New pin title
+                description:
+                  type: string
+                  description: New pin description
+      security:
+        - jwtAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinWithFullDetails'
+        '401':
+          description: Failed authentication
+        '403':
+          description: Authenticated user is not the pin's author
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - forbidden
+        '404':
+          description: No pin found for provided ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - pin_not_found
+    delete:
+      operationId: pins/<unique_id>/delete/
+      description: Delete a pin. Only the pin's author can delete it.
+      parameters:
+        - in: path
+          name: unique_id
+          schema:
+            type: string
+          description: ID of Pin
+          required: true
+      tags:
+        - Pins
+      security:
+        - jwtAuth: []
+      responses:
+        '204':
+          description: Success
+        '401':
+          description: Failed authentication
+        '403':
+          description: Authenticated user is not the pin's author
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - forbidden
+        '404':
+          description: No pin found for provided ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - pin_not_found
   /api/pins/{unique_id}/saves/:
     post:
       operationId: pins/{unique_id}/saves/
@@ -219,7 +523,7 @@ paths:
         '403':
           description: Authenticated user doesn't own board
         '404':
-          description: No pin found for provided ID
+          description: No pin or board found for provided ID
           content:
             application/json:
               schema:
@@ -268,6 +572,8 @@ paths:
           description: Success
         '400':
           description: No search term provided
+        '503':
+          description: Elasticsearch unavailable
   /api/search/suggestions/:
     get:
       operationId: search/suggestions/
@@ -481,24 +787,6 @@ paths:
                             Error code. One of:
                             * `invalid_email`: invalid email
                             * `invalid_password`: invalid password
-  /api/token/mobile/obtain-demo/:
-    get:
-      operationId: token/mobile/obtain-demo/
-      description: |-
-        Obtain authentication tokens for the demo account (mobile).
-      tags:
-      - Sign-up and authentication
-      security:
-      - null
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenPairResponse'
-        '401':
-          description: Demo account not found
   /api/token/web/:
     post:
       operationId: token/web/
@@ -557,16 +845,14 @@ paths:
                             Error code. One of:
                             * `invalid_email`: invalid email
                             * `invalid_password`: invalid password
-  /api/token/web/obtain-demo/:
-    get:
-      operationId: token/web/obtain-demo/
+    delete:
+      operationId: token/web/logout
       description: |-
-        Obtain authentication tokens for the demo account (web).
-        The refresh token is set as an HttpOnly `refreshToken` cookie.
+        Log out the current user (web) by clearing the `refreshToken` HttpOnly cookie.
       tags:
-      - Sign-up and authentication
+        - Sign-up and authentication
       security:
-      - null
+        - null
       responses:
         '200':
           description: Success
@@ -574,14 +860,8 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-                example: refreshToken=eyJhbGciO...; Path=/; HttpOnly; SameSite=Strict
-              description: HttpOnly cookie containing the refresh token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccessTokenResponse'
-        '401':
-          description: Demo account not found
+                example: refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+              description: Clears the `refreshToken` cookie
   /api/token/mobile/refresh/:
     post:
       operationId: token/mobile/refresh/
@@ -607,6 +887,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccessTokenResponse'
+        '400':
+          description: Missing refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - missing_refresh_token
         '401':
           description: Failed refresh
           content:
@@ -646,6 +942,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccessTokenResponse'
+        '400':
+          description: Missing refresh token cookie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                            - missing_refresh_token
         '401':
           description: Failed refresh
           content:
@@ -664,23 +976,6 @@ paths:
                           type: string
                           description: |-
                             Error code: `invalid_refresh_token`
-    delete:
-      operationId: token/web/logout
-      description: |-
-        Log out the current user (web) by clearing the `refreshToken` HttpOnly cookie.
-      tags:
-        - Sign-up and authentication
-      security:
-        - null
-      responses:
-        '200':
-          description: Success
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-                example: refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT
-              description: Clears the `refreshToken` cookie
 components:
   schemas:
     Account:
@@ -702,50 +997,45 @@ components:
           type: string
           format: uri
           description: Account profile picture URL
+    BoardBase:
+      type: object
+      properties:
+        unique_id:
+          type: string
+          description: Board unique ID
+          example: "441312392807868"
+        name:
+          description: Board name
+          type: string
+          example: "My food board"
+        slug:
+          description: Board slug
+          type: string
+          example: "my-food-board"
     Board:
-      type: object
-      properties:
-        unique_id:
-          type: string
-          description: Board unique ID
-          example: "441312392807868"
-        name:
-          description: Board name
-          type: string
-          example: "My food board"
-        slug:
-          description: Board slug
-          type: string
-          example: "my-food-board"
-        first_image_urls:
-          description: List of first image URLs
-          type: array
-          items:
-            type: string
-            format: uri
+      allOf:
+        - $ref: '#/components/schemas/BoardBase'
+        - type: object
+          properties:
+            first_image_urls:
+              description: List of first image URLs
+              type: array
+              items:
+                type: string
+                format: uri
     BoardWithFullDetails:
-      type: object
-      properties:
-        unique_id:
-          type: string
-          description: Board unique ID
-          example: "441312392807868"
-        name:
-          type: string
-          description: Board name
-          example: "My food board"
-        slug:
-          type: string
-          description: Board slug
-          example: "my-food-board"
-        author:
-          description: Board author
-          $ref: '#/components/schemas/Account'
-        pins:
-          type: array
-          items:
-            $ref: '#/components/schemas/PinWithAuthorDetails'
-          description: List of pins saved in the board, ordered by most recently saved
+      allOf:
+        - $ref: '#/components/schemas/BoardBase'
+        - type: object
+          properties:
+            author:
+              description: Board author
+              $ref: '#/components/schemas/Account'
+            pins:
+              type: array
+              items:
+                $ref: '#/components/schemas/PinWithAuthorDetails'
+              description: List of pins saved in the board, ordered by most recently saved
     AccountWithBoards:
       allOf:
         - $ref: '#/components/schemas/Account'
@@ -839,6 +1129,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PinWithAuthorDetails'
+    PinWithFullDetailsPaginatedList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 50
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PinWithFullDetails'
     TokenPairResponse:
       type: object
       properties:
