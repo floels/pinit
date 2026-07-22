@@ -1,39 +1,25 @@
 # Backend
 
-Django REST API serving the PinIt platform.
-
-## Stack
-
-- Python 3.12, Django 5, Django REST Framework
-- PostgreSQL 13
-- AWS S3 via `django-storages` for asset storage
-- `djangorestframework-simplejwt` for JWT authentication
-- Elasticsearch 8 for full-text search
-
+Django REST API serving the PinIt platform. See the [root README](../README.md) for the full stack, local setup instructions, and how to run tests.
 
 ## Running locally
 
-To run the API and the database only:
+The root README covers the standard launch commands (`make launch-backend`, etc.). If you're already in this directory, you can also run the backend stack directly:
 
 ```bash
-make up-backend   # from the repo root
-make up           # from this directory (`backend/`)
+make up
 ```
 
-The API will then be served at `http://localhost:8000/api`.
-
-To run the web app as well, run `make up` from the repo root.
+The API will be available at http://localhost:8000/api.
 
 ## Running tests
 
+To run the Django test suite from this directory:
+
 ```bash
-make test-backend   # from repo root
-make test           # from this directory (`backend/`)
+make test
 ```
 
 ## API documentation
 
-The API is documented using [OpenAPI 3.0](pinit_api/static/openapi_doc.yml) and rendered with [Redoc](https://github.com/Redocly/redoc).
-
-Once the backend is running, open `http://localhost:8000/api/doc/` in your browser to view the interactive documentation.
-
+The API is documented using [OpenAPI 3.0](pinit_api/static/openapi_doc.yml) and rendered with [Redoc](https://github.com/Redocly/redoc). Once the backend is running, open http://localhost:8000/api/doc/ in your browser to view the interactive documentation.
