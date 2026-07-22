@@ -1,5 +1,5 @@
 from .factories import UserFactory, AccountFactory, BusinessAccountFactory, PinFactory, BoardFactory
-from .mixins import JWTAuthenticationMixin
+from .mixins import AccessTokenAuthenticationMixin
 
 __all__ = [
     "UserFactory",
@@ -7,5 +7,5 @@ __all__ = [
     "BusinessAccountFactory",
     "PinFactory",
     "BoardFactory",
-    "JWTAuthenticationMixin",
+    "AccessTokenAuthenticationMixin",
 ]

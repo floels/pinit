@@ -148,6 +148,9 @@ const fetchRefreshedAccessToken = async ({
 
   return {
     accessToken: responseData.access_token,
+    // The refresh endpoint rotates the refresh token on every call, so persist
+    // the new one — the presented token is now revoked server-side.
+    refreshToken: responseData.refresh_token,
     accessTokenExpirationDate: responseData.access_token_expiration_utc,
   };
 };

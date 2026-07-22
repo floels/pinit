@@ -2,6 +2,11 @@ from .base import *
 
 SECRET_KEY = "e2e-test-secret-key"
 
+# 32-byte PASETO v4.local key, hex-encoded. Test-only fixed value.
+PASETO_SYMMETRIC_KEY = (
+    "e2e00000000000000000000000000000000000000000000000000000000e2e00"
+)
+
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]

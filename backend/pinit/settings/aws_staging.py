@@ -3,6 +3,9 @@ from decouple import config
 
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 
+# 32-byte PASETO v4.local key, hex-encoded (see base.py for how to generate one).
+PASETO_SYMMETRIC_KEY = config("PASETO_SYMMETRIC_KEY")
+
 DEBUG = False
 
 CORS_ALLOW_ALL_ORIGINS = True

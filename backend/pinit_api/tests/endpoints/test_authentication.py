@@ -3,8 +3,8 @@ from django.test import TestCase
 from django.utils.dateparse import parse_datetime
 from django.conf import settings
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
 from pinit_api.models import User
+from pinit_api.lib.utils.refresh_tokens import issue_refresh_token
 from pinit_api.lib.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
@@ -26,7 +26,7 @@ class AuthenticationTests(TestCase):
         parsed_expiration_utc = parse_datetime(access_token_expiration_utc)
 
         now_utc = datetime.now(timezone.utc)
-        expected_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
+        expected_lifetime = settings.ACCESS_TOKEN_LIFETIME
         expected_expiration_utc = now_utc + expected_lifetime
 
         delta_actual_predicted_expiration_seconds = abs(
@@ -141,8 +141,7 @@ class ObtainTokenWebTests(AuthenticationTests):
 class LogoutTests(AuthenticationTests):
     def setUp(self):
         super().setUp()
-        self.refresh_token_object = RefreshToken.for_user(self.user)
-        self.refresh_token_str = str(self.refresh_token_object)
+        self.refresh_token_str = issue_refresh_token(self.user)
         self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = self.refresh_token_str
 
     def test_logout_clears_refresh_token_cookie(self):
@@ -152,7 +151,7 @@ class LogoutTests(AuthenticationTests):
         self.assertIn(REFRESH_TOKEN_COOKIE_NAME, response.cookies)
         self.assertEqual(response.cookies[REFRESH_TOKEN_COOKIE_NAME]["max-age"], 0)
 
-    def test_logout_blacklists_refresh_token(self):
+    def test_logout_revokes_refresh_token(self):
         self.client.delete("/api/token/web/")
 
         self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = self.refresh_token_str

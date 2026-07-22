@@ -2,8 +2,6 @@ from django.conf import settings
 from rest_framework import status, views
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..models import User
 from ..lib.constants import (
@@ -12,6 +10,7 @@ from ..lib.constants import (
     REFRESH_TOKEN_COOKIE_NAME,
 )
 from ..lib.utils.authentication import get_tokens_data
+from ..lib.utils.refresh_tokens import revoke_refresh_token
 
 def get_user_from_credentials(email, password):
     """Returns (user, error_response). Exactly one of the two is None."""
@@ -84,10 +83,7 @@ class TokenWebView(views.APIView):
         refresh_token_str = request.COOKIES.get(REFRESH_TOKEN_COOKIE_NAME)
 
         if refresh_token_str:
-            try:
-                RefreshToken(refresh_token_str).blacklist()
-            except TokenError:
-                pass
+            revoke_refresh_token(refresh_token_str)
 
         response = Response(status=status.HTTP_200_OK)
         response.delete_cookie(REFRESH_TOKEN_COOKIE_NAME, path="/")

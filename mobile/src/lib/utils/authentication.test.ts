@@ -118,6 +118,26 @@ describe("refreshAccessToken", () => {
     );
   });
 
+  it("persists the rotated refresh token returned by the server", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(
+      "old-refresh-token",
+    );
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        access_token: "new-access-token",
+        refresh_token: "rotated-refresh-token",
+        access_token_expiration_utc: "2999-01-01T00:00:00Z",
+      }),
+    );
+
+    await refreshAccessToken();
+
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      REFRESH_TOKEN_STORAGE_KEY,
+      "rotated-refresh-token",
+    );
+  });
+
   it("returns false when there is no refresh token to refresh with", async () => {
     (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(null);
 
