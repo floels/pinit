@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import PinDetailsPage from "./PinDetailsPage";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 import {

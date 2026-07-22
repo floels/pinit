@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { API_URL_PIN_DETAILS } from "@/lib/constants";
 import { throwIfKO } from "@/lib/utils/fetch";

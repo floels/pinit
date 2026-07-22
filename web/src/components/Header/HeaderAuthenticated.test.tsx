@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import HeaderAuthenticated from "./HeaderAuthenticated";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
 

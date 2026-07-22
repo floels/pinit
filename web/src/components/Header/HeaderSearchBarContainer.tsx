@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import debounce from "lodash/debounce";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { API_URL_SEARCH_SUGGESTIONS } from "@/lib/constants";
 import HeaderSearchBar from "./HeaderSearchBar";
 import { useHeaderSearchBarContext } from "@/contexts/headerSearchBarContext";

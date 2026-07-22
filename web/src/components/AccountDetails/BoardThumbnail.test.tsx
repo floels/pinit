@@ -3,7 +3,7 @@ import BoardThumbnail from "./BoardThumbnail";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 
 const renderComponent = ({ board }: { board: BoardWithBasicDetails }) => {
   render(

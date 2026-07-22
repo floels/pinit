@@ -1,4 +1,4 @@
-import { useSearchParams, Navigate } from "react-router-dom";
+import { useSearchParams, Navigate } from "react-router";
 import { API_URL_SEARCH } from "@/lib/constants";
 import PinsBoardContainer from "@/components/PinsBoard/PinsBoardContainer";
 

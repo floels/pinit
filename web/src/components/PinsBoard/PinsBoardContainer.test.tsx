@@ -1,5 +1,5 @@
 import { render, waitFor, act, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import en from "@/public/locales/en/PinsBoard.json";
 import PinsBoardContainer from "./PinsBoardContainer";
 import { ToastContainer } from "react-toastify";

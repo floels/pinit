@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { useBlocker } from "react-router-dom";
+import { useBlocker } from "react-router";
 import { useCreatePin } from "@/lib/hooks/useCreatePin";
 import { toast } from "react-toastify";
 import SuccessToastMessage from "./SuccessToastMessage";

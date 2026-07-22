@@ -29,10 +29,13 @@ export default [
     rules: { "no-global-assign": "off" },
   },
   {
-    files: ["jest.config.js"],
+    files: ["jest.config.js", "esmDepTransformer.js"],
     languageOptions: {
       sourceType: "commonjs",
       globals: { ...globals.node },
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 ];

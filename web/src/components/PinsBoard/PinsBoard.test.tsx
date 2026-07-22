@@ -1,5 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import PinsBoard from "./PinsBoard";
 import { mockIntersectionObserver, withQueryClient } from "@/lib/testing-utils/misc";
 import en from "@/public/locales/en/PinsSearch.json";
