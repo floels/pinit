@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import {
   fireEvent,
   render,
@@ -16,9 +17,9 @@ import { ToastContainer } from "react-toastify";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
-jest.mock("react-router", () => ({
-  ...jest.requireActual("react-router"),
-  useBlocker: jest.fn(),
+vi.mock("react-router", async () => ({
+  ...(await vi.importActual("react-router")),
+  useBlocker: vi.fn(),
 }));
 
 import { useBlocker } from "react-router";
@@ -64,7 +65,7 @@ const setupMocksForSuccessfulFlow = () => {
   fetchMock.mockOnce(MOCK_API_RESPONSES[API_URL_CREATE_PIN], { status: 201 });
 };
 
-const mockUseBlocker = useBlocker as jest.Mock;
+const mockUseBlocker = useBlocker as Mock;
 
 beforeEach(() => {
   fetchMock.resetMocks();
@@ -253,8 +254,8 @@ it("does not show unsaved changes modal when blocker is unblocked", () => {
 it("shows unsaved changes modal when navigation is blocked", () => {
   mockUseBlocker.mockReturnValue({
     state: "blocked",
-    proceed: jest.fn(),
-    reset: jest.fn(),
+    proceed: vi.fn(),
+    reset: vi.fn(),
   });
 
   renderComponent();
@@ -266,12 +267,12 @@ it("shows unsaved changes modal when navigation is blocked", () => {
 });
 
 it("calls blocker.proceed when clicking 'Leave' in unsaved changes modal", async () => {
-  const mockProceed = jest.fn();
+  const mockProceed = vi.fn();
 
   mockUseBlocker.mockReturnValue({
     state: "blocked",
     proceed: mockProceed,
-    reset: jest.fn(),
+    reset: vi.fn(),
   });
 
   renderComponent();
@@ -282,11 +283,11 @@ it("calls blocker.proceed when clicking 'Leave' in unsaved changes modal", async
 });
 
 it("calls blocker.reset when clicking 'Stay' in unsaved changes modal", async () => {
-  const mockReset = jest.fn();
+  const mockReset = vi.fn();
 
   mockUseBlocker.mockReturnValue({
     state: "blocked",
-    proceed: jest.fn(),
+    proceed: vi.fn(),
     reset: mockReset,
   });
 

@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import OverlayModal from "./OverlayModal";
 
-const mockOnClose = jest.fn();
+const mockOnClose = vi.fn();
 
 const renderComponent = () => {
   render(

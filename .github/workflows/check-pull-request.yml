@@ -96,7 +96,7 @@ jobs:
         run: pnpm type-check
 
       - name: Run component tests
-        run: pnpm jest
+        run: pnpm test
 
   e2e-checks:
     needs: detect-changes

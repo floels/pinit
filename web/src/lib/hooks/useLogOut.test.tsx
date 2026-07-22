@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { toast } from "react-toastify";
@@ -6,11 +7,11 @@ import { API_URL_LOG_OUT } from "@/lib/constants";
 import { AuthContext } from "@/contexts/authContext";
 import { createTestQueryClient } from "@/lib/testing-utils/misc";
 
-jest.mock("react-toastify", () => ({
-  toast: { warn: jest.fn() },
+vi.mock("react-toastify", () => ({
+  toast: { warn: vi.fn() },
 }));
 
-const mockSetAccessToken = jest.fn();
+const mockSetAccessToken = vi.fn();
 
 let testQueryClient = createTestQueryClient();
 
@@ -31,7 +32,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 beforeEach(() => {
   fetchMock.resetMocks();
   mockSetAccessToken.mockReset();
-  (toast.warn as jest.Mock).mockReset();
+  (toast.warn as Mock).mockReset();
   testQueryClient = createTestQueryClient();
   delete (window as Window & { location?: Location }).location;
   (window as Window & { location: { href: string } }).location = { href: "" };

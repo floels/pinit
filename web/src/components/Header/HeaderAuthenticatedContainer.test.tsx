@@ -1,4 +1,3 @@
-import React from "react";
 import userEvent from "@testing-library/user-event";
 import { screen, render, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
@@ -14,14 +13,16 @@ import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContex
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIResponses";
 import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";
 
-jest.mock("@/components/Header/AccountOptionsFlyout", () => {
-  const MockedAccountOptionsFlyout = React.forwardRef(() => (
+vi.mock("@/components/Header/AccountOptionsFlyout", async () => {
+  const { forwardRef } = await vi.importActual<typeof import("react")>("react");
+
+  const MockedAccountOptionsFlyout = forwardRef(() => (
     <div data-testid="mock-account-options-flyout" />
   ));
 
   MockedAccountOptionsFlyout.displayName = "AccountOptionsFlyout";
 
-  return MockedAccountOptionsFlyout;
+  return { default: MockedAccountOptionsFlyout };
 });
 
 localStorage = new MockLocalStorage();
@@ -37,7 +38,7 @@ const renderComponent = ({
   render(
     withQueryClient(
       <MemoryRouter>
-        <AccountContext.Provider value={{ account, setAccount: jest.fn() }}>
+        <AccountContext.Provider value={{ account, setAccount: vi.fn() }}>
           <HeaderSearchBarContextProvider>
             <HeaderAuthenticatedContainer />
           </HeaderSearchBarContextProvider>

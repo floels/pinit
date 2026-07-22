@@ -34,7 +34,7 @@ const submit = async () => {
 
 const handleClickNoAccountYet = () => {}; // NB: this behavior will be tested in <HeaderUnauthenticatedClient />
 
-const mockSetAccessToken = jest.fn();
+const mockSetAccessToken = vi.fn();
 
 const renderComponent = () => {
   render(

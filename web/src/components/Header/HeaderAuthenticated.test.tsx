@@ -9,8 +9,8 @@ const renderComponent = ({ initial = null }: { initial?: string | null } = {}) =
     initial,
     profilePictureURL: null,
     isAccountOptionsFlyoutOpen: false,
-    handleClickAccountOptionsButton: jest.fn(),
-    handleClickOutOfAccountOptionsFlyout: jest.fn(),
+    handleClickAccountOptionsButton: vi.fn(),
+    handleClickOutOfAccountOptionsFlyout: vi.fn(),
   };
 
   render(

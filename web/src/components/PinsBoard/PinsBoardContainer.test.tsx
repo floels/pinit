@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { render, waitFor, act, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import en from "@/public/locales/en/PinsBoard.json";
@@ -14,7 +15,7 @@ const simulateScrollToBottom = async () => {
   // PinsBoard is only rendered after page 1 has loaded (the container shows
   // SpinnerBelowHeader while loading), so the board is always non-empty when
   // the observer is first created. Only one observer exists (index 0).
-  const callback = (global.IntersectionObserver as jest.Mock).mock.calls[0][0];
+  const callback = (global.IntersectionObserver as Mock).mock.calls[0][0];
 
   act(() => {
     callback([{ isIntersecting: true }]);

@@ -18,16 +18,16 @@ const messages = en.PictureSlider;
 
 const NUMBER_IMAGES_PER_TOPIC = IMAGE_URLS.FOOD.length;
 
-const mockOnClickSeeBelow = jest.fn();
+const mockOnClickSeeBelow = vi.fn();
 
 const renderComponent = () => {
   render(<PictureSlider onClickSeeBelow={mockOnClickSeeBelow} />);
 };
 
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 afterEach(() => {
-  jest.clearAllTimers();
+  vi.clearAllTimers();
 });
 
 it(`shows only header for first topic,
@@ -75,7 +75,7 @@ should style elements with proper color`, () => {
   renderComponent();
 
   act(() => {
-    jest.advanceTimersByTime(TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS);
+    vi.advanceTimersByTime(TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS);
   });
 
   // Check that only second header is visible
@@ -143,7 +143,7 @@ top position and all images of the second topic should be visible`, () => {
   renderComponent();
 
   act(() => {
-    jest.advanceTimersByTime(TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS);
+    vi.advanceTimersByTime(TIME_BEFORE_AUTOMATIC_STEP_CHANGE_MS);
   });
 
   // All FOOD images are exiting (top position) with cascade delays
@@ -162,7 +162,7 @@ top position and all images of the second topic should be visible`, () => {
 });
 
 it("moves to corresponding step when user clicks stepper button", async () => {
-  jest.useRealTimers(); // otherwise `await userEvent.click(...);` times out for some reason
+  vi.useRealTimers(); // otherwise `await userEvent.click(...);` times out for some reason
 
   renderComponent();
 

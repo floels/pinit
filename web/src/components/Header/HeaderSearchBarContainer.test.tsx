@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import HeaderSearchBarContainer, {
@@ -11,10 +11,10 @@ import {
   MOCK_API_RESPONSES_JSON,
 } from "@/lib/testing-utils/mockAPIResponses";
 
-const mockNavigate = jest.fn();
+const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }));
 
-jest.mock("react-router", () => ({
-  ...jest.requireActual("react-router"),
+vi.mock("react-router", async () => ({
+  ...(await vi.importActual("react-router")),
   useNavigate: () => mockNavigate,
 }));
 
@@ -260,53 +260,57 @@ it("does not display any suggestion in case of fetch error", async () => {
   });
 });
 
+// These debounce tests drive the input with synchronous `fireEvent` rather
+// than `userEvent`: userEvent's pointer/keyboard flows await internal timers
+// that deadlock under `vi.useFakeTimers()`. fireEvent lets us control the
+// clock explicitly while only the app's debounce timer is in play.
 it("fetches only once if two characters are typed within debounce time", async () => {
   renderComponent();
 
-  await clickSearchInput();
+  const searchInput = screen.getByTestId("search-bar-input");
+  fireEvent.focus(searchInput);
 
-  jest.useFakeTimers();
+  vi.useFakeTimers();
 
-  userEvent.keyboard("a"); // Using `await` here would make the test time out, because of the `jest.useFakeTimers();`
+  fireEvent.change(searchInput, { target: { value: "a" } });
 
-  jest.advanceTimersByTime(AUTOCOMPLETE_DEBOUNCE_TIME_MS / 2);
+  vi.advanceTimersByTime(AUTOCOMPLETE_DEBOUNCE_TIME_MS / 2);
 
-  userEvent.keyboard("b"); // Using `await` here would make the test time out, because of the `jest.useFakeTimers();`
+  fireEvent.change(searchInput, { target: { value: "ab" } });
 
-  await waitFor(() => {
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenLastCalledWith(
-      `${API_URL_SEARCH_SUGGESTIONS}?search=ab`,
-    );
-  });
+  await vi.advanceTimersByTimeAsync(AUTOCOMPLETE_DEBOUNCE_TIME_MS);
 
-  jest.useRealTimers();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenLastCalledWith(
+    `${API_URL_SEARCH_SUGGESTIONS}?search=ab`,
+  );
+
+  vi.useRealTimers();
 });
 
 it("fetches twice if two characters are typed beyond debounce time", async () => {
   renderComponent();
 
-  await clickSearchInput();
+  const searchInput = screen.getByTestId("search-bar-input");
+  fireEvent.focus(searchInput);
 
-  jest.useFakeTimers();
+  vi.useFakeTimers();
 
-  userEvent.keyboard("a"); // Using `await` here would make the test time out, because of the `jest.useFakeTimers();`
+  fireEvent.change(searchInput, { target: { value: "a" } });
 
-  await waitFor(() => {
-    expect(fetch).toHaveBeenLastCalledWith(
-      `${API_URL_SEARCH_SUGGESTIONS}?search=a`,
-    );
-  });
+  await vi.advanceTimersByTimeAsync(AUTOCOMPLETE_DEBOUNCE_TIME_MS);
 
-  jest.advanceTimersByTime(AUTOCOMPLETE_DEBOUNCE_TIME_MS * 2);
+  expect(fetch).toHaveBeenLastCalledWith(
+    `${API_URL_SEARCH_SUGGESTIONS}?search=a`,
+  );
 
-  userEvent.keyboard("b"); // Using `await` here would make the test time out, because of the `jest.useFakeTimers();`
+  fireEvent.change(searchInput, { target: { value: "ab" } });
 
-  await waitFor(() => {
-    expect(fetch).toHaveBeenLastCalledWith(
-      `${API_URL_SEARCH_SUGGESTIONS}?search=ab`,
-    );
-  });
+  await vi.advanceTimersByTimeAsync(AUTOCOMPLETE_DEBOUNCE_TIME_MS);
 
-  jest.useRealTimers();
+  expect(fetch).toHaveBeenLastCalledWith(
+    `${API_URL_SEARCH_SUGGESTIONS}?search=ab`,
+  );
+
+  vi.useRealTimers();
 });

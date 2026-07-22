@@ -1,2 +1,6 @@
-// https://github.com/jefflau/jest-fetch-mock#typescript-importing
-import "jest-fetch-mock";
+import type createFetchMock from "vitest-fetch-mock";
+
+// The global fetch mock installed in setupTests.ts.
+declare global {
+  var fetchMock: ReturnType<typeof createFetchMock>;
+}
