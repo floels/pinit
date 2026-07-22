@@ -44,6 +44,10 @@ There are two Dockerfiles:
 - **`Dockerfile`** — used for local development and tests. It installs dependencies and copies the source, but does not run `collectstatic`, does not set a default `DJANGO_SETTINGS_MODULE`, and has no `CMD` (the command is provided by the Docker Compose file instead).
 - **`Dockerfile.staging`** — used for the staging deployment on AWS. It additionally runs `collectstatic` at build time, exposes port 80, sets `DJANGO_SETTINGS_MODULE=pinit.settings.aws_staging`, and starts the app with Gunicorn.
 
+## Documentation
+
+Developer documentation for the backend lives in the [`pinit_api/doc/`](pinit_api/doc) folder.
+
 ## API documentation
 
 The API is documented using [OpenAPI 3.0](pinit_api/static/openapi_doc.yml) and rendered with [Redoc](https://github.com/Redocly/redoc). Once the backend is running, open http://localhost:8000/api/doc/ in your browser to view the documentation.

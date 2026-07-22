@@ -1,102 +1,139 @@
 # Authentication (web)
 
-> This document covers the authentication flow for the **web frontend** only.
-> The mobile app uses different token delivery mechanisms (no httpOnly cookies).
+> This document covers the **web frontend**: how it stores tokens, drives the
+> auth lifecycle, and talks to the auth endpoints. For the token protocol itself
+> (PASETO access tokens, opaque rotating refresh tokens, verification, and
+> revocation) see the backend reference:
+> [`backend/pinit_api/doc/authentication.md`](../../backend/pinit_api/doc/authentication.md).
+> The mobile app uses a different delivery mechanism — see
+> [`mobile/doc/authentication.md`](../../mobile/doc/authentication.md).
 
 ## Overview
 
-The web frontend uses a **two-token** scheme:
+The web frontend holds the two tokens as follows:
 
-| Token | Type | Where stored | Accessible to JS | Lifetime |
-|---|---|---|---|---|
-| **Access token** | PASETO v4.local (stateless) | React context (in-memory) | Yes — passed as `Authorization: Bearer …` header | 15 minutes |
-| **Refresh token** | opaque, DB-backed | httpOnly cookie | No | 30 days |
+| Token | Where stored | Accessible to JS | Sent as |
+|---|---|---|---|
+| **Access token** | React context (in-memory) | Yes | `Authorization: Bearer …` header |
+| **Refresh token** | httpOnly cookie (`refreshToken`) | No | sent automatically by the browser |
 
-Keeping the access token in memory (not localStorage) limits XSS exposure. Keeping the refresh token in an HTTP-only cookie prevents it from being read by any script.
-
-**Access token** — a [PASETO](https://paseto.io/) v4.local token, verified by the backend on every request. Because PASETO fixes the token type by version + purpose, it is immune to the JWT algorithm-confusion / `alg:none` class of attacks. It is stateless (nothing is stored server-side) and therefore not individually revocable, which is why it is short-lived.
-
-**Refresh token** — an opaque random string. The backend stores only its SHA-256 hash, so a database leak exposes no usable tokens, and it can be revoked server-side. It is **rotated on every refresh**: each call to the refresh endpoint issues a new refresh token (re-setting the httpOnly cookie) and revokes the presented one, so a captured-but-superseded token stops working.
-
----
+Keeping the access token in memory (not `localStorage`) limits XSS exposure;
+keeping the refresh token in an httpOnly cookie prevents any script from reading
+it. The refresh token cookie is set, rotated, and cleared entirely by the
+backend — the web code never sees its value.
 
 ## Auth state
 
-`AuthContext` is the single source of truth for auth state:
+`AuthContext` ([`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx))
+is the single source of truth:
 
 ```
-accessToken: string | null   — null until refreshed or obtained via login
-isAuthInitialized: boolean   — false until the startup token refresh completes
+accessToken: string | null   — null until obtained via startup refresh or login
+isAuthInitialized: boolean   — false until the startup refresh attempt settles
 ```
 
-`isAuthInitialized` exists solely to distinguish "we haven't checked yet" from "we checked and the user is unauthenticated". Without it, components would briefly render as unauthenticated on every page load, even for logged-in users.
-
----
+`isAuthInitialized` distinguishes "we haven't checked yet" from "we checked and
+the user is unauthenticated". Without it, the app would briefly render as logged
+out on every page load, even for authenticated users.
 
 ## Flows
 
 ### 1. App startup
 
-Every time the app loads, `AuthBootstrap` (rendered by `Layout`) kicks off a token refresh. `Layout` withholds `<Outlet />` until that check is complete to avoid a content flash.
+`AuthContextProvider` runs a one-shot [TanStack Query](https://tanstack.com/query)
+on mount that calls the refresh endpoint (the browser attaches the httpOnly
+cookie automatically). `Layout` withholds the routed content until the attempt
+settles, to avoid a flash of unauthenticated UI.
 
 ```mermaid
 sequenceDiagram
     participant Browser
+    participant AuthContextProvider
     participant Layout
-    participant AccessTokenRefresher
     participant Backend
 
-    Browser->>Layout: page load
-    note over Layout: isAuthInitialized = false<br/>renders spinner, not Outlet
-    Layout->>AccessTokenRefresher: mount
-    AccessTokenRefresher->>Backend: POST /token/web/refresh/<br/>(sends httpOnly cookie automatically)
+    Browser->>AuthContextProvider: mount
+    note over AuthContextProvider: isAuthInitialized = false
+    AuthContextProvider->>Backend: POST /token/web/refresh/<br/>(sends httpOnly cookie automatically)
 
     alt refresh token valid
-        Backend-->>AccessTokenRefresher: 200 { access_token }<br/>(re-sets rotated refresh cookie)
-        AccessTokenRefresher->>Layout: setAccessToken(token)<br/>setIsAuthInitialized(true)
-        note over Layout: renders Outlet with accessToken set
-    else no refresh token / expired
-        Backend-->>AccessTokenRefresher: 401
-        AccessTokenRefresher->>Layout: setIsAuthInitialized(true)
-        note over Layout: renders Outlet with accessToken = null
+        Backend-->>AuthContextProvider: 200 { access_token }<br/>(re-sets rotated refresh cookie)
+        AuthContextProvider->>AuthContextProvider: setAccessToken(token)<br/>setIsAuthInitialized(true)
+    else no cookie / expired
+        Backend-->>AuthContextProvider: 401
+        AuthContextProvider->>AuthContextProvider: setIsAuthInitialized(true)<br/>(accessToken stays null)
     end
+    note over Layout: gates &lt;Outlet /&gt; on isAuthInitialized<br/>(spinner until settled)
 ```
 
-Once `isAuthInitialized` is true, `AuthBootstrap` also mounts `AccountDetailsFetcher` (if a token was obtained), which fetches `/accounts/me/` and stores the result in `AccountContext` and `localStorage`.
+Once authenticated, `Layout` uses `useAccountDetails` to fetch `/accounts/me/`
+and populate `AccountContext` (and cache username / profile-picture URL in
+`localStorage`).
 
----
+### 2. Login / signup
 
-### 2. Login
-
-After the login API sets the HTTP-only cookie, the frontend immediately calls the refresh endpoint to obtain an access token and sets it in context. No page reload is needed.
+`useLogin` posts credentials to the login endpoint; on success it stores the
+returned access token in context. The backend sets the refresh cookie in the
+same response, so no page reload is needed. Signup (`useSignup`) is identical —
+the backend returns an access token and sets the refresh cookie.
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant LoginForm
+    participant useLogin
     participant Backend
     participant AuthContext
 
-    User->>LoginForm: submit email + password
-    LoginForm->>Backend: POST /token/web/obtain/<br/>{ email, password }
-
+    User->>useLogin: submit email + password
+    useLogin->>Backend: POST /token/web/<br/>{ email, password }
     alt credentials valid
-        Backend-->>LoginForm: 200 — sets httpOnly refresh token cookie
-        LoginForm->>Backend: POST /token/web/refresh/
-        Backend-->>LoginForm: 200 { access_token }
-        LoginForm->>AuthContext: setAccessToken(token)
-        note over AuthContext: AuthBootstrap mounts AccountDetailsFetcher,<br/>header switches to authenticated state
+        Backend-->>useLogin: 200 { access_token }<br/>+ sets httpOnly refresh cookie
+        useLogin->>AuthContext: setAccessToken(token)
+        note over AuthContext: authenticated shell renders
     else invalid credentials
-        Backend-->>LoginForm: 400 { errors: [{ code }] }
-        LoginForm-->>User: show field error
+        Backend-->>useLogin: 401 { errors: [{ code }] }
+        useLogin-->>User: show field error
     end
 ```
 
-A "Login as demo" button hits `/token/web/obtain-demo/` instead, which requires no credentials. The rest of the flow is identical.
+### 3. Authenticated requests (reactive refresh)
 
----
+`useFetchWithAuth` ([`src/lib/hooks/useFetchWithAuth.ts`](../src/lib/hooks/useFetchWithAuth.ts))
+attaches the access token and transparently recovers from expiry. Because access
+tokens last only 15 minutes, this is the mechanism that keeps a session alive
+without the user noticing. All authenticated data hooks go through it
+(`useAccountDetails`, `useCreatePin`, `useUpdatePin`, `useDeletePin`,
+`useCreateBoard`, `HomePage`).
 
-### 3. Logout
+```mermaid
+sequenceDiagram
+    participant Hook as useFetchWithAuth
+    participant Backend
+
+    Hook->>Backend: request + Authorization: Bearer <access>
+    alt not 401
+        Backend-->>Hook: response (returned as-is)
+    else 401
+        Hook->>Backend: POST /token/web/refresh/ (cookie)
+        alt refresh ok
+            Backend-->>Hook: 200 { access_token }<br/>(re-sets rotated cookie)
+            Hook->>Hook: setAccessToken(new)
+            Hook->>Backend: retry original request with new token
+            Backend-->>Hook: response
+        else refresh fails
+            Backend-->>Hook: 401
+            Hook->>Hook: logOut() → clear token, redirect to /
+        end
+    end
+```
+
+Refresh-token rotation is transparent here: each refresh re-sets the cookie
+server-side, and the browser stores it automatically.
+
+### 4. Logout
+
+`useLogOut` calls the logout endpoint, clears the in-memory access token, and
+reloads to `/`.
 
 ```mermaid
 sequenceDiagram
@@ -106,58 +143,39 @@ sequenceDiagram
     participant Browser
 
     User->>useLogOut: click logout
-    useLogOut->>Backend: POST /token/web/logout/<br/>(sends httpOnly cookie)
-    Backend-->>useLogOut: 200 — deletes refresh token cookie
-    useLogOut->>Browser: setAccessToken(null)
-    useLogOut->>Browser: window.location.href = "/"
-    note over Browser: app reloads, startup flow runs,<br/>refresh fails → user stays unauthenticated
+    useLogOut->>Backend: DELETE /token/web/ (sends cookie)
+    Backend-->>useLogOut: 200 — revokes refresh token, clears cookie
+    useLogOut->>Browser: setAccessToken(null); location.href = "/"
+    note over Browser: startup refresh now fails → unauthenticated
 ```
 
-Logout **revokes the refresh token server-side** (the backend marks it revoked, then deletes the cookie), so a captured refresh token cannot be reused after logout. The access token is stateless and not individually revocable, but it lives only in memory and expires within 15 minutes, so a logged-out user's token is effectively gone as soon as the page unloads.
+The backend **revokes the refresh token server-side** on logout, so it cannot be
+reused. The access token is stateless and only in memory, so it is gone as soon
+as the page unloads.
 
----
-
-### 4. Auth state machine
+### 5. Auth state machine
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Initializing: page load
+    [*] --> Initializing: app mount
 
-    Initializing --> Unauthenticated: refresh fails (no cookie / expired)
-    Initializing --> Authenticated: refresh succeeds
+    Initializing --> Unauthenticated: startup refresh fails (no cookie / expired)
+    Initializing --> Authenticated: startup refresh succeeds
 
-    Unauthenticated --> Authenticated: login/signup → refresh succeeds
+    Unauthenticated --> Authenticated: login / signup succeeds
     Authenticated --> Unauthenticated: logout
-    Authenticated --> Unauthenticated: AccountDetailsFetcher receives 401
+    Authenticated --> Unauthenticated: a request's reactive refresh fails
 ```
-
----
-
-## Component map
-
-```
-AuthContextProvider          — holds accessToken, isAuthInitialized
-└── Layout
-    ├── AuthBootstrap
-    │   ├── AccessTokenRefresher   (while !isAuthInitialized)
-    │   └── AccountDetailsFetcher  (once authenticated)
-    └── <Outlet />                 (gated on isAuthInitialized)
-        ├── HomePage
-        ├── PinCreationToolPage    (redirects to / if !accessToken)
-        └── … other pages
-```
-
----
 
 ## Key files
 
 | File | Role |
 |---|---|
-| `src/contexts/authContext.tsx` | `AuthContext` — `accessToken`, `isAuthInitialized` |
-| `src/components/AuthBootstrap/AuthBootstrap.tsx` | Orchestrates startup: refresh then account fetch |
-| `src/components/AuthBootstrap/AccessTokenRefresher.tsx` | Calls refresh endpoint, sets `isAuthInitialized` |
-| `src/components/AuthBootstrap/AccountDetailsFetcher.tsx` | Fetches `/accounts/me/`, populates `AccountContext` |
-| `src/lib/hooks/useLogIn.ts` | Calls refresh endpoint after login/signup, sets access token |
-| `src/lib/hooks/useLogOut.ts` | Calls logout endpoint, clears token, redirects |
-| `src/components/LoginForm/LoginFormContainer.tsx` | Login form — calls `useLogIn` on success |
-| `src/pages/Layout.tsx` | Gates `<Outlet />` on `isAuthInitialized` |
+| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` + provider; runs the startup refresh; holds `accessToken`, `isAuthInitialized`. |
+| [`src/pages/Layout.tsx`](../src/pages/Layout.tsx) | Gates routed content on `isAuthInitialized`; renders the authenticated vs. unauthenticated shell from `accessToken`. |
+| [`src/lib/hooks/useFetchWithAuth.ts`](../src/lib/hooks/useFetchWithAuth.ts) | Adds the Bearer header; reactive refresh + retry on 401; logs out on failed refresh. |
+| [`src/lib/hooks/useLogin.ts`](../src/lib/hooks/useLogin.ts) | Login — posts credentials, stores the access token. |
+| [`src/lib/hooks/useSignup.ts`](../src/lib/hooks/useSignup.ts) | Signup — same shape as login. |
+| [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout — calls the endpoint, clears the token, redirects. |
+| [`src/lib/hooks/useAccountDetails.ts`](../src/lib/hooks/useAccountDetails.ts) | Fetches `/accounts/me/` once authenticated. |
+| [`src/lib/constants.ts`](../src/lib/constants.ts) | API URLs. |
