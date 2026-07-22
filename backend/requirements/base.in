@@ -4,7 +4,7 @@
 # Everything not listed here (certifi, urllib3, cryptography, requests, ...)
 # is a transitive dependency and is resolved + pinned automatically.
 
-Django==5.2.13
+Django==6.0.7
 djangorestframework==3.17.1
 djangorestframework-simplejwt==5.5.1
 django-cors-headers==4.9.0
@@ -16,7 +16,3 @@ psycopg2-binary==2.9.12
 python-decouple==3.8
 pytz==2023.3.post1
 gunicorn==23.0.0
-
-# TODO: no imports or settings reference these — remove in a separate cleanup PR?
-django-filter==25.2
-coreapi==2.3.3

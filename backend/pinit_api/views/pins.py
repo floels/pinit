@@ -17,31 +17,17 @@ from ..lib.constants import (
 
 class PinView(views.APIView):
     def get(self, request, unique_id):
-        pin = Pin.get_by_unique_id(unique_id)
-        if not pin:
-            return Response(
-                {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        pin, error_response = self.get_pin_or_error(unique_id)
+        if error_response:
+            return error_response
+
         serializer = PinWithFullDetailsReadSerializer(pin)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, unique_id):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        pin = Pin.get_by_unique_id(unique_id)
-        if not pin:
-            return Response(
-                {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        if pin.author != request.user.account:
-            return Response(
-                {"errors": [{"code": ERROR_CODE_FORBIDDEN}]},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        pin, error_response = self.get_owned_pin_or_error(request, unique_id)
+        if error_response:
+            return error_response
 
         if "title" in request.data:
             pin.title = request.data["title"]
@@ -53,24 +39,37 @@ class PinView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, unique_id):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        pin, error_response = self.get_owned_pin_or_error(request, unique_id)
+        if error_response:
+            return error_response
 
+        pin.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_pin_or_error(self, unique_id):
         pin = Pin.get_by_unique_id(unique_id)
         if not pin:
-            return Response(
+            return None, Response(
                 {"errors": [{"code": ERROR_CODE_PIN_NOT_FOUND}]},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        return pin, None
+
+    def get_owned_pin_or_error(self, request, unique_id):
+        if not request.user.is_authenticated:
+            return None, Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        pin, error_response = self.get_pin_or_error(unique_id)
+        if error_response:
+            return None, error_response
 
         if pin.author != request.user.account:
-            return Response(
+            return None, Response(
                 {"errors": [{"code": ERROR_CODE_FORBIDDEN}]},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        pin.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return pin, None
 
 
 class GetCreatedPinsView(generics.ListAPIView):
