@@ -22,6 +22,9 @@ def build_pin_document(pin):
         "title": pin.title,
         "image_url": pin.image_url,
         "description": pin.description,
+        # Combined title + description, used by the search-suggestions endpoint to
+        # derive word-level autocomplete suggestions via a terms aggregation.
+        "suggest_text": f"{pin.title} {pin.description}",
         "created_at": pin.created_at.isoformat() if pin.created_at else None,
         "author": {
             "username": pin.author.username,

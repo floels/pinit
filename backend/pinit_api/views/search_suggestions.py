@@ -1,38 +1,15 @@
-from django.db import connection
+import logging
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
+from ..elasticsearch_client import get_es_client, PINS_INDEX
+
+logger = logging.getLogger(__name__)
 
 NUMBER_SUGGESTIONS_RETURNED = 12
 ERROR_CODE_MISSING_SEARCH_PARAMETER = "missing_search_parameter"
-
-# This query will return an intermediary table containing a single column (`word`)
-# and one row per word found in all pins' title and description,
-# by leveraging the regexp_split_to_table PostgreSQL function.
-# We split the text by: space, period, comma, hyphen, colon, slash and question mark.
-SQL_QUERY_SELECT_ALL_WORDS_PINS_TITLE_DESCRIPTION = """
-SELECT regexp_split_to_table(lower(title), '[\\s.,-:/?]+') AS word
-FROM pinit_api_pin
-UNION ALL
-SELECT regexp_split_to_table(lower(description), '[\\s.,-:/?]+') AS word
-FROM pinit_api_pin
-"""
-
-# This query will select the N words which appear most frequently in the
-# intermediary table above and which are 'LIKE' the pattern provided as parameter (`%s`).
-# This pattern will be `{prefix}%`, where `prefix` is the term we want to auto-complete,
-# and `%` is the usual SQL wildcard for `LIKE` statements.
-SQL_QUERY_GET_AUTOCOMPLETE_SUGGESTIONS = f"""
-SELECT word
-FROM (
-{SQL_QUERY_SELECT_ALL_WORDS_PINS_TITLE_DESCRIPTION}
-) t
-WHERE word LIKE %s
-GROUP BY word
-ORDER BY COUNT(*) DESC, word
-LIMIT {NUMBER_SUGGESTIONS_RETURNED};
-"""
 
 
 @api_view(["GET"])
@@ -45,18 +22,39 @@ def get_search_suggestions(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    # Keep only alphanumerics: this both normalizes the term and neutralizes any
+    # Lucene regexp metacharacters before it is interpolated into the `include`
+    # pattern below.
     sanitized_search_term = "".join(char for char in search_term if char.isalnum())
-
     lowercase_search_term = sanitized_search_term.lower()
 
-    with connection.cursor() as cursor:
-        cursor.execute(
-            SQL_QUERY_GET_AUTOCOMPLETE_SUGGESTIONS, [f"{lowercase_search_term}%"]
+    # Aggregate the word tokens of all pins' title + description and return the
+    # most frequent ones matching `{prefix}*`, ranked by frequency then
+    # alphabetically. This mirrors the previous SQL `GROUP BY word ORDER BY
+    # COUNT(*) DESC, word` behaviour, now served from the same Elasticsearch
+    # index as the main pin search.
+    try:
+        es_response = get_es_client().search(
+            index=PINS_INDEX,
+            size=0,
+            aggs={
+                "suggestions": {
+                    "terms": {
+                        "field": "suggest_text",
+                        "include": f"{lowercase_search_term}.*",
+                        "size": NUMBER_SUGGESTIONS_RETURNED,
+                        "order": [{"_count": "desc"}, {"_key": "asc"}],
+                    }
+                }
+            },
         )
+    except Exception:
+        logger.exception(
+            "Elasticsearch suggestions failed for term %r", lowercase_search_term
+        )
+        return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
-        # cursor.fetchall() returns a list of lists, so we need to flatten it:
-        suggestions = [item[0] for item in cursor.fetchall()]
+    buckets = es_response["aggregations"]["suggestions"]["buckets"]
+    suggestions = [bucket["key"] for bucket in buckets]
 
-    response_data = {"results": suggestions}
-
-    return Response(response_data)
+    return Response({"results": suggestions})

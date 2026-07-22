@@ -1,62 +1,82 @@
+from unittest.mock import patch
+
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
-from ..testing_utils import PinFactory
-from pinit_api.views.search import ERROR_CODE_MISSING_SEARCH_PARAMETER
+from pinit_api.views.search_suggestions import (
+    ERROR_CODE_MISSING_SEARCH_PARAMETER,
+    NUMBER_SUGGESTIONS_RETURNED,
+)
+
+
+def make_agg_response(words):
+    """Build an ES response with one suggestions bucket per word (order preserved)."""
+    return {
+        "aggregations": {
+            "suggestions": {
+                "buckets": [{"key": word, "doc_count": 1} for word in words]
+            }
+        }
+    }
 
 
 class SearchSuggestionsTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
 
-        # We will test a search autocomplete on "beach":
-        PinFactory.create(
-            title="My beacheresque view of a beachy beach",
-            description="Isn't that beachiful-",
-        )
-        PinFactory.create(
-            title="Isn't Beacho a beaufitul name for a boy?",
-            description="And Beacha? Yes, beacha if it's a girl.",
-        )
-        PinFactory.create(
-            title="Beautiful beach",
-            description="I want to go to the beach.",
-        )
-
-    def test_get_search_suggestions_happy_path(self):
-        response = self.get(search="beach")
-
-        self.check_response_happy_path(response=response)
-
-    def check_response_happy_path(self, response=None):
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        response_data = response.json()
-
-        response_results = response_data["results"]
-
-        # "beach" occurs three times so it should appear first in the list.
-        # Then, "beacha" which occurs twice.
-        # Then, all others, which occur once, ranked by alphabetical order.
-        self.assertListEqual(
-            response_results,
-            ["beach", "beacha", "beacheresque", "beachiful", "beacho", "beachy"],
-        )
-
     def get(self, search=""):
         return self.client.get("/api/search/suggestions/", {"search": search})
+
+    @patch("pinit_api.views.search_suggestions.get_es_client")
+    def test_get_search_suggestions_happy_path(self, mock_get_client):
+        # ES returns buckets already ordered by frequency then alphabetically.
+        expected = ["beach", "beacha", "beacheresque", "beachiful", "beacho", "beachy"]
+        mock_get_client.return_value.search.return_value = make_agg_response(expected)
+
+        response = self.get(search="beach")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertListEqual(response.json()["results"], expected)
+
+    @patch("pinit_api.views.search_suggestions.get_es_client")
+    def test_get_search_suggestions_es_query_structure(self, mock_get_client):
+        mock_get_client.return_value.search.return_value = make_agg_response([])
+
+        self.get(search="Beach")
+
+        call_kwargs = mock_get_client.return_value.search.call_args.kwargs
+        self.assertEqual(call_kwargs["size"], 0)
+        terms = call_kwargs["aggs"]["suggestions"]["terms"]
+        self.assertEqual(terms["field"], "suggest_text")
+        self.assertEqual(terms["include"], "beach.*")
+        self.assertEqual(terms["size"], NUMBER_SUGGESTIONS_RETURNED)
+        self.assertEqual(terms["order"], [{"_count": "desc"}, {"_key": "asc"}])
+
+    @patch("pinit_api.views.search_suggestions.get_es_client")
+    def test_get_search_suggestions_sanitizes_search_term(self, mock_get_client):
+        # Non-alphanumeric characters (incl. Lucene regexp metacharacters) are stripped.
+        mock_get_client.return_value.search.return_value = make_agg_response([])
+
+        self.get(search="be.*ch!")
+
+        terms = mock_get_client.return_value.search.call_args.kwargs["aggs"][
+            "suggestions"
+        ]["terms"]
+        self.assertEqual(terms["include"], "bech.*")
 
     def test_get_search_suggestions_missing_search_param(self):
         response = self.get(search="")
 
-        self.check_response_missing_search_param(response=response)
-
-    def check_response_missing_search_param(self, response=None):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        response_data = response.json()
-
         self.assertEqual(
-            response_data["errors"],
+            response.json()["errors"],
             [{"code": ERROR_CODE_MISSING_SEARCH_PARAMETER}],
         )
+
+    @patch("pinit_api.views.search_suggestions.get_es_client")
+    def test_get_search_suggestions_es_unavailable_returns_503(self, mock_get_client):
+        mock_get_client.return_value.search.side_effect = Exception("ES is down")
+
+        response = self.get(search="beach")
+
+        self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
