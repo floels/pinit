@@ -4,11 +4,13 @@ Django REST API serving the PinIt platform. See the [root README](../README.md) 
 
 ## Running locally
 
-The root README covers the standard launch commands (`make launch-backend`, etc.). If you're already in this directory, you can also run the backend stack directly:
+The root README covers the standard launch commands (`make launch-backend`, etc.). If you're already in this directory, you can start the same backend stack (Django, PostgreSQL, Elasticsearch, Moto, and the nginx CORS proxy) with:
 
 ```bash
 make up
 ```
+
+This is equivalent to running `make launch-backend` from the root.
 
 The API will be available at http://localhost:8000/api.
 
