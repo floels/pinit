@@ -1,0 +1,14 @@
+# Direct dev/test-only dependencies, layered on top of the runtime deps.
+# Edit this file, then run `make compile-deps` to regenerate the lockfiles.
+#
+# The compiled dev.txt is a superset of base.txt (runtime + dev), installed
+# in the local/CI test image. The staging image installs base.txt only.
+
+-r base.in
+
+factory-boy==3.3.3
+moto==5.1.22
+coverage==7.13.5
+
+# TODO: no usage found in the test suite — remove in a separate cleanup PR?
+responses==0.26.0
