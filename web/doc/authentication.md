@@ -7,12 +7,16 @@
 
 The web frontend uses a **two-token** scheme:
 
-| Token | Where stored | Accessible to JS | Lifetime |
-|---|---|---|---|
-| **Access token** | React context (in-memory) | Yes — passed as `Authorization: Bearer …` header | 24 hours |
-| **Refresh token** | httpOnly cookie | No | 30 days |
+| Token | Type | Where stored | Accessible to JS | Lifetime |
+|---|---|---|---|---|
+| **Access token** | PASETO v4.local (stateless) | React context (in-memory) | Yes — passed as `Authorization: Bearer …` header | 15 minutes |
+| **Refresh token** | opaque, DB-backed | httpOnly cookie | No | 30 days |
 
 Keeping the access token in memory (not localStorage) limits XSS exposure. Keeping the refresh token in an HTTP-only cookie prevents it from being read by any script.
+
+**Access token** — a [PASETO](https://paseto.io/) v4.local token, verified by the backend on every request. Because PASETO fixes the token type by version + purpose, it is immune to the JWT algorithm-confusion / `alg:none` class of attacks. It is stateless (nothing is stored server-side) and therefore not individually revocable, which is why it is short-lived.
+
+**Refresh token** — an opaque random string. The backend stores only its SHA-256 hash, so a database leak exposes no usable tokens, and it can be revoked server-side. It is **rotated on every refresh**: each call to the refresh endpoint issues a new refresh token (re-setting the httpOnly cookie) and revokes the presented one, so a captured-but-superseded token stops working.
 
 ---
 
@@ -48,7 +52,7 @@ sequenceDiagram
     AccessTokenRefresher->>Backend: POST /token/web/refresh/<br/>(sends httpOnly cookie automatically)
 
     alt refresh token valid
-        Backend-->>AccessTokenRefresher: 200 { access_token }
+        Backend-->>AccessTokenRefresher: 200 { access_token }<br/>(re-sets rotated refresh cookie)
         AccessTokenRefresher->>Layout: setAccessToken(token)<br/>setIsAuthInitialized(true)
         note over Layout: renders Outlet with accessToken set
     else no refresh token / expired
@@ -109,7 +113,7 @@ sequenceDiagram
     note over Browser: app reloads, startup flow runs,<br/>refresh fails → user stays unauthenticated
 ```
 
-There is no server-side token blacklisting. Because tokens last 24 hours and the access token is only ever in memory, a logged-out user's token is gone as soon as the page unloads.
+Logout **revokes the refresh token server-side** (the backend marks it revoked, then deletes the cookie), so a captured refresh token cannot be reused after logout. The access token is stateless and not individually revocable, but it lives only in memory and expires within 15 minutes, so a logged-out user's token is effectively gone as soon as the page unloads.
 
 ---
 

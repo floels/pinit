@@ -51,4 +51,4 @@ Injected at build time via `vite.config.ts`:
 
 ## Documentation
 
-See [`doc/authentication.md`](doc/authentication.md) for the two-token JWT auth flow used by the web frontend.
+See [`doc/authentication.md`](doc/authentication.md) for the two-token auth flow (PASETO access token + rotating refresh token) used by the web frontend.

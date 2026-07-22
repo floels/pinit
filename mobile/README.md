@@ -95,7 +95,10 @@ mobile/
 
 The app authenticates against the backend's mobile auth endpoints
 (`token/mobile/` to log in, `token/mobile/refresh/` to refresh) using a
-short-lived access token plus a longer-lived refresh token.
+short-lived, stateless PASETO access token plus a longer-lived, opaque refresh
+token. The refresh endpoint **rotates** the refresh token on every call: each
+refresh returns — and the app persists — a new refresh token alongside the new
+access token, and the presented refresh token is revoked server-side.
 
 **Where tokens live** ([`src/lib/utils/authentication.ts`](src/lib/utils/authentication.ts)):
 
@@ -130,7 +133,8 @@ that tracks `isCheckingAccessToken` and `isAuthenticated`.
    refreshes proactively, but if a request still comes back **401** (clock skew,
    a token invalidated server-side, or an access-token lifetime shorter than a
    session), `fetchWithAuthentication` transparently calls `refreshAccessToken()`
-   once, persists the new token, and **retries the request** with it. The caller
+   once, persists the new tokens (access token plus the rotated refresh token),
+   and **retries the request** with it. The caller
    never sees the 401 unless the refresh itself fails. This "reactive" refresh
    mirrors the web app's `useFetchWithAuth` and is what lets the access token be
    short-lived without logging users out mid-session.
