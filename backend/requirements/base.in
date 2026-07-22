@@ -4,7 +4,7 @@
 # Everything not listed here (certifi, urllib3, cryptography, requests, ...)
 # is a transitive dependency and is resolved + pinned automatically.
 
-Django==5.2.13
+Django==6.0.7
 djangorestframework==3.17.1
 djangorestframework-simplejwt==5.5.1
 django-cors-headers==4.9.0
