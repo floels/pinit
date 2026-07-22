@@ -1,7 +1,7 @@
 .PHONY: up test
 
 up:
-	docker compose -f ../docker-compose.yml up --build backend
+	docker compose -f ../docker-compose.local.yml up --build --detach backend
 
 test:
 	docker compose -f docker-compose.test.yml up -d
