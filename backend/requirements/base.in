@@ -1,0 +1,22 @@
+# Direct runtime dependencies. Edit this file, then run `make compile-deps`
+# to regenerate the pinned, hashed base.txt / dev.txt lockfiles.
+#
+# Everything not listed here (certifi, urllib3, cryptography, requests, ...)
+# is a transitive dependency and is resolved + pinned automatically.
+
+Django==5.2.13
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+django-storages==1.14.6
+whitenoise==6.9.0
+boto3==1.42.96
+elasticsearch==8.13.0
+psycopg2-binary==2.9.12
+python-decouple==3.8
+pytz==2023.3.post1
+gunicorn==23.0.0
+
+# TODO: no imports or settings reference these — remove in a separate cleanup PR?
+django-filter==25.2
+coreapi==2.3.3

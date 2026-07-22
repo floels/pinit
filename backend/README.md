@@ -20,6 +20,21 @@ To run the Django test suite from this directory, run:
 make test
 ```
 
+## Dependencies
+
+Python dependencies are managed with [pip-tools](https://github.com/jazzband/pip-tools). Two layers live under `requirements/`:
+
+- **`*.in` files** — hand-edited lists of *direct* dependencies. `base.in` holds runtime deps; `dev.in` layers test-only deps (`factory-boy`, `moto`, ...) on top via `-r base.in`.
+- **`*.txt` files** — generated, fully-pinned, hash-locked lockfiles covering the entire transitive closure. **Do not edit these by hand.** `base.txt` is installed in the staging image; `dev.txt` (a superset) is installed in the local/test image.
+
+To add, remove, or bump a dependency, edit the relevant `*.in` file and regenerate the lockfiles:
+
+```bash
+make compile-deps
+```
+
+This runs `pip-compile` inside a `python:3.12-slim` container so the resolved versions and hashes match the deployment target regardless of your host OS. Commit both the `*.in` and `*.txt` changes together.
+
 ## Docker setup
 
 There are two Dockerfiles:
