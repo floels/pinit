@@ -1,12 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import { API_URL_LOG_OUT } from "../constants";
 import { useAuthContext } from "@/contexts/authContext";
-import { useTranslation } from "react-i18next";
 
 export const useLogOut = () => {
   const { setAccessToken } = useAuthContext();
-  const { t } = useTranslation("Common");
 
   const { mutateAsync } = useMutation({
     mutationFn: async () => {
@@ -15,14 +12,13 @@ export const useLogOut = () => {
         credentials: "include",
       });
     },
-    onSuccess: () => {
+    // Best-effort logout: complete it locally whether or not the server call
+    // succeeded, so a failed request never leaves the user stuck logged in.
+    // The refresh token is revoked server-side on success; on failure it simply
+    // expires. The access token is in-memory only and is cleared here.
+    onSettled: () => {
       setAccessToken(null);
       window.location.href = "/";
-    },
-    onError: () => {
-      toast.warn(t("LOGOUT_ERROR"), {
-        toastId: "toast-log-out-error",
-      });
     },
   });
 
@@ -30,7 +26,7 @@ export const useLogOut = () => {
     try {
       await mutateAsync();
     } catch {
-      // onError handles the error
+      // onSettled already completed the local logout.
     }
   };
 };

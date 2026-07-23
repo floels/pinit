@@ -151,7 +151,9 @@ sequenceDiagram
 
 The backend **revokes the refresh token server-side** on logout, so it cannot be
 reused. The access token is stateless and only in memory, so it is gone as soon
-as the page unloads.
+as the page unloads. Logout is **best-effort**: `useLogOut` clears the token and
+redirects even if the request fails, so a failed call never leaves the user
+stuck logged in.
 
 ### 5. Auth state machine
 

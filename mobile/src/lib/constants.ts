@@ -2,6 +2,7 @@
 export const API_BASE_URL = "http://127.0.0.1:8000/api";
 export const API_ENDPOINT_OBTAIN_TOKEN = "token/mobile/";
 export const API_ENDPOINT_REFRESH_TOKEN = "token/mobile/refresh/";
+export const API_ENDPOINT_LOGOUT = "token/mobile/logout/";
 export const API_ENDPOINT_PIN_SUGGESTIONS = "pins/suggestions/";
 export const API_ENDPOINT_SEARCH_SUGGESTIONS = "search/suggestions/";
 export const API_ENDPOINT_SEARCH_PINS = "search/";

@@ -23,6 +23,7 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 }));
 
 jest.mock("expo-secure-store", () => ({
+  getItemAsync: jest.fn(),
   deleteItemAsync: jest.fn(),
 }));
 

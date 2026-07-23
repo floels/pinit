@@ -18,6 +18,7 @@ body and are stored on the device.
 |---|---|
 | `POST /token/mobile/` | Log in — returns access + refresh token in the body. |
 | `POST /token/mobile/refresh/` | Refresh — send the refresh token, get a new access token **and a rotated refresh token** back. |
+| `POST /token/mobile/logout/` | Log out — send the refresh token so the backend revokes it. |
 | `POST /accounts/mobile/` | Sign up — returns tokens like login. |
 
 **Where tokens live** ([`src/lib/utils/authentication.ts`](../src/lib/utils/authentication.ts)):
@@ -98,12 +99,14 @@ a dead token would bounce the user in and out of the app on the next launch.
 ### 5. Logout
 
 [`ProfileScreen`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) calls
-`clearStoredAuthData()` and dispatches `LOGGED_OUT`.
+`logOut()` and dispatches `LOGGED_OUT`. `logOut()` first POSTs the refresh token
+to `token/mobile/logout/` so the backend **revokes it server-side** — giving
+mobile the same revocation guarantee as web — then clears all stored auth data.
 
-> **Note — logout is client-side only.** There is no mobile logout endpoint, so
-> the refresh token is *not* revoked server-side on logout; it simply stops
-> being used and remains valid in the backend until it expires or is rotated
-> out. (Contrast with web logout, which revokes it server-side.)
+> **Best-effort revocation.** The server-side revoke call must never block
+> logout: if it fails (offline, token already expired), `logOut()` still clears
+> the local tokens so the user is never stuck logged in. The refresh token would
+> then simply expire on its own.
 
 ## Refresh, proactively and reactively
 
@@ -119,6 +122,7 @@ server-side, so the next refresh must use the new value.
 | `ensureFreshAccessToken()` | Refresh only if the stored expiry is missing or within the 2-minute buffer. Used by the launch gate. |
 | `refreshAccessToken()` | Unconditionally refresh from the stored refresh token. Used by the reactive 401 path. |
 | `persistTokensData()` | Write access token / refresh token / expiry to their stores. |
+| `logOut()` | Revoke the refresh token server-side (best-effort), then `clearStoredAuthData()`. |
 | `clearStoredAuthData()` | Remove all persisted session data (logout, dead session). |
 
 ## Key files

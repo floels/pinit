@@ -98,6 +98,7 @@ cookie, mobile uses the JSON body.
 | `DELETE /api/token/web/` | `TokenWebView.delete` | logout → **revokes** cookie's token, clears cookie |
 | `POST /api/token/web/refresh/` | `RefreshTokenWebView` | reads cookie → rotates → re-sets cookie |
 | `POST /api/token/mobile/` | `obtain_token_pair_mobile` | login → returns token in body |
+| `POST /api/token/mobile/logout/` | `logout_mobile` | logout → **revokes** the token supplied in the body |
 | `POST /api/token/mobile/refresh/` | `RefreshTokenMobileView` | reads body → rotates → returns new token in body |
 | `POST /api/accounts/web/` | `sign_up_web` | signup → sets httpOnly cookie |
 | `POST /api/accounts/mobile/` | `sign_up_mobile` | signup → returns token in body |
@@ -143,13 +144,13 @@ sequenceDiagram
 - **Web logout** (`DELETE /api/token/web/`) revokes the presented refresh token
   server-side, then deletes the cookie. A captured refresh token cannot be
   reused after logout.
+- **Mobile logout** (`POST /api/token/mobile/logout/`) revokes the refresh token
+  supplied in the body, giving mobile the same server-side revocation as web.
+  The mobile client calls it **best-effort** — it still clears local tokens even
+  if the request fails, so logout never gets stuck.
 - **Rotation** revokes the previous refresh token on every successful refresh.
 - **Access tokens are never individually revoked** — they are stateless. Their
   short (15-min) lifetime bounds exposure instead.
-- **Mobile logout is client-side only** — the mobile client clears its stored
-  tokens but does not call an endpoint, so the refresh token remains valid in
-  the DB until it expires or is rotated out. (There is no mobile logout
-  endpoint.)
 
 ## Error codes
 
@@ -171,6 +172,6 @@ Defined in [`lib/constants.py`](../lib/constants.py).
 | `lib/utils/authentication.py` | `get_tokens_data` — bundles a fresh access + refresh token. |
 | `lib/authentication.py` | `PasetoAuthentication` DRF authentication class. |
 | `models.py` | `RefreshToken` model. |
-| `views/authentication.py` | Login / logout (web) + mobile obtain views, cookie helper. |
+| `views/authentication.py` | Web login/logout, mobile obtain/logout, cookie helper. |
 | `views/token_refresh.py` | Web + mobile refresh (rotating) views. |
 | `pinit/settings/base.py` | Token lifetimes, `REST_FRAMEWORK` auth class. |

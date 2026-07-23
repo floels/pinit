@@ -5,6 +5,7 @@ import {
   ACCESS_TOKEN_EXPIRATION_DATE_STORAGE_KEY,
   ACCESS_TOKEN_STORAGE_KEY,
   API_BASE_URL,
+  API_ENDPOINT_LOGOUT,
   API_ENDPOINT_REFRESH_TOKEN,
   PROFILE_PICTURE_URL_STORAGE_KEY,
   REFRESH_TOKEN_STORAGE_KEY,
@@ -13,6 +14,7 @@ import {
   TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS,
   clearStoredAuthData,
   ensureFreshAccessToken,
+  logOut,
   refreshAccessToken,
 } from "@/src/lib/utils/authentication";
 
@@ -172,6 +174,50 @@ describe("clearStoredAuthData", () => {
     );
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith(
       PROFILE_PICTURE_URL_STORAGE_KEY,
+    );
+  });
+});
+
+const logoutEndpoint = `${API_BASE_URL}/${API_ENDPOINT_LOGOUT}`;
+
+describe("logOut", () => {
+  it("posts the refresh token to the logout endpoint, then clears stored data", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
+    fetchMock.mockResponseOnce("{}");
+
+    await logOut();
+
+    expect(fetch).toHaveBeenCalledWith(
+      logoutEndpoint,
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ refresh_token: "refresh-token" }),
+      }),
+    );
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      REFRESH_TOKEN_STORAGE_KEY,
+    );
+  });
+
+  it("clears stored data even when the logout request fails", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
+    fetchMock.mockRejectOnce(new Error("network error"));
+
+    await logOut();
+
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      ACCESS_TOKEN_STORAGE_KEY,
+    );
+  });
+
+  it("skips the request and still clears data when there is no refresh token", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(null);
+
+    await logOut();
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      ACCESS_TOKEN_STORAGE_KEY,
     );
   });
 });

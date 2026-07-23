@@ -6,7 +6,7 @@ import styles from "./ProfileScreen.styles";
 
 import LoadingOverlay from "@/src/components/LoadingOverlay/LoadingOverlay";
 import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
-import { clearStoredAuthData } from "@/src/lib/utils/authentication";
+import { logOut } from "@/src/lib/utils/authentication";
 
 const ProfileScreen = () => {
   const { t } = useTranslation();
@@ -19,7 +19,7 @@ const ProfileScreen = () => {
     setIsClearingTokensData(true);
 
     try {
-      await clearStoredAuthData();
+      await logOut();
     } catch {
       // Fail silently:
       setIsClearingTokensData(false);

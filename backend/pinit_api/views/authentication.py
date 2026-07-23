@@ -60,6 +60,19 @@ def obtain_token_pair_mobile(request):
     return Response(get_tokens_data(user))
 
 
+@api_view(["POST"])
+def logout_mobile(request):
+    # Mobile has no httpOnly cookie, so the refresh token comes in the body.
+    # Best-effort revocation: revoke if a known token was supplied, otherwise
+    # succeed anyway (mirrors the tolerant web logout).
+    refresh_token_str = request.data.get("refresh_token")
+
+    if refresh_token_str:
+        revoke_refresh_token(refresh_token_str)
+
+    return Response(status=status.HTTP_200_OK)
+
+
 class TokenWebView(views.APIView):
     def post(self, request):
         user, error = get_user_from_credentials(

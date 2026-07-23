@@ -138,7 +138,7 @@ class ObtainTokenWebTests(AuthenticationTests):
         self.check_response_wrong_password(response=response)
 
 
-class LogoutTests(AuthenticationTests):
+class WebLogoutTests(AuthenticationTests):
     def setUp(self):
         super().setUp()
         self.refresh_token_str = issue_refresh_token(self.user)
@@ -171,4 +171,39 @@ class LogoutTests(AuthenticationTests):
     def test_logout_with_invalid_token_succeeds(self):
         self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = "invalid.token.value"
         response = self.client.delete("/api/token/web/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class MobileLogoutTests(AuthenticationTests):
+    def post_logout(self, request_payload=None):
+        return self.client.post(
+            "/api/token/mobile/logout/", request_payload or {}, format="json"
+        )
+
+    def test_logout_revokes_refresh_token(self):
+        refresh_token = issue_refresh_token(self.user)
+
+        response = self.post_logout({"refresh_token": refresh_token})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # The revoked token can no longer be used to refresh.
+        refresh_response = self.client.post(
+            "/api/token/mobile/refresh/",
+            {"refresh_token": refresh_token},
+            format="json",
+        )
+        self.assertEqual(
+            refresh_response.status_code, status.HTTP_401_UNAUTHORIZED
+        )
+        self.assertEqual(
+            refresh_response.json()["errors"],
+            [{"code": "invalid_refresh_token"}],
+        )
+
+    def test_logout_with_missing_token_succeeds(self):
+        response = self.post_logout({})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_logout_with_invalid_token_succeeds(self):
+        response = self.post_logout({"refresh_token": "not-a-real-token"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
