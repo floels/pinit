@@ -6,7 +6,6 @@ from pinit_api.models import RefreshToken, User
 from pinit_api.lib.utils.refresh_tokens import (
     InvalidRefreshTokenError,
     issue_refresh_token,
-    resolve_valid_user,
     revoke_refresh_token,
     rotate_refresh_token,
 )
@@ -45,44 +44,27 @@ class RefreshTokenServiceTests(TestCase):
         expected = timezone.now() + settings.REFRESH_TOKEN_LIFETIME
         self.assertLess(abs((stored.expires_at - expected).total_seconds()), 60)
 
-    def test_resolve_valid_user_returns_owner(self):
-        raw_token = issue_refresh_token(self.user)
-
-        self.assertEqual(resolve_valid_user(raw_token), self.user)
-
-    def test_resolve_rejects_unknown_token(self):
-        with self.assertRaises(InvalidRefreshTokenError):
-            resolve_valid_user("never-issued")
-
-    def test_resolve_rejects_revoked_token(self):
-        raw_token = issue_refresh_token(self.user)
-        revoke_refresh_token(raw_token)
-
-        with self.assertRaises(InvalidRefreshTokenError):
-            resolve_valid_user(raw_token)
-
-    @override_settings(REFRESH_TOKEN_LIFETIME=timedelta(seconds=-1))
-    def test_resolve_rejects_expired_token(self):
-        raw_token = issue_refresh_token(self.user)
-
-        with self.assertRaises(InvalidRefreshTokenError):
-            resolve_valid_user(raw_token)
-
     def test_revoke_unknown_token_is_a_no_op(self):
         revoke_refresh_token("never-issued")  # must not raise
 
-    def test_rotate_issues_new_token_and_revokes_old(self):
+    def test_rotate_issues_new_usable_token_and_revokes_old(self):
         old_token = issue_refresh_token(self.user)
 
         new_token, user = rotate_refresh_token(old_token)
 
         self.assertEqual(user, self.user)
         self.assertNotEqual(new_token, old_token)
-        # New token is usable...
-        self.assertEqual(resolve_valid_user(new_token), self.user)
-        # ...and the old one is now revoked.
+        # The old token is now revoked — rotating it again fails...
         with self.assertRaises(InvalidRefreshTokenError):
-            resolve_valid_user(old_token)
+            rotate_refresh_token(old_token)
+        # ...while the new token is usable (it can itself be rotated).
+        newer_token, user_again = rotate_refresh_token(new_token)
+        self.assertEqual(user_again, self.user)
+        self.assertNotEqual(newer_token, new_token)
+
+    def test_rotate_rejects_unknown_token(self):
+        with self.assertRaises(InvalidRefreshTokenError):
+            rotate_refresh_token("never-issued")
 
     def test_rotate_rejects_already_revoked_token(self):
         old_token = issue_refresh_token(self.user)
@@ -90,3 +72,10 @@ class RefreshTokenServiceTests(TestCase):
 
         with self.assertRaises(InvalidRefreshTokenError):
             rotate_refresh_token(old_token)
+
+    @override_settings(REFRESH_TOKEN_LIFETIME=timedelta(seconds=-1))
+    def test_rotate_rejects_expired_token(self):
+        raw_token = issue_refresh_token(self.user)
+
+        with self.assertRaises(InvalidRefreshTokenError):
+            rotate_refresh_token(raw_token)

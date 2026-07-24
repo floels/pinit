@@ -35,14 +35,6 @@ def _get_token_object(raw_token):
     ).first()
 
 
-def resolve_valid_user(raw_token):
-    """Return the user owning ``raw_token`` if it is valid, else raise."""
-    token_object = _get_token_object(raw_token)
-    if token_object is None or not token_object.is_valid:
-        raise InvalidRefreshTokenError()
-    return token_object.user
-
-
 def revoke_refresh_token(raw_token):
     """Revoke ``raw_token`` if it exists. A no-op for unknown tokens."""
     token_object = _get_token_object(raw_token)
