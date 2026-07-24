@@ -19,7 +19,8 @@ body and are stored on the device.
 | `POST /token/mobile/` | Log in — returns access + refresh token in the body. |
 | `POST /token/mobile/refresh/` | Refresh — send the refresh token, get a new access token **and a rotated refresh token** back. |
 | `POST /token/mobile/logout/` | Log out — send the refresh token so the backend revokes it. |
-| `POST /accounts/mobile/` | Sign up — returns tokens like login. |
+
+The mobile app is **login-only** — it has no signup flow (unlike the web app).
 
 **Where tokens live** ([`src/lib/utils/authentication.ts`](../src/lib/utils/authentication.ts)):
 
@@ -57,12 +58,11 @@ While `isCheckingAccessToken` is true the container renders nothing (no UI
 flash). The proactive refresh window is `TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS`
 (2 minutes), well below the 15-minute access-token lifetime.
 
-### 2. Login / signup
+### 2. Login
 
 [`LoginScreenContainer`](../src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx)
 POSTs credentials to `token/mobile/`, persists the returned tokens and expiry
-date via `persistTokensData`, and dispatches `LOGGED_IN`. Signup follows the
-same shape against `accounts/mobile/`.
+date via `persistTokensData`, and dispatches `LOGGED_IN`.
 
 ### 3. Authenticated requests (reactive refresh)
 
