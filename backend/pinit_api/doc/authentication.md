@@ -1,18 +1,16 @@
 # Authentication (backend)
 
 This document describes how the backend issues, verifies, and revokes
-authentication tokens. It is the **authoritative reference** for the token
-protocol; the web and mobile clients ([`web/doc/authentication.md`](../../../web/doc/authentication.md),
-[`mobile/doc/authentication.md`](../../../mobile/doc/authentication.md)) only
-differ in how they *transport* and *store* these tokens.
+authentication tokens. The client-side authentication flows are documented in [`web/doc/authentication.md`](../../../web/doc/authentication.md) and
+[`mobile/doc/authentication.md`](../../../mobile/doc/authentication.md).
 
 ## Token scheme
 
-Authentication uses a **two-token** scheme:
+Authentication relies on a two-token scheme:
 
 | Token | Type | Stateful? | Lifetime | Revocable? |
 |---|---|---|---|---|
-| **Access token** | PASETO v4.local | No (stateless) | 15 minutes | No — kept short-lived instead |
+| **Access token** | PASETO v4.local | No (stateless) | 15 minutes | No |
 | **Refresh token** | opaque random string, DB-backed | Yes (one row per token) | 30 days | Yes |
 
 Lifetimes are configured in [`pinit/settings/base.py`](../../pinit/settings/base.py)
@@ -20,10 +18,7 @@ as `ACCESS_TOKEN_LIFETIME` and `REFRESH_TOKEN_LIFETIME`.
 
 ### Access token — PASETO v4.local
 
-A [PASETO](https://paseto.io/) v4.local token: a symmetric, authenticated-and-
-encrypted token. Because PASETO fixes the token type by **version + purpose**
-(`v4.local`), it is immune to the JWT algorithm-confusion / `alg:none` class of
-attacks — there is no caller-supplied algorithm field to tamper with.
+A [PASETO](https://paseto.io/) v4.local token: an encrypted token.
 
 - **Claims:** `sub` (the user's primary key, as a string), `exp`, `iat`.
 - **Stateless:** nothing is stored server-side, so an access token cannot be
@@ -52,10 +47,10 @@ server stores **only its SHA-256 hash** ([`RefreshToken`](../models.py) model), 
 a database leak exposes no usable tokens.
 
 `RefreshToken` fields: `user`, `token_hash` (unique), `created_at`,
-`expires_at`, `revoked_at` (nullable). A token is *valid* while it is neither
+`expires_at`, `revoked_at` (nullable). A token is valid while it is neither
 revoked nor past `expires_at`.
 
-The token is **rotated on every refresh**: each call to a refresh endpoint
+The token is rotated on every refresh: each call to a refresh endpoint
 issues a new refresh token and revokes the presented one, so a captured-but-
 superseded token stops working.
 
@@ -79,9 +74,12 @@ Implemented in [`lib/utils/refresh_tokens.py`](../lib/utils/refresh_tokens.py):
 3. A valid token whose `sub` matches no user → `AuthenticationFailed` (401).
 4. Otherwise → `(user, token)`.
 
-`authenticate_header()` returns `"Bearer"` so unauthenticated requests to
-protected views get **401** (not 403). The 401 body is normalised to
-`{"errors": [{"code": "unauthorized"}]}` by
+By default, DRF **downgrades an authentication failure to 403** unless the
+authentication class's `authenticate_header()` returns a value; when it does, the
+response stays a **401** and that value becomes the `WWW-Authenticate` header.
+`PasetoAuthentication` returns `"Bearer"`, so unauthenticated requests to
+protected views get a **401** rather than a 403. The 401 body is then normalised
+to `{"errors": [{"code": "unauthorized"}]}` by
 [`handle_unauthorized_exception`](../lib/utils/exception_handling.py).
 
 ## Endpoints
@@ -89,7 +87,7 @@ protected views get **401** (not 403). The 401 body is normalised to
 Token issuance goes through
 [`get_tokens_data(user)`](../lib/utils/authentication.py), which returns
 `{access_token, access_token_expiration_utc, refresh_token}`. Web and mobile
-differ only in **how the refresh token is delivered**: web uses an httpOnly
+differ only in how the refresh token is delivered: web uses an httpOnly
 cookie, mobile uses the JSON body.
 
 | Method + path | View | Refresh token in/out |
@@ -116,28 +114,20 @@ DEBUG (Chromium rejects `SameSite=None` without `Secure` over HTTP),
 
 ## Refresh + rotation flow
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant RefreshView
-    participant DB
+A request to a refresh endpoint (`POST /api/token/{web,mobile}/refresh/`) is
+handled as follows:
 
-    Client->>RefreshView: POST refresh (cookie or body)
-    alt token missing
-        RefreshView-->>Client: 400 { code: missing_refresh_token }
-    else token present
-        RefreshView->>DB: rotate_refresh_token(raw)
-        alt invalid / revoked / expired
-            DB-->>RefreshView: InvalidRefreshTokenError
-            RefreshView-->>Client: 401 { code: invalid_refresh_token }
-        else valid
-            DB->>DB: revoke old row, insert new row
-            DB-->>RefreshView: (new_raw_token, user)
-            RefreshView->>RefreshView: create_access_token(user)
-            RefreshView-->>Client: 200 { access_token, … }<br/>web: re-set cookie · mobile: refresh_token in body
-        end
-    end
-```
+1. **Extract the refresh token** — from the httpOnly cookie (web) or the JSON
+   body (mobile).
+2. **No token present** → respond `400 { "code": "missing_refresh_token" }`.
+3. **Token present** → call `rotate_refresh_token(raw)`:
+   - **Unknown, revoked, or expired** → respond
+     `401 { "code": "invalid_refresh_token" }`.
+   - **Valid** → revoke the presented token, insert a new refresh-token row, and
+     mint a new access token via `create_access_token(user)`.
+4. **On success** → respond `200` with the new access token and its expiry. The
+   rotated refresh token is returned per client: web re-sets the httpOnly
+   cookie; mobile returns `refresh_token` in the body.
 
 ## Revocation
 

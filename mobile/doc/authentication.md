@@ -44,26 +44,14 @@ and, if present, refreshes it **before** entering the authenticated tree — so
 authenticated screens never fire a request with a stale token and get bounced by
 a spurious 401.
 
-```mermaid
-sequenceDiagram
-    participant Nav as NavigationContainer
-    participant Store as SecureStore
-    participant Backend
-
-    Nav->>Store: read access token
-    alt no token
-        Nav->>Nav: dispatch CHECKED_NO_ACCESS_TOKEN → login tree
-    else token present
-        Nav->>Backend: ensureFreshAccessToken()<br/>(refresh if expiry missing / within 2 min)
-        alt session usable
-            Backend-->>Nav: refreshed (or still-fresh) token
-            Nav->>Nav: dispatch FOUND_ACCESS_TOKEN → authenticated tree
-        else cannot refresh
-            Nav->>Store: clearStoredAuthData()
-            Nav->>Nav: dispatch CHECKED_NO_ACCESS_TOKEN → login tree
-        end
-    end
-```
+1. `NavigationContainer` reads the access token from secure store.
+2. **No token** → dispatch `CHECKED_NO_ACCESS_TOKEN` → render the login tree.
+3. **Token present** → call `ensureFreshAccessToken()` (refreshes if the stored
+   expiry is missing or within 2 minutes of expiring):
+   - **Session usable** (refreshed, or still fresh) → dispatch
+     `FOUND_ACCESS_TOKEN` → render the authenticated tree.
+   - **Cannot refresh** → `clearStoredAuthData()`, then dispatch
+     `CHECKED_NO_ACCESS_TOKEN` → render the login tree.
 
 While `isCheckingAccessToken` is true the container renders nothing (no UI
 flash). The proactive refresh window is `TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS`
@@ -116,6 +104,12 @@ reads the stored refresh token, POSTs it to `token/mobile/refresh/`, and persist
 the new access token **and the rotated refresh token** from the response.
 Persisting the rotated refresh token is essential: the presented one is revoked
 server-side, so the next refresh must use the new value.
+
+`refreshAccessToken` is **single-flight**: if a refresh is already running,
+concurrent callers (e.g. several requests hitting 401 at once) await that same
+request rather than each starting their own. Because refresh tokens rotate,
+parallel refreshes would otherwise spend the same token twice and revoke one
+another, ending the session.
 
 | Helper | Role |
 |---|---|
