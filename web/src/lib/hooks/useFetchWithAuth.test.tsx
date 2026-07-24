@@ -1,8 +1,10 @@
 import React from "react";
 import { renderHook, act } from "@testing-library/react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { useFetchWithAuth } from "./useFetchWithAuth";
 import { API_URL_REFRESH_TOKEN } from "../constants";
 import { AuthContext } from "@/contexts/authContext";
+import { createTestQueryClient } from "@/lib/testing-utils/misc";
 
 const mockSetAccessToken = vi.fn();
 const { mockLogOut } = vi.hoisted(() => ({ mockLogOut: vi.fn() }));
@@ -15,21 +17,26 @@ const MOCK_ACCESS_TOKEN = "mock.access.token";
 const MOCK_NEW_ACCESS_TOKEN = "mock.new.access.token";
 const TARGET_URL = "http://example.com/api/resource/";
 
+let testQueryClient = createTestQueryClient();
+
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <AuthContext.Provider
-    value={{
-      accessToken: MOCK_ACCESS_TOKEN,
-      setAccessToken: mockSetAccessToken,
-      isAuthInitialized: true,
-    }}
-  >
-    {children}
-  </AuthContext.Provider>
+  <QueryClientProvider client={testQueryClient}>
+    <AuthContext.Provider
+      value={{
+        accessToken: MOCK_ACCESS_TOKEN,
+        setAccessToken: mockSetAccessToken,
+        isAuthInitialized: true,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  </QueryClientProvider>
 );
 
 beforeEach(() => {
   fetchMock.resetMocks();
   vi.clearAllMocks();
+  testQueryClient = createTestQueryClient();
 });
 
 it("returns the response directly when status is not 401", async () => {
@@ -138,4 +145,40 @@ it("preserves other fetch options when adding the Authorization header", async (
       }),
     }),
   );
+});
+
+it("shares a single refresh across concurrent 401s (single-flight)", async () => {
+  // All initial requests (old token) 401; the refresh succeeds; retries (new
+  // token) succeed. Routed by URL + Authorization header so concurrent,
+  // interleaved requests are handled deterministically.
+  fetchMock.mockResponse(async (req) => {
+    if (req.url === API_URL_REFRESH_TOKEN) {
+      return JSON.stringify({ access_token: MOCK_NEW_ACCESS_TOKEN });
+    }
+    const authorization = req.headers.get("Authorization");
+    if (authorization === `Bearer ${MOCK_ACCESS_TOKEN}`) {
+      return { body: "{}", status: 401 };
+    }
+    return { body: "{}", status: 200 };
+  });
+
+  const { result } = renderHook(() => useFetchWithAuth(), { wrapper });
+
+  let responses: Response[] = [];
+  await act(async () => {
+    responses = await Promise.all([
+      result.current(TARGET_URL),
+      result.current(TARGET_URL),
+      result.current(TARGET_URL),
+    ]);
+  });
+
+  // Every concurrent request eventually succeeds after the shared refresh...
+  expect(responses.map((response) => response.status)).toEqual([200, 200, 200]);
+  // ...but the refresh endpoint is hit only ONCE, not once per request — so the
+  // rotating refresh token can't race and revoke itself.
+  const refreshCalls = fetchMock.mock.calls.filter(
+    ([url]) => url === API_URL_REFRESH_TOKEN,
+  );
+  expect(refreshCalls).toHaveLength(1);
 });

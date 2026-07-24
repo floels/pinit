@@ -221,3 +221,31 @@ describe("logOut", () => {
     );
   });
 });
+
+describe("refreshAccessToken single-flight", () => {
+  it("dedupes concurrent refreshes into a single request", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
+    fetchMock.mockResponse(
+      JSON.stringify({
+        access_token: "new-access-token",
+        refresh_token: "rotated-refresh-token",
+        access_token_expiration_utc: "2999-01-01T00:00:00Z",
+      }),
+    );
+
+    const results = await Promise.all([
+      refreshAccessToken(),
+      refreshAccessToken(),
+      refreshAccessToken(),
+    ]);
+
+    // All callers see the same successful outcome...
+    expect(results).toEqual([true, true, true]);
+    // ...but the refresh endpoint is hit only once, so the rotating refresh
+    // token can't race and revoke itself.
+    const refreshCalls = fetchMock.mock.calls.filter(
+      ([url]) => url === refreshEndpoint,
+    );
+    expect(refreshCalls).toHaveLength(1);
+  });
+});

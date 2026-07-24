@@ -95,13 +95,29 @@ export const ensureFreshAccessToken = async (): Promise<boolean> => {
   return refreshAccessToken();
 };
 
+// Tracks an in-flight refresh so concurrent callers share it (see below).
+let refreshInFlight: Promise<boolean> | null = null;
+
 // Unconditionally attempts to obtain a new access token from the stored refresh
 // token, persisting it on success. Returns `true` when the session is usable
 // afterwards and `false` when it could not be refreshed (no refresh token, or
 // the refresh request failed), meaning the caller should treat the session as
 // ended. Unlike `ensureFreshAccessToken`, this ignores the local expiration
 // date — use it when the server has already rejected the access token (401).
+//
+// Single-flight: if a refresh is already running, concurrent callers await the
+// same request rather than each firing their own. Because refresh tokens rotate
+// (each refresh revokes the presented one), parallel refreshes would otherwise
+// spend the same token twice and revoke one another, ending the session.
 export const refreshAccessToken = async (): Promise<boolean> => {
+  refreshInFlight ??= doRefreshAccessToken().finally(() => {
+    refreshInFlight = null;
+  });
+
+  return refreshInFlight;
+};
+
+const doRefreshAccessToken = async (): Promise<boolean> => {
   const refreshToken = await SecureStore.getItemAsync(
     REFRESH_TOKEN_STORAGE_KEY,
   );
