@@ -2,6 +2,11 @@ from .base import *
 
 SECRET_KEY = "local-secret-key"
 
+# 32-byte PASETO v4.local key, hex-encoded. Development-only fixed value.
+PASETO_SYMMETRIC_KEY = (
+    "90ca4bf5e366dc71c64a133694814daf3e8256d3c29172fecc8f746339c7645f"
+)
+
 DEBUG = True
 
 CORS_ALLOW_ALL_ORIGINS = True

@@ -1,25 +1,28 @@
-import pytz
-from datetime import datetime
-from rest_framework import status
+from rest_framework import status, views
 from rest_framework.response import Response
-from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.views import TokenViewBase
 
 from ..lib.constants import (
     ERROR_CODE_INVALID_REFRESH_TOKEN,
     ERROR_CODE_MISSING_REFRESH_TOKEN,
     REFRESH_TOKEN_COOKIE_NAME,
 )
+from ..lib.utils.tokens import create_access_token
+from ..lib.utils.refresh_tokens import (
+    InvalidRefreshTokenError,
+    rotate_refresh_token,
+)
+from .authentication import set_refresh_token_cookie
 
 
-# This view is taking inspiration from:
-# https://github.com/jazzband/djangorestframework-simplejwt/blob/master/rest_framework_simplejwt/views.py#L63-L69
-class RefreshTokenView(TokenViewBase):
-    _serializer_class = (
-        "pinit_api.serializers.token_serializers.CustomTokenRefreshSerializer"
-    )
+class RefreshTokenView(views.APIView):
+    """Rotating refresh: validate the presented opaque refresh token, revoke it,
+    issue a fresh one, and mint a new access token. Subclasses decide where the
+    incoming token is read from and how the new one is returned."""
 
     def get_refresh_token(self, request):
+        raise NotImplementedError
+
+    def build_response(self, access_token, access_token_expiration_utc, new_refresh_token):
         raise NotImplementedError
 
     def post(self, request):
@@ -28,28 +31,20 @@ class RefreshTokenView(TokenViewBase):
         if error:
             return error
 
-        serializer = self.get_serializer(data={"refresh": refresh_token})
-
         try:
-            serializer.is_valid(raise_exception=True)
-
-        except TokenError:
+            new_refresh_token, user = rotate_refresh_token(refresh_token)
+        except InvalidRefreshTokenError:
             return Response(
                 {"errors": [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}]},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        access_token = serializer.validated_data["access_token"]
-        access_token_exp = serializer.validated_data["access_token_exp"]
-        access_token_expiration_utc = datetime.fromtimestamp(
-            access_token_exp, tz=pytz.UTC
-        )
+        access_token, access_token_expiration_utc = create_access_token(user)
 
-        return Response(
-            {
-                "access_token": access_token,
-                "access_token_expiration_utc": access_token_expiration_utc.isoformat(),
-            }
+        return self.build_response(
+            access_token,
+            access_token_expiration_utc.isoformat(),
+            new_refresh_token,
         )
 
 
@@ -63,6 +58,15 @@ class RefreshTokenMobileView(RefreshTokenView):
 
         return request.data["refresh_token"], None
 
+    def build_response(self, access_token, access_token_expiration_utc, new_refresh_token):
+        return Response(
+            {
+                "access_token": access_token,
+                "access_token_expiration_utc": access_token_expiration_utc,
+                "refresh_token": new_refresh_token,
+            }
+        )
+
 
 class RefreshTokenWebView(RefreshTokenView):
     def get_refresh_token(self, request):
@@ -75,3 +79,13 @@ class RefreshTokenWebView(RefreshTokenView):
             )
 
         return token, None
+
+    def build_response(self, access_token, access_token_expiration_utc, new_refresh_token):
+        response = Response(
+            {
+                "access_token": access_token,
+                "access_token_expiration_utc": access_token_expiration_utc,
+            }
+        )
+        set_refresh_token_cookie(response, new_refresh_token)
+        return response

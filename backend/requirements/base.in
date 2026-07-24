@@ -6,7 +6,7 @@
 
 Django==6.0.7
 djangorestframework==3.17.1
-djangorestframework-simplejwt==5.5.1
+pyseto==1.10.0
 django-cors-headers==4.9.0
 django-storages==1.14.6
 whitenoise==6.9.0

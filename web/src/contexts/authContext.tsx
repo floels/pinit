@@ -7,7 +7,10 @@ import {
   useState,
 } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { API_URL_REFRESH_TOKEN } from "@/lib/constants";
+import {
+  REFRESH_ACCESS_TOKEN_QUERY_KEY,
+  fetchRefreshedAccessToken,
+} from "@/lib/utils/refreshAccessToken";
 
 export type AuthContextType = {
   accessToken: string | null;
@@ -29,21 +32,8 @@ export const AuthContextProvider = ({
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isAuthInitialized, setIsAuthInitialized] = useState(false);
 
-  const fetchRefreshedAccessToken = async () => {
-    const response = await fetch(API_URL_REFRESH_TOKEN, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    return response.json();
-  };
-
   const { data, status } = useQuery({
-    queryKey: ["refreshAccessToken"],
+    queryKey: REFRESH_ACCESS_TOKEN_QUERY_KEY,
     queryFn: fetchRefreshedAccessToken,
     retry: false,
     refetchOnWindowFocus: false,

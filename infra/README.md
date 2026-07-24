@@ -301,6 +301,7 @@ aws secretsmanager create-secret \
   --region eu-west-3 \
   --secret-string '{
     "DJANGO_SECRET_KEY": "...",
+    "PASETO_SYMMETRIC_KEY": "...",
     "POSTGRES_HOST": "<rds-address from terraform output>",
     "POSTGRES_DB": "pinit_staging",
     "POSTGRES_USER": "...",
@@ -415,6 +416,7 @@ aws secretsmanager create-secret \
   --region eu-west-3 \
   --secret-string '{
     "DJANGO_SECRET_KEY": "<generate with: python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\">",
+    "PASETO_SYMMETRIC_KEY": "<generate with: python -c \"import secrets; print(secrets.token_hex(32))\">",
     "POSTGRES_HOST": "<rds_address output from step 2>",
     "POSTGRES_DB": "pinit_staging",
     "POSTGRES_USER": "pinit",

@@ -3,14 +3,14 @@ from rest_framework import status
 from django.conf import settings
 
 from pinit_api.models import Pin
-from ..testing_utils import UserFactory, PinFactory, JWTAuthenticationMixin
+from ..testing_utils import UserFactory, PinFactory, AccessTokenAuthenticationMixin
 from pinit_api.lib.constants import ERROR_CODE_UNAUTHORIZED
 
 NUMBER_EXISTING_PINS = 150
 PAGINATION_PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
 
 
-class GetPinSuggestionsTests(APITestCase, JWTAuthenticationMixin):
+class GetPinSuggestionsTests(APITestCase, AccessTokenAuthenticationMixin):
     def setUp(self):
         self.pins = PinFactory.create_batch(NUMBER_EXISTING_PINS)
 

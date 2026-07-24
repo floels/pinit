@@ -2,6 +2,7 @@ import uuid
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
+from django.utils import timezone
 from pinit_api.lib.utils.user_manager import UserManager
 
 
@@ -53,6 +54,43 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
+
+
+class RefreshToken(models.Model):
+    """An opaque, revocable refresh token.
+
+    The raw token is a random string handed to the client; only its SHA-256
+    hash is persisted here, so a database leak does not expose usable tokens.
+    A token is usable while it is neither revoked nor past ``expires_at``.
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="refresh_tokens"
+    )
+    token_hash = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"RefreshToken for {self.user} (…{self.token_hash[-6:]})"
+
+    @property
+    def is_expired(self):
+        return self.expires_at <= timezone.now()
+
+    @property
+    def is_revoked(self):
+        return self.revoked_at is not None
+
+    @property
+    def is_valid(self):
+        return not self.is_revoked and not self.is_expired
+
+    def revoke(self):
+        if self.revoked_at is None:
+            self.revoked_at = timezone.now()
+            self.save(update_fields=["revoked_at"])
 
 
 class Account(models.Model):

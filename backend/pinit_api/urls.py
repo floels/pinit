@@ -37,6 +37,11 @@ urlpatterns = [
         name="refresh_token",
     ),
     path(
+        "token/mobile/logout/",
+        authentication.logout_mobile,
+        name="logout_mobile",
+    ),
+    path(
         "token/web/refresh/",
         token_refresh.RefreshTokenWebView.as_view(),
         name="web_refresh_token",

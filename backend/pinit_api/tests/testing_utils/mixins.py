@@ -1,7 +1,7 @@
-from rest_framework_simplejwt.tokens import RefreshToken
+from pinit_api.lib.utils.tokens import create_access_token
 
 
-class JWTAuthenticationMixin:
+class AccessTokenAuthenticationMixin:
     def authenticate_client(self, user):
-        tokens_pair = RefreshToken.for_user(user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {tokens_pair.access_token}")
+        access_token, _ = create_access_token(user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")

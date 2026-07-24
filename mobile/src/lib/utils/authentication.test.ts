@@ -5,6 +5,7 @@ import {
   ACCESS_TOKEN_EXPIRATION_DATE_STORAGE_KEY,
   ACCESS_TOKEN_STORAGE_KEY,
   API_BASE_URL,
+  API_ENDPOINT_LOGOUT,
   API_ENDPOINT_REFRESH_TOKEN,
   PROFILE_PICTURE_URL_STORAGE_KEY,
   REFRESH_TOKEN_STORAGE_KEY,
@@ -13,6 +14,7 @@ import {
   TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS,
   clearStoredAuthData,
   ensureFreshAccessToken,
+  logOut,
   refreshAccessToken,
 } from "@/src/lib/utils/authentication";
 
@@ -118,6 +120,26 @@ describe("refreshAccessToken", () => {
     );
   });
 
+  it("persists the rotated refresh token returned by the server", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(
+      "old-refresh-token",
+    );
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        access_token: "new-access-token",
+        refresh_token: "rotated-refresh-token",
+        access_token_expiration_utc: "2999-01-01T00:00:00Z",
+      }),
+    );
+
+    await refreshAccessToken();
+
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      REFRESH_TOKEN_STORAGE_KEY,
+      "rotated-refresh-token",
+    );
+  });
+
   it("returns false when there is no refresh token to refresh with", async () => {
     (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(null);
 
@@ -153,5 +175,77 @@ describe("clearStoredAuthData", () => {
     expect(AsyncStorage.removeItem).toHaveBeenCalledWith(
       PROFILE_PICTURE_URL_STORAGE_KEY,
     );
+  });
+});
+
+const logoutEndpoint = `${API_BASE_URL}/${API_ENDPOINT_LOGOUT}`;
+
+describe("logOut", () => {
+  it("posts the refresh token to the logout endpoint, then clears stored data", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
+    fetchMock.mockResponseOnce("{}");
+
+    await logOut();
+
+    expect(fetch).toHaveBeenCalledWith(
+      logoutEndpoint,
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ refresh_token: "refresh-token" }),
+      }),
+    );
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      REFRESH_TOKEN_STORAGE_KEY,
+    );
+  });
+
+  it("clears stored data even when the logout request fails", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
+    fetchMock.mockRejectOnce(new Error("network error"));
+
+    await logOut();
+
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      ACCESS_TOKEN_STORAGE_KEY,
+    );
+  });
+
+  it("skips the request and still clears data when there is no refresh token", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(null);
+
+    await logOut();
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      ACCESS_TOKEN_STORAGE_KEY,
+    );
+  });
+});
+
+describe("refreshAccessToken single-flight", () => {
+  it("dedupes concurrent refreshes into a single request", async () => {
+    (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
+    fetchMock.mockResponse(
+      JSON.stringify({
+        access_token: "new-access-token",
+        refresh_token: "rotated-refresh-token",
+        access_token_expiration_utc: "2999-01-01T00:00:00Z",
+      }),
+    );
+
+    const results = await Promise.all([
+      refreshAccessToken(),
+      refreshAccessToken(),
+      refreshAccessToken(),
+    ]);
+
+    // All callers see the same successful outcome...
+    expect(results).toEqual([true, true, true]);
+    // ...but the refresh endpoint is hit only once, so the rotating refresh
+    // token can't race and revoke itself.
+    const refreshCalls = fetchMock.mock.calls.filter(
+      ([url]) => url === refreshEndpoint,
+    );
+    expect(refreshCalls).toHaveLength(1);
   });
 });

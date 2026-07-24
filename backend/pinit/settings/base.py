@@ -17,8 +17,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
-    "rest_framework_simplejwt",
-    "rest_framework_simplejwt.token_blacklist",
     "pinit_api.apps.PinitApiConfig",
 ]
 
@@ -117,14 +115,19 @@ STORAGES = {
 # before expiry and reactively on a 401 (refresh + retry), so a short lifetime
 # does not surface to the user as a logout. The refresh token is long-lived and
 # is what keeps a session alive across the short access-token windows.
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
-}
+ACCESS_TOKEN_LIFETIME = timedelta(minutes=15)
+REFRESH_TOKEN_LIFETIME = timedelta(days=30)
+
+# Access tokens are PASETO v4.local: symmetric, authenticated encryption. The
+# key is a 32-byte value, hex-encoded, provided per environment (never derived
+# from SECRET_KEY). Generate one with:
+#   python -c "import secrets; print(secrets.token_hex(32))"
+# PASETO_SYMMETRIC_KEY is defined in each environment's settings module, mirroring
+# how SECRET_KEY is set.
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "pinit_api.lib.authentication.PasetoAuthentication",
     ],
     "EXCEPTION_HANDLER": "pinit_api.lib.utils.exception_handling.handle_unauthorized_exception",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",

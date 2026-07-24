@@ -3,8 +3,8 @@ from django.test import TestCase
 from django.utils.dateparse import parse_datetime
 from django.conf import settings
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
 from pinit_api.models import User
+from pinit_api.lib.utils.refresh_tokens import issue_refresh_token
 from pinit_api.lib.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
@@ -26,7 +26,7 @@ class AuthenticationTests(TestCase):
         parsed_expiration_utc = parse_datetime(access_token_expiration_utc)
 
         now_utc = datetime.now(timezone.utc)
-        expected_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
+        expected_lifetime = settings.ACCESS_TOKEN_LIFETIME
         expected_expiration_utc = now_utc + expected_lifetime
 
         delta_actual_predicted_expiration_seconds = abs(
@@ -138,11 +138,10 @@ class ObtainTokenWebTests(AuthenticationTests):
         self.check_response_wrong_password(response=response)
 
 
-class LogoutTests(AuthenticationTests):
+class WebLogoutTests(AuthenticationTests):
     def setUp(self):
         super().setUp()
-        self.refresh_token_object = RefreshToken.for_user(self.user)
-        self.refresh_token_str = str(self.refresh_token_object)
+        self.refresh_token_str = issue_refresh_token(self.user)
         self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = self.refresh_token_str
 
     def test_logout_clears_refresh_token_cookie(self):
@@ -152,7 +151,7 @@ class LogoutTests(AuthenticationTests):
         self.assertIn(REFRESH_TOKEN_COOKIE_NAME, response.cookies)
         self.assertEqual(response.cookies[REFRESH_TOKEN_COOKIE_NAME]["max-age"], 0)
 
-    def test_logout_blacklists_refresh_token(self):
+    def test_logout_revokes_refresh_token(self):
         self.client.delete("/api/token/web/")
 
         self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = self.refresh_token_str
@@ -172,4 +171,39 @@ class LogoutTests(AuthenticationTests):
     def test_logout_with_invalid_token_succeeds(self):
         self.client.cookies[REFRESH_TOKEN_COOKIE_NAME] = "invalid.token.value"
         response = self.client.delete("/api/token/web/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class MobileLogoutTests(AuthenticationTests):
+    def post_logout(self, request_payload=None):
+        return self.client.post(
+            "/api/token/mobile/logout/", request_payload or {}, format="json"
+        )
+
+    def test_logout_revokes_refresh_token(self):
+        refresh_token = issue_refresh_token(self.user)
+
+        response = self.post_logout({"refresh_token": refresh_token})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # The revoked token can no longer be used to refresh.
+        refresh_response = self.client.post(
+            "/api/token/mobile/refresh/",
+            {"refresh_token": refresh_token},
+            format="json",
+        )
+        self.assertEqual(
+            refresh_response.status_code, status.HTTP_401_UNAUTHORIZED
+        )
+        self.assertEqual(
+            refresh_response.json()["errors"],
+            [{"code": "invalid_refresh_token"}],
+        )
+
+    def test_logout_with_missing_token_succeeds(self):
+        response = self.post_logout({})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_logout_with_invalid_token_succeeds(self):
+        response = self.post_logout({"refresh_token": "not-a-real-token"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
