@@ -26,10 +26,11 @@ export default [
     ...reactHooksPlugin.configs.flat["recommended-latest"],
   },
   {
-    // Adoption ramp: the rules below still have known violations, listed in
-    // doc/react-rules-adoption.md. They are warnings so that the plugin can be
-    // introduced without a red pipeline. Restore them to "error" once the
-    // corresponding fix lands.
+    // Adoption ramp: 'set-state-in-effect' is a warning so that the plugin can
+    // be introduced without a red pipeline. Four Effects still write state
+    // synchronously: PinThumbnailsGrid, CreatedPinsContainer, authContext and
+    // HeaderSearchBarContainer. Run 'pnpm lint' for the exact lines. Restore
+    // the rule to "error" once the last one is fixed.
     files: ["**/*.{ts,tsx}"],
     rules: {
       "react-hooks/set-state-in-effect": "warn",
