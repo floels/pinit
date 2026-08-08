@@ -1,6 +1,6 @@
 import { BrowserContext } from "@playwright/test";
 
-export const BACKEND_API_URL = "http://127.0.0.1:8000/api";
+export const BACKEND_API_URL = "http://localhost:8000/api";
 
 export const E2E_TEST_USER_EMAIL = "e2e_test@example.com";
 export const E2E_TEST_USER_PASSWORD = "testpassword123";
@@ -42,7 +42,7 @@ export const loginAsTestUser = async ({
     {
       name: "refreshToken",
       value: match[1],
-      domain: "127.0.0.1",
+      domain: "localhost",
       path: "/",
       httpOnly: true,
       secure: false,

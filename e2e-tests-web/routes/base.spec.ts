@@ -36,7 +36,7 @@ test("shows unauthenticated state when the refresh token is invalid", async ({
     {
       name: "refreshToken",
       value: "this.is.not.a.valid.jwt",
-      domain: "127.0.0.1",
+      domain: "localhost",
       path: "/",
       httpOnly: true,
       secure: false,

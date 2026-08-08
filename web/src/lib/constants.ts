@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  process.env.BACKEND_URL ?? "http://127.0.0.1:8000/api";
+  process.env.BACKEND_URL ?? "http://localhost:8000/api";
 
 export const API_URL_SIGN_UP = `${API_BASE_URL}/accounts/web/`;
 export const API_URL_OBTAIN_TOKEN = `${API_BASE_URL}/token/web/`;

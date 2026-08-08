@@ -50,7 +50,7 @@ Read at build time and inlined by `vite.config.ts`:
 
 | Variable | Description |
 |---|---|
-| `BACKEND_URL` | Backend API base URL. `docker-compose.local.yml` sets `http://localhost:8000/api`. Without the variable, `src/lib/constants.ts` falls back to `http://127.0.0.1:8000/api`. |
+| `BACKEND_URL` | Backend API base URL. `docker-compose.local.yml` sets `http://localhost:8000/api`, which is also the fallback in `src/lib/constants.ts`. Keep both on `localhost`: the refresh token cookie is `SameSite=Lax` in development, and a browser treats `localhost` and `127.0.0.1` as different sites. |
 
 ## Documentation
 
