@@ -1,6 +1,5 @@
 import { PinWithAuthorDetails } from "@/lib/types/frontendTypes";
 import PinThumbnailContainer from "../PinsBoard/PinThumbnailContainer";
-import { useEffect, useState } from "react";
 import { useViewportWidth } from "@/lib/hooks/useViewportWidth";
 import styles from "./PinThumbnailsGrid.module.css";
 
@@ -26,38 +25,30 @@ const getNumberOfColumns = (viewportWidth: number) => {
 };
 
 const PinThumbnailsGrid = ({ pins }: PinThumbnailsGridProps) => {
-  const [numberOfColumns, setNumberOfColumns] = useState<number | undefined>();
-
   const viewportWidth = useViewportWidth();
 
-  useEffect(() => {
-    if (viewportWidth !== undefined) {
-      const calculatedColumns = getNumberOfColumns(viewportWidth);
-      setNumberOfColumns(calculatedColumns);
-    }
-  }, [viewportWidth]);
+  const numberOfColumns =
+    viewportWidth === undefined ? undefined : getNumberOfColumns(viewportWidth);
 
-  if (!numberOfColumns) {
+  if (numberOfColumns === undefined) {
     return null;
   }
 
-  const castedNumberOfColumns = numberOfColumns as number;
-
   // Here the logic is to:
-  // - render as many columns as `numberOfColumns` (casted to number to avoid TypeScript errors),
+  // - render as many columns as `numberOfColumns`,
   // - then, render the thumbnails in rows, e.g. if we have 3 columns:
   //   - thumbnail #1 goes to column #1,
   //   - thumbnail #2 goes to column #2,
   //   - thumbnail #3 goes to column #3,
   //   - thumbnail #4 goes to column #1, etc.
   // We do this by conditioning the rendering of thumbnail #pinThumbnailIndex (zero-based) to:
-  // `if (pinThumbnailIndex % castedNumberOfColumns === columnIndex)`
+  // `if (pinThumbnailIndex % numberOfColumns === columnIndex)`
   // which translates the logic above.
   return (
     <div className={styles.container}>
-      {Array.from({ length: castedNumberOfColumns }).map((_, columnIndex) => {
+      {Array.from({ length: numberOfColumns }).map((_, columnIndex) => {
         const isFirstColumn = columnIndex === 0;
-        const isLastColumn = columnIndex === castedNumberOfColumns - 1;
+        const isLastColumn = columnIndex === numberOfColumns - 1;
 
         return (
           <div
@@ -66,7 +57,7 @@ const PinThumbnailsGrid = ({ pins }: PinThumbnailsGridProps) => {
           >
             {pins.map((pin, pinIndex) => {
               const pinBelongsToColumn =
-                pinIndex % castedNumberOfColumns === columnIndex;
+                pinIndex % numberOfColumns === columnIndex;
 
               if (!pinBelongsToColumn) {
                 return null;

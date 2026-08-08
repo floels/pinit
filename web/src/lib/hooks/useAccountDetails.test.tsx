@@ -1,11 +1,15 @@
-import { render, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { useAccountDetails } from "./useAccountDetails";
 import {
   API_URL_MY_ACCOUNT_DETAILS,
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
   USERNAME_LOCAL_STORAGE_KEY,
 } from "@/lib/constants";
-import { MockLocalStorage, withQueryClient } from "@/lib/testing-utils/misc";
+import {
+  MockLocalStorage,
+  createTestQueryClient,
+} from "@/lib/testing-utils/misc";
 import { AccountContext } from "@/contexts/accountContext";
 import { AuthContext } from "@/contexts/authContext";
 import {
@@ -30,13 +34,6 @@ beforeEach(() => {
   mockSetAccount.mockClear();
 });
 
-let hookResult: ReturnType<typeof useAccountDetails> = { isError: false };
-
-const TestComponent = () => {
-  hookResult = useAccountDetails();
-  return null;
-};
-
 const renderHookInContext = ({
   accessToken = MOCK_ACCESS_TOKEN,
   isAuthInitialized = true,
@@ -44,15 +41,25 @@ const renderHookInContext = ({
   accessToken?: string | null;
   isAuthInitialized?: boolean;
 } = {}) => {
-  render(
+  // One client per render, created outside the wrapper so that re-renders keep
+  // the same React Query cache.
+  const testQueryClient = createTestQueryClient();
+
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
     <AuthContext.Provider
       value={{ accessToken, setAccessToken: vi.fn(), isAuthInitialized }}
     >
-      <AccountContext.Provider value={{ account: null, setAccount: mockSetAccount }}>
-        {withQueryClient(<TestComponent />)}
+      <AccountContext.Provider
+        value={{ account: null, setAccount: mockSetAccount }}
+      >
+        <QueryClientProvider client={testQueryClient}>
+          {children}
+        </QueryClientProvider>
       </AccountContext.Provider>
-    </AuthContext.Provider>,
+    </AuthContext.Provider>
   );
+
+  return renderHook(() => useAccountDetails(), { wrapper });
 };
 
 it(`calls 'setAccount' with proper arguments and persists
@@ -74,9 +81,9 @@ relevant data upon successful fetch`, async () => {
       responseSerialized.username,
     );
 
-    expect(
-      localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY),
-    ).toEqual(responseSerialized.profilePictureURL);
+    expect(localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY)).toEqual(
+      responseSerialized.profilePictureURL,
+    );
   });
 });
 
@@ -142,9 +149,9 @@ it("does not fetch account details when not authenticated", async () => {
 it("returns isError: true when fetch fails", async () => {
   fetchMock.mockResponseOnce("{}", { status: 500 });
 
-  renderHookInContext();
+  const { result } = renderHookInContext();
 
   await waitFor(() => {
-    expect(hookResult.isError).toBe(true);
+    expect(result.current.isError).toBe(true);
   });
 });

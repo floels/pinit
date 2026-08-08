@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { appendQueryParam } from "@/lib/utils/strings";
 import CreatedPins from "./CreatedPins";
@@ -22,11 +22,12 @@ const CreatedPinsContainer = ({ username }: CreatedPinsProps) => {
   const isOwnProfile = account?.username === username;
   const queryClient = useQueryClient();
 
-  const [currentPage, setCurrentPage] = useState(1);
+  // The page number is stored together with the username it belongs to. A new
+  // username therefore starts back at page 1 during the same render, without an
+  // effect and without a fetch for the wrong page.
+  const [pagination, setPagination] = useState({ username, page: 1 });
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [username]);
+  const currentPage = pagination.username === username ? pagination.page : 1;
 
   const queryKey = ["createdPins", username, currentPage];
 
@@ -54,8 +55,10 @@ const CreatedPinsContainer = ({ username }: CreatedPinsProps) => {
   const pins = data?.pins ?? [];
   const hasNextPage = data?.hasNextPage ?? false;
 
-  const handleNextPage = () => setCurrentPage((p) => p + 1);
-  const handlePreviousPage = () => setCurrentPage((p) => p - 1);
+  const handleNextPage = () =>
+    setPagination({ username, page: currentPage + 1 });
+  const handlePreviousPage = () =>
+    setPagination({ username, page: currentPage - 1 });
 
   const handlePinDeleted = (pinId: string) => {
     queryClient.setQueryData<CreatedPinsQueryData>(queryKey, (old) => {

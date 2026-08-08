@@ -38,7 +38,12 @@ const getSuggestionsWithSearchTermAtTop = ({
 const HeaderSearchBarContainer = () => {
   const navigate = useNavigate();
 
-  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  // The suggestions are stored together with the search term they were fetched
+  // for. Suggestions for any other term, and for an empty input, read as empty.
+  const [fetchedSuggestions, setFetchedSuggestions] = useState<{
+    searchTerm: string;
+    suggestions: string[];
+  }>({ searchTerm: "", suggestions: [] });
 
   const {
     state: { inputValue, isInputFocused },
@@ -84,12 +89,12 @@ const HeaderSearchBarContainer = () => {
         `${API_URL_SEARCH_SUGGESTIONS}?search=${searchTerm.toLowerCase()}`,
       );
     } catch {
-      setSearchSuggestions([]);
+      setFetchedSuggestions({ searchTerm, suggestions: [] });
       return;
     }
 
     if (!response.ok) {
-      setSearchSuggestions([]);
+      setFetchedSuggestions({ searchTerm, suggestions: [] });
       return;
     }
 
@@ -98,7 +103,7 @@ const HeaderSearchBarContainer = () => {
     try {
       responseData = await response.json();
     } catch {
-      setSearchSuggestions([]);
+      setFetchedSuggestions({ searchTerm, suggestions: [] });
       return;
     }
 
@@ -107,7 +112,10 @@ const HeaderSearchBarContainer = () => {
       originalSuggestions: responseData.results,
     });
 
-    setSearchSuggestions(suggestionsWithSearchTermAtTop);
+    setFetchedSuggestions({
+      searchTerm,
+      suggestions: suggestionsWithSearchTermAtTop,
+    });
   };
 
   const debouncedFetchSearchSuggestions = debounce(
@@ -117,7 +125,6 @@ const HeaderSearchBarContainer = () => {
 
   useEffect(() => {
     if (!inputValue) {
-      setSearchSuggestions([]);
       return;
     }
 
@@ -132,6 +139,11 @@ const HeaderSearchBarContainer = () => {
     dispatch({ type: "SET_INPUT_VALUE", payload: "" });
     dispatch({ type: "BLUR_INPUT" });
   };
+
+  const searchSuggestions =
+    fetchedSuggestions.searchTerm === inputValue
+      ? fetchedSuggestions.suggestions
+      : [];
 
   return (
     <HeaderSearchBar
