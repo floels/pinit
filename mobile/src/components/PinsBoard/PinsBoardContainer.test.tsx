@@ -64,6 +64,14 @@ const mockRefreshedPinSuggestions = mockPinSuggestions.map((result, index) => ({
   unique_id: String(mockPinSuggestions.length + index).padStart(18, "0"),
 }));
 
+// Pins created after the API carried the image dimensions report them, so the
+// board lays them out without measuring their image:
+const mockPinSuggestionsWithDimensions = mockPinSuggestions.map((result) => ({
+  ...result,
+  image_width: 1024,
+  image_height: 768,
+}));
+
 const pinSuggestionsEndpoint = `${API_BASE_URL}/${API_ENDPOINT_PIN_SUGGESTIONS}`;
 
 const mockDispatch = jest.fn();
@@ -107,6 +115,7 @@ const pullToRefresh = () => {
 
 beforeEach(() => {
   fetchMock.resetMocks();
+  (Image.getSize as jest.Mock).mockClear();
 });
 
 afterEach(() => {
@@ -153,6 +162,38 @@ and fetches second page upon scroll`, async () => {
       `${pinSuggestionsEndpoint}?page=2`,
     );
   });
+});
+
+it("renders pins without measuring their image when the API reports the dimensions", async () => {
+  fetchMock.mockOnceIf(
+    `${pinSuggestionsEndpoint}?page=1`,
+    JSON.stringify({ results: mockPinSuggestionsWithDimensions }),
+  );
+
+  renderComponent();
+
+  await waitFor(() => {
+    const pinThumbnails = screen.queryAllByTestId(/^mocked-pin-thumbnail-/);
+    expect(pinThumbnails.length).toEqual(mockPinSuggestions.length);
+  });
+
+  expect(Image.getSize).not.toHaveBeenCalled();
+});
+
+it("measures the image of pins for which the API reports no dimensions", async () => {
+  fetchMock.mockOnceIf(
+    `${pinSuggestionsEndpoint}?page=1`,
+    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
+  );
+
+  renderComponent();
+
+  await waitFor(() => {
+    const pinThumbnails = screen.queryAllByTestId(/^mocked-pin-thumbnail-/);
+    expect(pinThumbnails.length).toEqual(mockPinSuggestions.length);
+  });
+
+  expect(Image.getSize).toHaveBeenCalledTimes(mockPinSuggestions.length);
 });
 
 it("fetches first page with authentication if relevant", async () => {

@@ -38,6 +38,20 @@ export const DEBOUNCE_TIME_SCROLL_DOWN_TO_FETCH_MORE_PINS_MS = 500; // this debo
 // is introduced to avoid fetching the two next pages instead of just the next
 // page when the user scrolls down.
 
+// The API reports the image dimensions of every pin created after the API
+// carried them. Such a pin needs no measurement, so the board lays it out
+// without a round trip for its image. Older pins report null, and the caller
+// measures them with 'Image.getSize' instead.
+const getReportedImageAspectRatio = (pin: PinWithAuthorDetails) => {
+  const { imageWidth, imageHeight } = pin;
+
+  if (!imageWidth || !imageHeight) {
+    return null;
+  }
+
+  return imageWidth / imageHeight;
+};
+
 const PinsBoardContainer = ({
   fetchEndpoint,
   shouldAuthenticate,
@@ -196,7 +210,15 @@ const PinsBoardContainer = ({
       });
     };
 
-    const aspectRatioPromises = pins.map(buildGetSizePromiseForPin);
+    const aspectRatioPromises = pins.map((pin) => {
+      const reportedAspectRatio = getReportedImageAspectRatio(pin);
+
+      if (reportedAspectRatio !== null) {
+        return Promise.resolve(reportedAspectRatio);
+      }
+
+      return buildGetSizePromiseForPin(pin);
+    });
 
     return Promise.all(aspectRatioPromises);
   };

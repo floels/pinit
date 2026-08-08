@@ -20,6 +20,8 @@ export const serializePin = (pin: any): Pin => {
   return {
     id: pin.unique_id,
     imageURL: pin.image_url,
+    imageWidth: pin.image_width ?? null,
+    imageHeight: pin.image_height ?? null,
     title: pin.title,
   };
 };

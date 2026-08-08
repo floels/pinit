@@ -44,7 +44,11 @@ jest.mock("expo-image-manipulator", () => ({
       renderAsync: () =>
         Promise.resolve({
           saveAsync: () =>
-            Promise.resolve({ uri: "file:///converted/image.jpg" }),
+            Promise.resolve({
+              uri: "file:///converted/image.jpg",
+              width: 1024,
+              height: 768,
+            }),
         }),
     })),
   },
@@ -55,6 +59,8 @@ Image.getSize = jest.fn();
 const MockFile = File as unknown as jest.Mock;
 
 const MOCK_JPEG_URI = "file:///converted/image.jpg";
+const MOCK_JPEG_WIDTH = 1024;
+const MOCK_JPEG_HEIGHT = 768;
 
 const uploadURLEndpoint = `${API_BASE_URL}/${API_ENDPOINT_PIN_IMAGE_UPLOAD_URL}`;
 const createPinEndpoint = `${API_BASE_URL}/${API_ENDPOINT_CREATE_PIN}`;
@@ -162,10 +168,14 @@ it("uploads the image via a presigned URL then creates the pin", async () => {
           Authorization: "Bearer access_token",
           "Content-Type": "application/json",
         },
+        // The dimensions describe the JPEG we just uploaded, so every client
+        // lays the pin out before its image loads.
         body: JSON.stringify({
           title: "My pin title",
           description: "My pin description",
           image_file_key: MOCK_IMAGE_FILE_KEY,
+          image_width: MOCK_JPEG_WIDTH,
+          image_height: MOCK_JPEG_HEIGHT,
         }),
       }),
     );
@@ -184,6 +194,10 @@ it("calls 'handleCreateSuccess' with proper arguments upon successful pin creati
       createdPin: {
         id: MOCK_API_RESPONSES_JSON[API_ENDPOINT_CREATE_PIN].unique_id,
         imageURL: MOCK_API_RESPONSES_JSON[API_ENDPOINT_CREATE_PIN].image_url,
+        imageWidth:
+          MOCK_API_RESPONSES_JSON[API_ENDPOINT_CREATE_PIN].image_width,
+        imageHeight:
+          MOCK_API_RESPONSES_JSON[API_ENDPOINT_CREATE_PIN].image_height,
         title: MOCK_API_RESPONSES_JSON[API_ENDPOINT_CREATE_PIN].title,
       },
       createdPinImageAspectRatio: 1.5,
