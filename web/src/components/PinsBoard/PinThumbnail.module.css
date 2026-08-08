@@ -21,6 +21,11 @@
   display: block; /* otherwise for some reason, the container
   and the overlay end up being a few pixels taller than the image */
   width: 100%;
+  height: auto; /* required: the 'height' attribute of the <img> is a
+  presentational hint, so without this rule the image renders at its pixel
+  height instead of scaling to the column. With this rule the browser derives
+  the height from the aspect ratio of the width/height attributes, which
+  reserves the box before the image loads. */
   min-height: 120px;
   border-radius: 16px;
 }

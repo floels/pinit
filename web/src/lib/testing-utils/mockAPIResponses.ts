@@ -37,6 +37,8 @@ export const MOCK_API_RESPONSES_JSON = {
       unique_id: String(index).padStart(18, "0"),
       image_url:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      image_width: 1024,
+      image_height: 768,
       title: `Pin ${index + 1} title`,
       author: {
         username: "johndoe",
@@ -100,6 +102,8 @@ export const MOCK_API_RESPONSES_JSON = {
     unique_id: "000000000000000001",
     image_url:
       "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+    image_width: 1024,
+    image_height: 768,
     title: "Pin title",
   },
   [API_URL_CREATE_BOARD]: {
@@ -112,6 +116,8 @@ export const MOCK_API_RESPONSES_JSON = {
       unique_id: String(index).padStart(18, "0"),
       image_url:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      image_width: 1024,
+      image_height: 768,
       title: `Pin ${index + 1} title`,
       author: {
         username: "johndoe",
@@ -125,6 +131,8 @@ export const MOCK_API_RESPONSES_JSON = {
     unique_id: "000000000000000001",
     image_url:
       "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+    image_width: 1024,
+    image_height: 768,
     title: "Pin title",
     author: {
       username: "johndoe",
@@ -175,6 +183,8 @@ export const MOCK_API_RESPONSES_JSON = {
       unique_id: String(index + 10).padStart(18, "0"),
       image_url:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      image_width: 1024,
+      image_height: 768,
       title: `Created Pin ${index + 1} title`,
       description: `Created pin ${index + 1} description`,
       author: {
@@ -190,6 +200,8 @@ export const MOCK_API_RESPONSES_JSON = {
     unique_id: "000000000000000010",
     image_url:
       "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+    image_width: 1024,
+    image_height: 768,
     title: "Updated title",
     description: "Updated description",
     author: {
@@ -216,6 +228,8 @@ export const MOCK_API_RESPONSES_JSON = {
         unique_id: "000000000000000001",
         image_url:
           "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+        image_width: 1024,
+        image_height: 768,
         title: "Pin 1 title",
         author: {
           username: "johndoe",
@@ -229,6 +243,8 @@ export const MOCK_API_RESPONSES_JSON = {
         unique_id: "000000000000000002",
         image_url:
           "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+        image_width: 1024,
+        image_height: 768,
         title: "Pin 2 title",
         author: {
           username: "johndoe",
@@ -250,6 +266,8 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
     id: "000000000000000001",
     imageURL:
       "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+    imageWidth: 1024,
+    imageHeight: 768,
     title: "Pin title",
     author: {
       username: "johndoe",
@@ -332,6 +350,8 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
       title: `Pin ${index} title`,
       imageURL:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      imageWidth: 1024,
+      imageHeight: 768,
       author: {
         username: "johndoe",
         displayName: "John Doe",
@@ -346,6 +366,8 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
       id: String(index + 10).padStart(18, "0"),
       imageURL:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      imageWidth: 1024,
+      imageHeight: 768,
       title: `Created Pin ${index + 1} title`,
       description: `Created pin ${index + 1} description`,
       author: {
@@ -373,6 +395,8 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
         id: "000000000000000001",
         imageURL:
           "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+        imageWidth: 1024,
+        imageHeight: 768,
         title: "Pin 1 title",
         author: {
           username: "johndoe",
@@ -386,6 +410,8 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
         id: "000000000000000002",
         imageURL:
           "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+        imageWidth: 1024,
+        imageHeight: 768,
         title: "Pin 2 title",
         author: {
           username: "johndoe",

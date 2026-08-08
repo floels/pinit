@@ -67,9 +67,31 @@ const setupMocksForSuccessfulFlow = () => {
 
 const mockUseBlocker = useBlocker as Mock;
 
+const MOCK_IMAGE_WIDTH = 1024;
+const MOCK_IMAGE_HEIGHT = 768;
+
+// jsdom implements no 'createImageBitmap', so we stub the decoder the pin
+// creation flow uses to read the dimensions of the dropped image.
+const stubImageDecoder = ({ succeeds = true } = {}) => {
+  const decode = succeeds
+    ? vi.fn().mockResolvedValue({
+        width: MOCK_IMAGE_WIDTH,
+        height: MOCK_IMAGE_HEIGHT,
+        close: vi.fn(),
+      })
+    : vi.fn().mockRejectedValue(new Error("undecodable"));
+
+  vi.stubGlobal("createImageBitmap", decode);
+};
+
 beforeEach(() => {
   fetchMock.resetMocks();
   mockUseBlocker.mockReturnValue({ state: "unblocked" });
+  stubImageDecoder();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 it("renders header, have input fields disabled, and not render submit button initially", () => {
@@ -176,7 +198,38 @@ it("makes correct API calls when user clicks submit", async () => {
       description: "Pin description",
       image_file_key:
         "pins/pin_image_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4.png",
+      // The dimensions let every client lay out the pin before its image loads.
+      image_width: MOCK_IMAGE_WIDTH,
+      image_height: MOCK_IMAGE_HEIGHT,
     });
+  });
+});
+
+it("omits the image dimensions when the browser cannot decode the image", async () => {
+  stubImageDecoder({ succeeds: false });
+
+  renderComponent();
+
+  await dropImageFile();
+
+  setupMocksForSuccessfulFlow();
+
+  const submitButton = screen.getByTestId("pin-creation-submit-button");
+  await userEvent.click(submitButton);
+
+  await waitFor(() => {
+    const mockedFetch = fetch as FetchMock;
+
+    expect(mockedFetch).toHaveBeenCalledTimes(3);
+
+    const [, createPinOptions] = mockedFetch.mock.calls[2];
+
+    const body = JSON.parse(createPinOptions?.body as string);
+
+    // The API requires both dimensions together, or neither. So a pin is still
+    // created, and the clients fall back to measuring the image.
+    expect(body).not.toHaveProperty("image_width");
+    expect(body).not.toHaveProperty("image_height");
   });
 });
 

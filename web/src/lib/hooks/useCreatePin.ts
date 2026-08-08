@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { API_URL_CREATE_PIN, API_URL_PIN_IMAGE_UPLOAD_URL } from "../constants";
 import { useFetchWithAuth } from "./useFetchWithAuth";
 import { throwIfKO } from "../utils/fetch";
+import { readImageDimensions } from "../utils/images";
 
 const MIME_TYPE_TO_EXTENSION: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -25,6 +26,8 @@ export const useCreatePin = () => {
     mutationFn: async ({ pinImageFile, pinDetails }: CreatePinVariables) => {
       const fileExtension = MIME_TYPE_TO_EXTENSION[pinImageFile.type];
 
+      const imageDimensions = await readImageDimensions(pinImageFile);
+
       const presignedUrlResponse = await fetchWithAuth(
         `${API_URL_PIN_IMAGE_UPLOAD_URL}?file_extension=${fileExtension}`,
       );
@@ -41,10 +44,16 @@ export const useCreatePin = () => {
       const createPinResponse = await fetchWithAuth(API_URL_CREATE_PIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // The API requires both dimensions together, or neither. So we omit
+        // both when the browser could not decode the image.
         body: JSON.stringify({
           title: pinDetails.title,
           description: pinDetails.description,
           image_file_key,
+          ...(imageDimensions && {
+            image_width: imageDimensions.width,
+            image_height: imageDimensions.height,
+          }),
         }),
       });
       throwIfKO(createPinResponse);
