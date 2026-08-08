@@ -1,9 +1,9 @@
 import FontAwesome5Icon from "@expo/vector-icons/FontAwesome5";
 import {
-  Dimensions,
   FlatList,
   Image,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -28,10 +28,10 @@ const CameraRollView = ({
   selectedImageIndex,
   getPressHandlerForImage,
 }: CameraRollViewProps) => {
-  const screenWidth = Dimensions.get("screen").width;
+  const { width: windowWidth } = useWindowDimensions();
 
   const imageWidth =
-    (screenWidth - SPACE_BETWEEN_COLUMNS * (NUMBER_COLUMNS - 1)) /
+    (windowWidth - SPACE_BETWEEN_COLUMNS * (NUMBER_COLUMNS - 1)) /
     NUMBER_COLUMNS;
 
   return (
