@@ -1,6 +1,5 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
 
 import { PinNavigatorParamList } from "./PinNavigator";
 
@@ -9,7 +8,6 @@ import {
   API_BASE_URL,
   API_ENDPOINT_ACCOUNT_DETAILS,
 } from "@/src/lib/constants";
-import { Account, AccountWithPublicDetails } from "@/src/lib/types";
 import { throwIfKO } from "@/src/lib/utils/fetch";
 import { serializeAccountWithPublicDetails } from "@/src/lib/utils/serializers";
 
@@ -20,10 +18,6 @@ type AuthorScreenProps = {
 
 const AuthorScreen = ({ route, navigation }: AuthorScreenProps) => {
   const providedAccount = route.params.author;
-
-  const [account, setAccount] = useState<AccountWithPublicDetails | Account>(
-    providedAccount,
-  );
 
   const { username } = providedAccount;
 
@@ -44,11 +38,9 @@ const AuthorScreen = ({ route, navigation }: AuthorScreenProps) => {
     queryFn: fetchAccountDetails,
   });
 
-  useEffect(() => {
-    if (data) {
-      setAccount(data);
-    }
-  }, [data]);
+  // The query starts from the account the previous screen already handed us,
+  // and upgrades to the public details once they arrive.
+  const account = data ?? providedAccount;
 
   return (
     <AccountDetailsView

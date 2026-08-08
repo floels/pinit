@@ -1,12 +1,11 @@
 import { NavigationProp } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
 
 import { PinNavigatorParamList } from "./PinNavigator";
 
 import PinDetailsView from "@/src/components/PinDetailsView/PinDetailsView";
 import { API_BASE_URL, API_ENDPOINT_PIN_DETAILS } from "@/src/lib/constants";
-import { PinWithAuthorDetails, PinWithFullDetails } from "@/src/lib/types";
+import { PinWithAuthorDetails } from "@/src/lib/types";
 import { throwIfKO } from "@/src/lib/utils/fetch";
 import { serializePinWithFullDetails } from "@/src/lib/utils/serializers";
 
@@ -21,10 +20,6 @@ const HomeScreen = ({
   pinImageAspectRatio,
   navigation,
 }: HomeScreenProps) => {
-  const [pin, setPin] = useState<PinWithFullDetails | PinWithAuthorDetails>(
-    providedPin,
-  );
-
   const { id } = providedPin;
 
   const fetchPinDetails = async () => {
@@ -44,11 +39,9 @@ const HomeScreen = ({
     queryFn: fetchPinDetails,
   });
 
-  useEffect(() => {
-    if (data) {
-      setPin(data);
-    }
-  }, [data]);
+  // The query starts from the pin the previous screen already handed us, and
+  // upgrades to the full details once they arrive.
+  const pin = data ?? providedPin;
 
   const handlePressAuthor = () => {
     navigation.navigate("Author", {
