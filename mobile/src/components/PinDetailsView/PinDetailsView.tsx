@@ -32,7 +32,7 @@ const PinDetailsView = ({
   const imageWidth = windowWidth - 2 * SIDE_PADDING;
   const pinImageHeight = imageWidth / pinImageAspectRatio;
 
-  const BackButton = () => (
+  const backButton = (
     <TouchableOpacity
       style={styles.backButton}
       onPress={handlePressBack}
@@ -58,7 +58,7 @@ const PinDetailsView = ({
 
   return (
     <ScrollView style={styles.container}>
-      <BackButton />
+      {backButton}
       <View style={styles.content}>
         <Image
           source={{ uri: pin.imageURL }}

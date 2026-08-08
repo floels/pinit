@@ -34,6 +34,17 @@ module.exports = [
     },
   },
   {
+    rules: {
+      // A component declared inside another component is a new type on every
+      // render, so React destroys and rebuilds that subtree, losing its state.
+      // `eslint-config-universe` does not enable this rule.
+      // `allowAsProps` stays on for `ToastAnchor`, whose `config` entries are
+      // called as plain functions by `react-native-toast-message` and are
+      // therefore never reconciled as component types.
+      "react/no-unstable-nested-components": ["error", { allowAsProps: true }],
+    },
+  },
+  {
     // Node-based config files run in CommonJS and use Node globals (`__dirname`, etc.).
     files: ["*.js"],
     languageOptions: {

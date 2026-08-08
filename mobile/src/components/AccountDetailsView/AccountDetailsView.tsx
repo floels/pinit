@@ -38,7 +38,7 @@ const AccountDetailsView = ({
     ? styles.backButtonIconWithBackgroundPicture
     : null;
 
-  const BackButton = () => (
+  const backButton = (
     <TouchableOpacity
       onPress={handlePressBack}
       style={styles.backButton}
@@ -64,7 +64,7 @@ const AccountDetailsView = ({
 
   return (
     <View style={styles.container}>
-      <BackButton />
+      {backButton}
       <AccountPictures account={account} isLoading={isLoading} />
       <View style={styles.accountData}>
         <Text style={styles.displayName}>{displayName}</Text>
