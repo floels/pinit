@@ -27,21 +27,21 @@ export const PICTURE_URLS = [
   "https://i.pinimg.com/236x/18/dc/f7/18dcf759aa96740f8d335dc6231a9cf9.jpg",
 ];
 
-const FifthFoldPicturesBackground = () => {
+const BackgroundPicture = ({ pictureIndex }: { pictureIndex: number }) => {
   const { t } = useTranslation("LandingPageContent");
 
-  const BackgroundPicture = ({ pictureIndex }: { pictureIndex: number }) => {
-    return (
-      <img
-        src={PICTURE_URLS[pictureIndex]}
-        width={236}
-        height={350}
-        alt={t("FifthFold.PICTURE_FOOD_ALT")}
-        className={styles.backgroundPicture}
-      />
-    );
-  };
+  return (
+    <img
+      src={PICTURE_URLS[pictureIndex]}
+      width={236}
+      height={350}
+      alt={t("FifthFold.PICTURE_FOOD_ALT")}
+      className={styles.backgroundPicture}
+    />
+  );
+};
 
+const FifthFoldPicturesBackground = () => {
   return (
     <div className={styles.picturesBackground}>
       <div>
