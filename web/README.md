@@ -51,7 +51,6 @@ Read at build time and inlined by `vite.config.ts`:
 | Variable | Description |
 |---|---|
 | `BACKEND_URL` | Backend API base URL. `docker-compose.local.yml` sets `http://localhost:8000/api`. Without the variable, `src/lib/constants.ts` falls back to `http://127.0.0.1:8000/api`. |
-| `ENVIRONMENT` | Runtime environment label. `.github/workflows/deploy-staging.yml` sets `staging` for the staging build. No file in `src/` reads the variable today. |
 
 ## Documentation
 
