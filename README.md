@@ -22,14 +22,14 @@ PinIt ships **two frontends** on top of a shared backend API:
 
 ## Stack
 
-| Layer          | Tech                                             |
-|----------------|--------------------------------------------------|
-| Web frontend   | Vite, React 18, React Router 7, TypeScript, pnpm |
-| Mobile frontend| Expo (React Native 0.73), TypeScript, Yarn       |
-| Backend        | Django 5, Django REST Framework, Python 3        |
-| Database       | PostgreSQL 13                                    |
-| Storage        | AWS S3 (pin images); Moto (local S3 mock)       |
-| Search         | Elasticsearch 8                                  |
+| Layer           | Tech                                                  |
+|-----------------|-------------------------------------------------------|
+| Web frontend    | Vite 8, React 19, React Router 8, TypeScript, pnpm    |
+| Mobile frontend | Expo 57 (React Native 0.86), TypeScript, Yarn Classic |
+| Backend         | Django 6, Django REST Framework, Python 3.12          |
+| Database        | PostgreSQL 17                                         |
+| Storage         | AWS S3 (pin images); Moto (local S3 mock)             |
+| Search          | Elasticsearch 8                                       |
 
 ## Repo structure
 
@@ -43,7 +43,7 @@ pinit/
 └── nginx/           # CORS proxy for the local S3 mock (see below)
 ```
 
-Each sub-project has its own README: [`backend/README.md`](backend/README.md), [`web/README.md`](web/README.md), and [`mobile/README.md`](mobile/README.md).
+Each sub-project has its own README: [`backend/README.md`](backend/README.md), [`web/README.md`](web/README.md), [`mobile/README.md`](mobile/README.md), and [`e2e-tests-web/README.md`](e2e-tests-web/README.md).
 
 ## Local setup
 
@@ -55,7 +55,7 @@ After cloning, start the backend stack, create a Django superuser, and seed the 
 
 ```bash
 make launch-backend
-docker compose exec backend python manage.py createsuperuser
+docker compose -f docker-compose.local.yml exec backend python manage.py createsuperuser
 make seed
 ```
 
@@ -118,7 +118,7 @@ To run the Django unit tests for the backend:
 make test-backend
 ```
 
-To run the Jest unit tests for the web app:
+To run the Vitest unit tests for the web app:
 
 ```bash
 make test-web
@@ -149,8 +149,8 @@ and vice versa. Changing the workflow file itself triggers every job.
 | Job | Runs when | What it does |
 |-----|-----------|--------------|
 | `backend-checks` | `backend/**` changed | Builds the test Docker image, runs migrations, runs the Django test suite |
-| `web-checks` | `web/**` changed | `pnpm` install → lint → build → type-check → Jest unit tests |
-| `mobile-checks` | `mobile/**` changed | `yarn` install → lint → `tsc` → Jest unit tests (with coverage) |
+| `web-checks` | `web/**` changed | `pnpm` install → lint → build → type-check → Vitest unit tests |
+| `mobile-checks` | `mobile/**` changed | `yarn` install → lint → `tsc` → Jest unit tests |
 | `e2e-checks` | `e2e-tests-web/**` changed | **Type-check only** |
 
 > The **Playwright end-to-end tests are not executed in CI** — the `e2e-checks` job only
