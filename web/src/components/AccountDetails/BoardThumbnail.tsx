@@ -10,6 +10,54 @@ type BoardThumbnailProps = {
 const COVER_PICTURE_SIZE_PX = 160;
 const SECONDARY_PICTURE_SIZE_PX = 80;
 
+type SecondaryImageProps = {
+  index: number;
+  firstImageURLs: string[];
+  name: string;
+};
+
+const SecondaryImage = ({
+  index,
+  firstImageURLs,
+  name,
+}: SecondaryImageProps) => {
+  const imageURL = firstImageURLs.length > index ? firstImageURLs[index] : null;
+
+  if (imageURL) {
+    const imageClasses = [
+      styles.secondaryPicture,
+      index === 1 ? styles.topSecondaryPicture : null,
+    ];
+
+    const imageHeight =
+      index === 1 ? SECONDARY_PICTURE_SIZE_PX - 1 : SECONDARY_PICTURE_SIZE_PX;
+    // to account for 1px bottom border
+
+    return (
+      <img
+        src={imageURL}
+        alt={name}
+        width={SECONDARY_PICTURE_SIZE_PX}
+        height={imageHeight}
+        className={imageClasses.join(" ")}
+        data-testid={`board-thumbnail-secondary-picture-${index}`}
+      />
+    );
+  }
+
+  const placeholderClasses = [
+    styles.secondaryPicturePlaceholder,
+    index === 1 ? styles.topSecondaryPicturePlaceholder : null,
+  ];
+
+  return (
+    <div
+      className={placeholderClasses.join(" ")}
+      data-testid={`board-thumbnail-secondary-picture-placeholder-${index}`}
+    />
+  );
+};
+
 const BoardThumbnail = ({ username, board }: BoardThumbnailProps) => {
   const { slug, name, firstImageURLs } = board;
 
@@ -37,53 +85,22 @@ const BoardThumbnail = ({ username, board }: BoardThumbnailProps) => {
     );
   }
 
-  const SecondaryImage = ({ index }: { index: number }) => {
-    const imageURL =
-      firstImageURLs.length > index ? firstImageURLs[index] : null;
-
-    if (imageURL) {
-      const imageClasses = [
-        styles.secondaryPicture,
-        index === 1 ? styles.topSecondaryPicture : null,
-      ];
-
-      const imageHeight =
-        index === 1 ? SECONDARY_PICTURE_SIZE_PX - 1 : SECONDARY_PICTURE_SIZE_PX;
-      // to account for 1px bottom border
-
-      return (
-        <img
-          src={imageURL}
-          alt={name}
-          width={SECONDARY_PICTURE_SIZE_PX}
-          height={imageHeight}
-          className={imageClasses.join(" ")}
-          data-testid={`board-thumbnail-secondary-picture-${index}`}
-        />
-      );
-    }
-
-    const placeholderClasses = [
-      styles.secondaryPicturePlaceholder,
-      index === 1 ? styles.topSecondaryPicturePlaceholder : null,
-    ];
-
-    return (
-      <div
-        className={placeholderClasses.join(" ")}
-        data-testid={`board-thumbnail-secondary-picture-placeholder-${index}`}
-      />
-    );
-  };
-
   return (
     <div className={styles.container}>
       <Link to={`/${username}/${slug}`} className={styles.content}>
         <div className={styles.imagesContainer}>
           {coverImage}
           <div className={styles.secondaryImages}>
-            <SecondaryImage index={1} />
-            <SecondaryImage index={2} />
+            <SecondaryImage
+              index={1}
+              firstImageURLs={firstImageURLs}
+              name={name}
+            />
+            <SecondaryImage
+              index={2}
+              firstImageURLs={firstImageURLs}
+              name={name}
+            />
           </div>
           <div className={styles.overlay} />
         </div>
