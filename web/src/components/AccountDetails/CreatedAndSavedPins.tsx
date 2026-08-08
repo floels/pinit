@@ -21,9 +21,9 @@ const CreatedAndSavedPins = ({ account }: CreatedAndSavedPinsProps) => {
 
   const getTabHandler =
     ({ tab }: { tab: TAB }) =>
-    () => {
-      setActiveTab(tab);
-    };
+      () => {
+        setActiveTab(tab);
+      };
 
   const createdTabButtonClasses = [
     styles.tabButton,
@@ -70,9 +70,7 @@ const CreatedAndSavedPins = ({ account }: CreatedAndSavedPinsProps) => {
           />
         </div>
       </div>
-      {/* The `key` resets the state of the container when the profile changes:
-          the route is `/:username`, so the same element receives a new username
-          instead of being remounted. */}
+      {/* We pass the username as a key to <CreatedPinsContainer /> so its state is reset when the profile changes: */}
       {activeTab === TAB.CREATED && (
         <CreatedPinsContainer
           key={account.username}

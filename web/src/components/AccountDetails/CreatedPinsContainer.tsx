@@ -22,8 +22,6 @@ const CreatedPinsContainer = ({ username }: CreatedPinsProps) => {
   const isOwnProfile = account?.username === username;
   const queryClient = useQueryClient();
 
-  // The parent passes the username as a `key`, so a new username remounts this
-  // component and the page number starts back at 1.
   const [currentPage, setCurrentPage] = useState(1);
 
   const queryKey = ["createdPins", username, currentPage];
