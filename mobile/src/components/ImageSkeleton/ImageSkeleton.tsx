@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Animated,
@@ -21,28 +21,39 @@ const GLAZE_ANIMATION_DURATION = 2000;
 const ImageSkeleton = ({ style, testID }: ImageSkeletonProps) => {
   const [parentWidth, setParentWidth] = useState(0);
 
+  const animatedValue = useRef(new Animated.Value(0)).current;
+
+  // The glaze sweeps for as long as the skeleton is mounted. Starting the
+  // animation during render would leak one loop per render and would leave the
+  // orphaned loops running, so we own it from an Effect and stop it on unmount.
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(animatedValue, {
+        toValue: 1,
+        duration: GLAZE_ANIMATION_DURATION,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+  }, [animatedValue]);
+
   const handleLayout = (event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout;
     setParentWidth(width);
   };
-
-  const animatedValue = new Animated.Value(0);
-
-  Animated.loop(
-    Animated.timing(animatedValue, {
-      toValue: 1,
-      duration: GLAZE_ANIMATION_DURATION,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    }),
-  ).start();
 
   const glazeTranslationX = animatedValue.interpolate({
     inputRange: [0, 1],
     outputRange: [-0.2 * parentWidth, parentWidth],
   });
 
-  const Glaze = () => (
+  const glaze = (
     <Animated.View
       style={[
         styles.animatedGlaze,
@@ -72,7 +83,7 @@ const ImageSkeleton = ({ style, testID }: ImageSkeletonProps) => {
       style={[styles.container, style]}
       testID={testID}
     >
-      <Glaze />
+      {glaze}
     </View>
   );
 };
