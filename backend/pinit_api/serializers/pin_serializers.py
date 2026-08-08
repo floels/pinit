@@ -10,6 +10,8 @@ class PinBaseReadSerializer(serializers.ModelSerializer):
         fields = (
             "unique_id",
             "image_url",
+            "image_width",
+            "image_height",
             "title",
         )
 

@@ -21,6 +21,8 @@ def build_pin_document(pin):
         "unique_id": str(pin.unique_id),
         "title": pin.title,
         "image_url": pin.image_url,
+        "image_width": pin.image_width,
+        "image_height": pin.image_height,
         "description": pin.description,
         # Combined title + description, used by the search-suggestions endpoint to
         # derive word-level autocomplete suggestions via a terms aggregation.

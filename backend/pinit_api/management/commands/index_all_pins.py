@@ -13,6 +13,8 @@ INDEX_MAPPINGS = {
         # aggregation over its word tokens to build autocomplete suggestions.
         "suggest_text": {"type": "text", "analyzer": "standard", "fielddata": True},
         "image_url": {"type": "keyword", "index": False},
+        "image_width": {"type": "integer", "index": False},
+        "image_height": {"type": "integer", "index": False},
         "created_at": {"type": "date"},
         "author": {
             "type": "object",

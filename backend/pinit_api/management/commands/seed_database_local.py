@@ -148,8 +148,14 @@ class Command(BaseCommand):
             image_urls = json.load(f)
 
         for _ in range(NUMBER_PINS_TO_CREATE):
+            # The images come from real URLs of many shapes, and we do not read
+            # their bytes here. So we leave the dimensions null rather than
+            # report the placeholder values of the factory, which would distort
+            # every thumbnail. The clients measure such images themselves.
             PinFactory.create(
                 image_url=random.choice(image_urls),
+                image_width=None,
+                image_height=None,
                 author=random.choice(accounts),
             )
 

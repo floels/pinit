@@ -22,6 +22,8 @@ def make_hit(title, created_at="2024-01-01T00:00:00", unique_id=None):
             "unique_id": unique_id or "100000000000000001",
             "title": title,
             "image_url": "https://example.com/image.jpg",
+            "image_width": 1024,
+            "image_height": 768,
             "description": "Some description.",
             "created_at": created_at,
             "author": SAMPLE_AUTHOR,
@@ -59,6 +61,32 @@ class SearchPinsTests(APITestCase):
         self.assertEqual(data["results"][-1]["title"], "Some title")
 
         self._assert_result_shape(data["results"][0])
+        self.assertEqual(data["results"][0]["image_width"], 1024)
+        self.assertEqual(data["results"][0]["image_height"], 768)
+
+    @patch("pinit_api.views.search.get_es_client")
+    def test_returns_null_dimensions_for_documents_indexed_before_the_fields(
+        self, mock_get_client
+    ):
+        # Documents indexed before the dimensions existed carry neither key. The
+        # endpoint must return null for both instead of failing.
+        legacy_hit = make_hit("Beautiful sunset")
+        del legacy_hit["_source"]["image_width"]
+        del legacy_hit["_source"]["image_height"]
+
+        mock_get_client.return_value.search.return_value = make_es_response(
+            total=1, hits=[legacy_hit]
+        )
+
+        response = self.get()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        result = response.json()["results"][0]
+
+        self._assert_result_shape(result)
+        self.assertIsNone(result["image_width"])
+        self.assertIsNone(result["image_height"])
 
     @patch("pinit_api.views.search.get_es_client")
     def test_happy_path_second_page_sends_correct_offset(self, mock_get_client):
@@ -131,7 +159,17 @@ class SearchPinsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
 
     def _assert_result_shape(self, result):
-        self.assertEqual(set(result.keys()), {"unique_id", "title", "image_url", "author"})
+        self.assertEqual(
+            set(result.keys()),
+            {
+                "unique_id",
+                "title",
+                "image_url",
+                "image_width",
+                "image_height",
+                "author",
+            },
+        )
         author = result["author"]
         self.assertEqual(
             set(author.keys()), {"username", "display_name", "initial", "profile_picture_url"}

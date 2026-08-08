@@ -7,7 +7,9 @@ from pinit_api.models import Pin
 from pinit_api.lib.constants import (
     ERROR_CODE_MISSING_PIN_IMAGE_FILE,
     ERROR_CODE_INVALID_PIN_IMAGE_FILE_KEY,
+    ERROR_CODE_INVALID_PIN_IMAGE_DIMENSIONS,
 )
+from pinit_api.views.pin_creation import MAX_IMAGE_DIMENSION
 
 S3_BUCKET_NAME = "pinit-staging"
 S3_BUCKET_REGION = "eu-north-1"
@@ -43,6 +45,8 @@ class PinCreationTests(APITestCase):
             "title": "Title",
             "description": "Description",
             "image_file_key": VALID_IMAGE_FILE_KEY,
+            "image_width": 1024,
+            "image_height": 768,
         }
 
     def tearDown(self):
@@ -69,9 +73,11 @@ class PinCreationTests(APITestCase):
     def check_response(self, response=None, created_pin=None):
         response_data = response.json()
 
-        self.assertEqual(len(response_data), 3)
+        self.assertEqual(len(response_data), 5)
         self.assertEqual(response_data["unique_id"], str(created_pin.unique_id))
         self.assertEqual(response_data["image_url"], created_pin.image_url)
+        self.assertEqual(response_data["image_width"], created_pin.image_width)
+        self.assertEqual(response_data["image_height"], created_pin.image_height)
         self.assertEqual(response_data["title"], created_pin.title)
 
     def check_created_pin(self, created_pin=None):
@@ -82,6 +88,74 @@ class PinCreationTests(APITestCase):
             created_pin.image_url,
             f"https://{S3_CUSTOM_DOMAIN}/{VALID_IMAGE_FILE_KEY}",
         )
+        self.assertEqual(created_pin.image_width, 1024)
+        self.assertEqual(created_pin.image_height, 768)
+
+    def test_create_pin_without_image_dimensions(self):
+        # The dimensions are optional. A client that does not know them still
+        # creates a pin, and the clients fall back to measuring the image.
+        payload = {
+            key: value
+            for key, value in self.request_payload.items()
+            if key not in ("image_width", "image_height")
+        }
+
+        response = self.post(data=payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        created_pin = Pin.objects.get()
+
+        self.assertIsNone(created_pin.image_width)
+        self.assertIsNone(created_pin.image_height)
+
+        response_data = response.json()
+
+        self.assertIsNone(response_data["image_width"])
+        self.assertIsNone(response_data["image_height"])
+
+    def test_create_pin_accepts_image_dimensions_as_strings(self):
+        response = self.post(
+            data={**self.request_payload, "image_width": "800", "image_height": "600"}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        created_pin = Pin.objects.get()
+
+        self.assertEqual(created_pin.image_width, 800)
+        self.assertEqual(created_pin.image_height, 600)
+
+    def test_create_pin_rejects_invalid_image_dimensions(self):
+        invalid_dimension_pairs = [
+            (0, 768),
+            (1024, 0),
+            (-1, 768),
+            (1024, -1),
+            ("wide", 768),
+            (1024, None),
+            (None, 768),
+            (True, 768),
+            (MAX_IMAGE_DIMENSION + 1, 768),
+            (1024, MAX_IMAGE_DIMENSION + 1),
+        ]
+
+        for width, height in invalid_dimension_pairs:
+            with self.subTest(image_width=width, image_height=height):
+                response = self.post(
+                    data={
+                        **self.request_payload,
+                        "image_width": width,
+                        "image_height": height,
+                    }
+                )
+
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                self.assertEqual(
+                    response.json()["errors"],
+                    [{"code": ERROR_CODE_INVALID_PIN_IMAGE_DIMENSIONS}],
+                )
+                self.assertEqual(Pin.objects.count(), 0)
 
     def test_create_pin_missing_image_file_key(self):
         response = self.post(data={"title": "Title", "description": "Description"})

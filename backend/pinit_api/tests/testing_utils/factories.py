@@ -54,6 +54,8 @@ class PinFactory(factory.django.DjangoModelFactory):
     title = factory.Faker("sentence", nb_words=5, variable_nb_words=True)
     description = factory.Faker("text")
     image_url = factory.Faker("image_url")
+    image_width = 1024
+    image_height = 768
     author = factory.SubFactory(AccountFactory)
 
 
