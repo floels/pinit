@@ -1,4 +1,4 @@
-import { Dimensions, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 
 import PinThumbnail from "./PinThumbnail";
 import styles from "./PinThumbnailsGrid.styles";
@@ -25,13 +25,13 @@ const PinThumbnailsGrid = ({
   pinImageAspectRatios,
   getTapHandlerForPin,
 }: PinsThumbnailsGridProps) => {
-  const screenWidth = Dimensions.get("window").width;
+  const { width: windowWidth } = useWindowDimensions();
 
-  // For N columns, we want (N+1) margins total on the screen,
+  // For N columns, we want (N+1) margins total across the window,
   // counting the one at the far left and the one at the far right
-  // of the screen. Therefore we should set:
+  // of the window. Therefore we should set:
   const columnWidth =
-    (screenWidth - (NUMBER_COLUMNS + 1) * MARGIN_BETWEEN_COLUMNS) /
+    (windowWidth - (NUMBER_COLUMNS + 1) * MARGIN_BETWEEN_COLUMNS) /
     NUMBER_COLUMNS;
 
   // Here the logic is to:

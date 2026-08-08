@@ -3,9 +3,9 @@ import {
   Text,
   View,
   Image,
-  Dimensions,
   TouchableOpacity,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 
 import styles, { SIDE_PADDING } from "./PinDetailsView.styles";
@@ -28,8 +28,8 @@ const PinDetailsView = ({
   handlePressBack,
   handlePressAuthor,
 }: PinDetailsViewProps) => {
-  const screenWidth = Dimensions.get("window").width;
-  const imageWidth = screenWidth - 2 * SIDE_PADDING;
+  const { width: windowWidth } = useWindowDimensions();
+  const imageWidth = windowWidth - 2 * SIDE_PADDING;
   const pinImageHeight = imageWidth / pinImageAspectRatio;
 
   const BackButton = () => (

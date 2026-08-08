@@ -1,10 +1,10 @@
 import {
   View,
-  Dimensions,
   Image,
   StyleProp,
   ImageStyle,
   Text,
+  useWindowDimensions,
 } from "react-native";
 
 import styles from "./AccountPictures.styles";
@@ -20,7 +20,7 @@ type AccountPicturesProps = {
 const AccountPictures = ({ account, isLoading }: AccountPicturesProps) => {
   const { profilePictureURL } = account;
 
-  const screenWidth = Dimensions.get("window").width;
+  const { width: windowWidth } = useWindowDimensions();
 
   let backgroundPicture;
   let displaysOrMightDisplayBackgroundPicture;
@@ -35,7 +35,7 @@ const AccountPictures = ({ account, isLoading }: AccountPicturesProps) => {
     backgroundPicture = (
       <Image
         source={{ uri: account.backgroundPictureURL }}
-        width={screenWidth}
+        width={windowWidth}
         style={styles.backgroundPictureImage}
         testID="account-background-picture"
       />
