@@ -70,7 +70,15 @@ const CreatedAndSavedPins = ({ account }: CreatedAndSavedPinsProps) => {
           />
         </div>
       </div>
-      {activeTab === TAB.CREATED && <CreatedPinsContainer username={account.username} />}
+      {/* The `key` resets the state of the container when the profile changes:
+          the route is `/:username`, so the same element receives a new username
+          instead of being remounted. */}
+      {activeTab === TAB.CREATED && (
+        <CreatedPinsContainer
+          key={account.username}
+          username={account.username}
+        />
+      )}
       {activeTab === TAB.SAVED && <SavedPins account={account} />}
     </div>
   );

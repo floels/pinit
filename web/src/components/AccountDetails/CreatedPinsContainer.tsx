@@ -22,12 +22,9 @@ const CreatedPinsContainer = ({ username }: CreatedPinsProps) => {
   const isOwnProfile = account?.username === username;
   const queryClient = useQueryClient();
 
-  // The page number is stored together with the username it belongs to. A new
-  // username therefore starts back at page 1 during the same render, without an
-  // effect and without a fetch for the wrong page.
-  const [pagination, setPagination] = useState({ username, page: 1 });
-
-  const currentPage = pagination.username === username ? pagination.page : 1;
+  // The parent passes the username as a `key`, so a new username remounts this
+  // component and the page number starts back at 1.
+  const [currentPage, setCurrentPage] = useState(1);
 
   const queryKey = ["createdPins", username, currentPage];
 
@@ -55,10 +52,8 @@ const CreatedPinsContainer = ({ username }: CreatedPinsProps) => {
   const pins = data?.pins ?? [];
   const hasNextPage = data?.hasNextPage ?? false;
 
-  const handleNextPage = () =>
-    setPagination({ username, page: currentPage + 1 });
-  const handlePreviousPage = () =>
-    setPagination({ username, page: currentPage - 1 });
+  const handleNextPage = () => setCurrentPage((p) => p + 1);
+  const handlePreviousPage = () => setCurrentPage((p) => p - 1);
 
   const handlePinDeleted = (pinId: string) => {
     queryClient.setQueryData<CreatedPinsQueryData>(queryKey, (old) => {
