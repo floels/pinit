@@ -61,11 +61,12 @@ const LoginScreenContainer = ({ navigation }: LoginScreenContainerProps) => {
 
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [canSubmit, setCanSubmit] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   const { dispatch } = useAuthenticationContext();
+
+  const canSubmit = computeCanSubmit(credentials);
 
   const handleTogglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -74,11 +75,10 @@ const LoginScreenContainer = ({ navigation }: LoginScreenContainerProps) => {
   const getInputChangeHandler =
     ({ input }: { input: "email" | "password" }) =>
     (newValue: string) => {
-      const newCredentials = { ...credentials, [input]: newValue };
-      setCredentials(newCredentials);
-
-      const newCanSubmit = computeCanSubmit(newCredentials);
-      setCanSubmit(newCanSubmit);
+      setCredentials((previousCredentials) => ({
+        ...previousCredentials,
+        [input]: newValue,
+      }));
     };
 
   const handleSubmitError = (error: unknown) => {
