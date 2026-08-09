@@ -17,6 +17,7 @@ import {
   API_BASE_URL,
   API_ENDPOINT_PIN_SUGGESTIONS,
 } from "@/src/lib/constants";
+import { withQueryClient } from "@/src/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
@@ -70,17 +71,30 @@ const renderComponent = (props?: any) => {
   };
 
   render(
-    <AuthenticationContext.Provider
-      value={{ state: initialState, dispatch: mockDispatch }}
-    >
-      <PinsBoardContainer
-        fetchEndpoint={pinSuggestionsEndpoint}
-        getTapHandlerForPin={mockGetTapHandlerForPin}
-        emptyResultsMessageKey="SearchScreen.NO_RESULTS"
-        {...props}
-      />
-    </AuthenticationContext.Provider>,
+    withQueryClient(
+      <AuthenticationContext.Provider
+        value={{ state: initialState, dispatch: mockDispatch }}
+      >
+        <PinsBoardContainer
+          fetchEndpoint={pinSuggestionsEndpoint}
+          getTapHandlerForPin={mockGetTapHandlerForPin}
+          emptyResultsMessageKey="SearchScreen.NO_RESULTS"
+          {...props}
+        />
+      </AuthenticationContext.Provider>,
+    ),
   );
+};
+
+const scrollToBottom = () => {
+  const scrollView = screen.getByTestId("pins-board-scroll-view");
+
+  fireEvent.scroll(scrollView, {
+    nativeEvent: {
+      contentOffset: { y: SCROLL_VIEW_HEIGHT },
+      contentSize: { height: SCROLL_VIEW_HEIGHT },
+    },
+  });
 };
 
 const pullToRefresh = () => {
@@ -146,6 +160,59 @@ and fetches second page upon scroll`, async () => {
       `${pinSuggestionsEndpoint}?page=2`,
     );
   });
+});
+
+it("stops fetching further pages once a page comes back empty", async () => {
+  jest.useFakeTimers();
+
+  fetchMock.mockOnceIf(
+    `${pinSuggestionsEndpoint}?page=1`,
+    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
+  );
+  fetchMock.mockOnceIf(
+    `${pinSuggestionsEndpoint}?page=2`,
+    JSON.stringify({ results: [] }),
+  );
+
+  renderComponent();
+
+  await waitFor(() => {
+    expect(screen.queryAllByTestId(/^mocked-pin-thumbnail-/).length).toEqual(
+      mockPinSuggestions.length,
+    );
+  });
+
+  act(() => {
+    jest.advanceTimersByTime(
+      2 * DEBOUNCE_TIME_SCROLL_DOWN_TO_FETCH_MORE_PINS_MS,
+    );
+  });
+
+  scrollToBottom();
+
+  await waitFor(() => {
+    expect(fetch as FetchMock).toHaveBeenLastCalledWith(
+      `${pinSuggestionsEndpoint}?page=2`,
+    );
+  });
+
+  (fetch as FetchMock).mockClear();
+
+  act(() => {
+    jest.advanceTimersByTime(
+      2 * DEBOUNCE_TIME_SCROLL_DOWN_TO_FETCH_MORE_PINS_MS,
+    );
+  });
+
+  scrollToBottom();
+
+  jest.useRealTimers();
+
+  await new Promise((resolve) => setTimeout(resolve, 1)); // Without this wait,
+  // the assertion below would be inoperative, meaning it would pass even if the
+  // board asked for a third page.
+
+  expect(fetch).not.toHaveBeenCalled();
 });
 
 it("fetches first page with authentication if relevant", async () => {

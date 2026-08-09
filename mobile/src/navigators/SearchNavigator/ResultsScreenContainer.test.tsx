@@ -8,6 +8,7 @@ import {
 import ResultsScreenContainer from "./ResultsScreenContainer";
 
 import { API_BASE_URL, API_ENDPOINT_SEARCH_PINS } from "@/src/lib/constants";
+import { withQueryClient } from "@/src/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_SERIALIZED,
@@ -27,11 +28,13 @@ const mockHandlePressBack = jest.fn();
 
 const renderComponent = () => {
   render(
-    <ResultsScreenContainer
-      navigation={mockNavigation as any}
-      route={{ params: { searchTerm: "search" } } as any}
-      handlePressBack={mockHandlePressBack}
-    />,
+    withQueryClient(
+      <ResultsScreenContainer
+        navigation={mockNavigation as any}
+        route={{ params: { searchTerm: "search" } } as any}
+        handlePressBack={mockHandlePressBack}
+      />,
+    ),
   );
 };
 
