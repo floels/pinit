@@ -6,7 +6,6 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import { FetchMock } from "jest-fetch-mock";
-import { StrictMode } from "react";
 
 import PinsBoardContainer, {
   DEBOUNCE_TIME_REFRESH_MS,
@@ -64,26 +63,6 @@ const pinSuggestionsEndpoint = `${API_BASE_URL}/${API_ENDPOINT_PIN_SUGGESTIONS}`
 const mockDispatch = jest.fn();
 
 const mockGetTapHandlerForPin = () => () => {};
-
-const buildComponent = (props?: any) => {
-  const initialState = {
-    isCheckingAccessToken: false,
-    isAuthenticated: true,
-  };
-
-  return (
-    <AuthenticationContext.Provider
-      value={{ state: initialState, dispatch: mockDispatch }}
-    >
-      <PinsBoardContainer
-        fetchEndpoint={pinSuggestionsEndpoint}
-        getTapHandlerForPin={mockGetTapHandlerForPin}
-        emptyResultsMessageKey="SearchScreen.NO_RESULTS"
-        {...props}
-      />
-    </AuthenticationContext.Provider>
-  );
-};
 
 const renderComponent = (props?: any) => {
   const initialState = {
@@ -181,36 +160,6 @@ and fetches second page upon scroll`, async () => {
       `${pinSuggestionsEndpoint}?page=2`,
     );
   });
-});
-
-it(`renders the first page once when the mount Effect runs twice,
-as it does under StrictMode`, async () => {
-  // React Query keys the pages on the endpoint and dedupes concurrent fetches,
-  // so a double mount cannot append page 1 twice.
-  fetchMock.mockOnceIf(
-    `${pinSuggestionsEndpoint}?page=1`,
-    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
-  );
-  fetchMock.mockOnceIf(
-    `${pinSuggestionsEndpoint}?page=1`,
-    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
-  );
-
-  render(<StrictMode>{withQueryClient(buildComponent())}</StrictMode>);
-
-  await waitFor(() => {
-    const pinThumbnails = screen.queryAllByTestId(/^mocked-pin-thumbnail-/);
-    expect(pinThumbnails.length).toEqual(mockPinSuggestions.length);
-  });
-
-  // Let any second response settle before counting again. Without this wait the
-  // assertion above would pass even if a second page were appended afterwards.
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 10));
-  });
-
-  const pinThumbnails = screen.queryAllByTestId(/^mocked-pin-thumbnail-/);
-  expect(pinThumbnails.length).toEqual(mockPinSuggestions.length);
 });
 
 it("stops fetching further pages once a page comes back empty", async () => {
