@@ -153,13 +153,14 @@ the first would be rejected as already-rotated — logging the user out.
 
 ### 4. Logout
 
-`useLogOut` calls the logout endpoint, clears the in-memory access token, and
-reloads to `/`.
+`useLogOut` calls the logout endpoint, clears the in-memory access token and the
+cached display data, then reloads to `/`.
 
 1. On logout, `useLogOut` sends `DELETE /token/web/` (browser attaches the cookie).
 2. The backend revokes the refresh token and clears the cookie (`200`).
-3. `useLogOut` calls `setAccessToken(null)` and navigates to `/`; the next
-   startup refresh fails, leaving the app unauthenticated.
+3. `useLogOut` calls `setAccessToken(null)`, removes the two `localStorage`
+   values, and navigates to `/`; the next startup refresh fails, leaving the app
+   unauthenticated.
 
 The backend **revokes the refresh token server-side** on logout, so it cannot be
 reused. The access token is stateless and only in memory, so it is gone as soon
@@ -168,11 +169,13 @@ query cache, and with it the account. Logout is **best-effort**: `useLogOut`
 clears the token and redirects even if the request fails, so a failed call never
 leaves the user stuck logged in.
 
-**Known gap: the two `localStorage` values survive a logout.** `useLogOut` does
-not remove `username` and `profilePictureURL`. They hold no credential, so no
-session survives. But if a second account then logs in on the same browser, the
-header shows the previous username and profile picture until `/accounts/me/`
-resolves. A fix must remove both keys in `useLogOut`.
+**Logout also removes the cached display data.** `useLogOut` removes `username`
+and `profilePictureURL` from `localStorage`. Neither one is a credential, so
+they never kept a session alive. But they belong to the account that logged out.
+Without this step, the header of the next account to log in on the same browser
+shows the previous username and profile picture until `/accounts/me/` resolves.
+The removal runs on the best-effort path, so it happens even when the request to
+the logout endpoint fails.
 
 ### 5. Auth state machine
 
@@ -196,6 +199,6 @@ The app moves between three states — **Initializing** (on mount),
 | [`src/lib/hooks/useFetchWithAuth.ts`](../src/lib/hooks/useFetchWithAuth.ts) | Adds the Bearer header; reactive refresh + retry on 401; logs out on failed refresh. |
 | [`src/lib/hooks/useLogin.ts`](../src/lib/hooks/useLogin.ts) | Login — posts credentials, stores the access token. |
 | [`src/lib/hooks/useSignup.ts`](../src/lib/hooks/useSignup.ts) | Signup — same shape as login. |
-| [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout — calls the endpoint, clears the token, redirects. |
+| [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout — calls the endpoint, clears the token and the cached display data, redirects. |
 | [`src/contexts/accountContext.tsx`](../src/contexts/accountContext.tsx) | `AccountContext` + provider; fetches `/accounts/me/` once authenticated and passes the query result through the context. |
 | [`src/lib/constants.ts`](../src/lib/constants.ts) | API URLs. |
