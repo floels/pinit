@@ -27,7 +27,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
         sessionExpired: false,
         clearSession: mockClearSession,
         endSession: vi.fn(),
-        dismissSessionExpiry: vi.fn(),
+        clearSessionExpiry: vi.fn(),
       }}
     >
       {children}

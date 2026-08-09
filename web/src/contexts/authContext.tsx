@@ -23,7 +23,7 @@ export type AuthContextType = {
   clearSession: () => void;
   // 'clearSession' plus the 'sessionExpired' flag. A failed refresh calls this.
   endSession: () => void;
-  dismissSessionExpiry: () => void;
+  clearSessionExpiry: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -33,7 +33,7 @@ export const AuthContext = createContext<AuthContextType>({
   sessionExpired: false,
   clearSession: () => {},
   endSession: () => {},
-  dismissSessionExpiry: () => {},
+  clearSessionExpiry: () => {},
 });
 
 export const AuthContextProvider = ({
@@ -67,7 +67,7 @@ export const AuthContextProvider = ({
   const setAccessToken = (newAccessToken: string | null) => {
     setExplicitAccessToken(newAccessToken);
 
-    // A token means that somebody logged in, so the expiry prompt is done.
+    // A token means that somebody logged in, so there is nothing left to ask.
     if (newAccessToken !== null) {
       setSessionExpired(false);
     }
@@ -88,7 +88,7 @@ export const AuthContextProvider = ({
     setSessionExpired(true);
   };
 
-  const dismissSessionExpiry = () => {
+  const clearSessionExpiry = () => {
     setSessionExpired(false);
   };
 
@@ -99,7 +99,7 @@ export const AuthContextProvider = ({
     sessionExpired,
     clearSession,
     endSession,
-    dismissSessionExpiry,
+    clearSessionExpiry,
   };
 
   return (

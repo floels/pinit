@@ -15,7 +15,7 @@ const HeaderUnauthenticated = () => {
 
   const { t } = useTranslation("HeaderUnauthenticated");
 
-  const { sessionExpired, dismissSessionExpiry } = useAuthContext();
+  const { sessionExpired, clearSessionExpiry } = useAuthContext();
 
   // This component mounts at the moment 'Layout' swaps to the unauthenticated
   // shell, which is the moment the session ends. So an expired session opens
@@ -31,18 +31,18 @@ const HeaderUnauthenticated = () => {
     setIsSignupModalOpen(true);
   };
 
-  // Leaving the login form ends the expiry prompt, whether the user moves on to
-  // signup or closes the modal. An authenticated-only route then stops holding
-  // its URL and redirects home.
+  // Leaving the login form means the user accepts being logged out, whether they
+  // move on to signup or close the modal. An authenticated-only route then stops
+  // holding its URL and redirects home.
   const handleClickNoAccountYet = () => {
     setIsLoginModalOpen(false);
     setIsSignupModalOpen(true);
-    dismissSessionExpiry();
+    clearSessionExpiry();
   };
 
   const handleCloseLoginModal = () => {
     setIsLoginModalOpen(false);
-    dismissSessionExpiry();
+    clearSessionExpiry();
   };
 
   const handleClickAlreadyHaveAccount = () => {

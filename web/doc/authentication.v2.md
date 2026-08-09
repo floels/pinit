@@ -85,11 +85,11 @@ exposes the state and the four ways to change it.
 ```
 accessToken: string | null   — null until the startup refresh or a login supplies one
 isAuthInitialized: boolean   — false until the startup refresh settles
-sessionExpired: boolean      — true from a failed refresh until a login or a dismissal
+sessionExpired: boolean      — true from a failed refresh until a login, or until the user closes the prompt
 setAccessToken(value)        — sets an explicit token, or null. A token clears sessionExpired
 clearSession()               — drops the token and the two localStorage values
 endSession()                 — clearSession(), plus sessionExpired = true
-dismissSessionExpiry()       — sessionExpired = false
+clearSessionExpiry()         — sessionExpired = false, so the app stops asking for a login
 ```
 
 `isAuthInitialized` separates "not checked yet" from "checked, and the user is
@@ -325,7 +325,7 @@ session is over, and no request can save it.
 The cached queries stay on this path. The person logging back in is the same
 person, so the data is theirs.
 
-If the user dismisses the modal instead, `dismissSessionExpiry()` clears the
+If the user dismisses the modal instead, `clearSessionExpiry()` clears the
 flag, and the app is plainly **Unauthenticated**.
 
 **Authenticated-only routes.** `PinCreationToolPage` redirects to `/` when no

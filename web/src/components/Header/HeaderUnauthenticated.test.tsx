@@ -8,7 +8,7 @@ import { MemoryRouter } from "react-router";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
-const mockDismissSessionExpiry = vi.fn();
+const mockClearSessionExpiry = vi.fn();
 
 const buildAuthContextValue = (
   overrides: Partial<AuthContextType> = {},
@@ -19,7 +19,7 @@ const buildAuthContextValue = (
   sessionExpired: false,
   clearSession: vi.fn(),
   endSession: vi.fn(),
-  dismissSessionExpiry: mockDismissSessionExpiry,
+  clearSessionExpiry: mockClearSessionExpiry,
   ...overrides,
 });
 
@@ -166,7 +166,7 @@ it("shows no reason in the login modal when the user opens it themselves", async
   expect(within(modal).queryByText(common.SESSION_EXPIRED)).toBeNull();
 });
 
-it("dismisses the expiry when the user closes the login modal", async () => {
+it("stops treating the session as expired when the user closes the modal", async () => {
   renderComponent(
     "/some-page",
     buildAuthContextValue({ sessionExpired: true }),
@@ -175,10 +175,10 @@ it("dismisses the expiry when the user closes the login modal", async () => {
   await userEvent.click(screen.getByTestId("overlay-modal-close-button"));
 
   expect(screen.queryByTestId("overlay-modal")).toBeNull();
-  expect(mockDismissSessionExpiry).toHaveBeenCalledTimes(1);
+  expect(mockClearSessionExpiry).toHaveBeenCalledTimes(1);
 });
 
-it("dismisses the expiry when the user switches to signup", async () => {
+it("stops treating the session as expired when the user switches to signup", async () => {
   renderComponent(
     "/some-page",
     buildAuthContextValue({ sessionExpired: true }),
@@ -186,5 +186,5 @@ it("dismisses the expiry when the user switches to signup", async () => {
 
   await userEvent.click(screen.getByText(en.LoginForm.NO_ACCOUNT_YET_CTA));
 
-  expect(mockDismissSessionExpiry).toHaveBeenCalledTimes(1);
+  expect(mockClearSessionExpiry).toHaveBeenCalledTimes(1);
 });

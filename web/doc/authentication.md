@@ -39,12 +39,12 @@ is the single source of truth:
 ```
 accessToken: string | null   — null until obtained via startup refresh or login
 isAuthInitialized: boolean   — false until the startup refresh attempt settles
-sessionExpired: boolean      — true from a failed reactive refresh until a login or a dismissal
+sessionExpired: boolean      — true from a failed reactive refresh until a login, or until the user closes the prompt
 ```
 
 Alongside `setAccessToken`, the context exposes three session mutators:
 `clearSession()` (drops the token and the cached display data), `endSession()`
-(`clearSession()` plus `sessionExpired = true`), and `dismissSessionExpiry()`.
+(`clearSession()` plus `sessionExpired = true`), and `clearSessionExpiry()`.
 Logout uses the first, a failed refresh uses the second. A logout is not an
 expiry, so only the second one prompts a login.
 
@@ -60,7 +60,7 @@ out on every page load, even for authenticated users.
   unauthenticated even while the cached refresh result still holds a token.
 
 The provider therefore holds two pieces of state: the explicit token, which is
-`undefined` until something sets it, and the expiry flag.
+`undefined` until something sets it, and `sessionExpired`.
 
 ## Flows
 
@@ -192,7 +192,7 @@ keeps the current URL.
    shell returns, and the queries refetch on the same route.
 
 The cached queries stay on this path: the person logging back in is the same
-person. If the user dismisses the modal, `dismissSessionExpiry()` clears the flag
+person. If the user dismisses the modal, `clearSessionExpiry()` clears the flag
 and the app is plainly **Unauthenticated**.
 
 `PinCreationToolPage` redirects to `/` when no token exists, which would destroy

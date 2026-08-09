@@ -77,7 +77,7 @@ const SessionConsumer = () => {
     setAccessToken,
     clearSession,
     endSession,
-    dismissSessionExpiry,
+    clearSessionExpiry,
   } = useAuthContext();
 
   return (
@@ -86,7 +86,7 @@ const SessionConsumer = () => {
       <div data-testid="session-expired">{String(sessionExpired)}</div>
       <button onClick={clearSession} data-testid="clear-session" />
       <button onClick={endSession} data-testid="end-session" />
-      <button onClick={dismissSessionExpiry} data-testid="dismiss" />
+      <button onClick={clearSessionExpiry} data-testid="dismiss" />
       <button
         onClick={() => setAccessToken("new.access.token")}
         data-testid="log-in"
@@ -120,7 +120,7 @@ const expectPersistedAccountDataCleared = () => {
   ).toBeNull();
 };
 
-it("clears the token and the persisted account data on clearSession", async () => {
+it("clears the token and the account data, without asking for a login", async () => {
   fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN]);
   seedPersistedAccountData();
 
@@ -140,7 +140,7 @@ it("clears the token and the persisted account data on clearSession", async () =
   expectPersistedAccountDataCleared();
 });
 
-it("raises the expiry flag on endSession", async () => {
+it("asks for a new login on endSession", async () => {
   fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN]);
   seedPersistedAccountData();
 
@@ -153,7 +153,7 @@ it("raises the expiry flag on endSession", async () => {
   expectPersistedAccountDataCleared();
 });
 
-it("clears the expiry flag when a login supplies a token", async () => {
+it("stops asking for a login once one supplies a token", async () => {
   fetchMock.mockResponseOnce("{}", { status: 401 });
 
   renderSessionConsumer();
@@ -170,7 +170,7 @@ it("clears the expiry flag when a login supplies a token", async () => {
   expect(screen.getByTestId("session-expired")).toHaveTextContent("false");
 });
 
-it("clears the expiry flag on dismissSessionExpiry", async () => {
+it("stops asking for a login on clearSessionExpiry", async () => {
   fetchMock.mockResponseOnce("{}", { status: 401 });
 
   renderSessionConsumer();

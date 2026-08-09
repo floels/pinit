@@ -33,7 +33,7 @@ const renderComponent = ({
         sessionExpired,
         clearSession: vi.fn(),
         endSession: vi.fn(),
-        dismissSessionExpiry: vi.fn(),
+        clearSessionExpiry: vi.fn(),
       }}
     >
       <RouterProvider router={router} />
@@ -62,7 +62,7 @@ it("holds the route without redirecting when the session just expired", () => {
   expect(screen.queryByTestId("pin-creation-view-container")).toBeNull();
 });
 
-it("redirects home once the user dismisses the expiry prompt", () => {
+it("redirects home once the app stops treating the session as expired", () => {
   renderComponent({ sessionExpired: false });
 
   screen.getByText("Home");

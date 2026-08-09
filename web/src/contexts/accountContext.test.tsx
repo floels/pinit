@@ -53,7 +53,7 @@ const renderAccountContext = ({
         sessionExpired: false,
         clearSession: vi.fn(),
         endSession: mockEndSession,
-        dismissSessionExpiry: vi.fn(),
+        clearSessionExpiry: vi.fn(),
       }}
     >
       <QueryClientProvider client={testQueryClient}>
