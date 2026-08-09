@@ -3,7 +3,7 @@ import { execSync } from "child_process";
 import path from "path";
 
 const REPO_ROOT = path.resolve(__dirname, "..");
-const BACKEND_URL = "http://127.0.0.1:8000";
+const BACKEND_URL = "http://localhost:8000";
 const COMPOSE_FILE = path.resolve(__dirname, "docker-compose.e2e.yml");
 
 async function waitForBackend(maxAttempts = 30, delayMs = 2000): Promise<void> {

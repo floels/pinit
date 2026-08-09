@@ -26,27 +26,11 @@ export default [
     ...reactHooksPlugin.configs.flat["recommended-latest"],
   },
   {
-    // Adoption ramp: 'set-state-in-effect' is a warning so that the plugin can
-    // be introduced without a red pipeline. Four Effects still write state
-    // synchronously: PinThumbnailsGrid, CreatedPinsContainer, authContext and
-    // HeaderSearchBarContainer. Run 'pnpm lint' for the exact lines. Restore
-    // the rule to "error" once the last one is fixed.
-    files: ["**/*.{ts,tsx}"],
-    rules: {
-      "react-hooks/set-state-in-effect": "warn",
-    },
-  },
-  {
     files: ["**/*.test.{ts,tsx}", "setupTests.ts", "reactI18nextMock.ts"],
     languageOptions: {
       sourceType: "module",
       globals: { ...globals.jest, vi: "readonly", fetchMock: "readonly" },
     },
-    rules: {
-      "no-global-assign": "off",
-      // Test harnesses capture hook output in a module-level variable on
-      // purpose. That is impure by design and is safe inside a test.
-      "react-hooks/globals": "off",
-    },
+    rules: { "no-global-assign": "off" },
   },
 ];

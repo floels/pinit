@@ -1,10 +1,11 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 import path from "path";
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react()],
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
   resolve: {
     // `@/public/*` must come before `@/*` so it wins for public assets
     // (mirrors the tsconfig `paths` mapping).
@@ -20,14 +21,13 @@ export default defineConfig(({ mode }) => ({
     port: 3000,
     host: "0.0.0.0",
   },
-  // Only inline these for the browser build/dev. Under test (Node), leave
+  // Only inline this for the browser build/dev. Under test (Node), leave
   // `process.env` intact so runtime values (and the `??` fallbacks in
   // constants.ts) resolve as they do under Node — matching the pre-Vitest setup.
   define:
     mode === "test"
       ? {}
       : {
-          "process.env.ENVIRONMENT": JSON.stringify(process.env.ENVIRONMENT),
           "process.env.BACKEND_URL": JSON.stringify(process.env.BACKEND_URL),
         },
   test: {

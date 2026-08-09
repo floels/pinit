@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { appendQueryParam } from "@/lib/utils/strings";
 import CreatedPins from "./CreatedPins";
@@ -23,10 +23,6 @@ const CreatedPinsContainer = ({ username }: CreatedPinsProps) => {
   const queryClient = useQueryClient();
 
   const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [username]);
 
   const queryKey = ["createdPins", username, currentPage];
 

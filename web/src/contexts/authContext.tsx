@@ -1,11 +1,4 @@
-import {
-  Dispatch,
-  SetStateAction,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   REFRESH_ACCESS_TOKEN_QUERY_KEY,
@@ -14,7 +7,7 @@ import {
 
 export type AuthContextType = {
   accessToken: string | null;
-  setAccessToken: Dispatch<SetStateAction<string | null>>;
+  setAccessToken: (accessToken: string | null) => void;
   isAuthInitialized: boolean;
 };
 
@@ -29,8 +22,12 @@ export const AuthContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
+  // `undefined` means that no token was set explicitly yet. The token then comes
+  // from the refresh query below. Login, logout and token refresh all set an
+  // explicit value, which takes precedence over the query result.
+  const [explicitAccessToken, setExplicitAccessToken] = useState<
+    string | null | undefined
+  >(undefined);
 
   const { data, status } = useQuery({
     queryKey: REFRESH_ACCESS_TOKEN_QUERY_KEY,
@@ -39,21 +36,21 @@ export const AuthContextProvider = ({
     refetchOnWindowFocus: false,
   });
 
-  useEffect(() => {
-    if (status === "success") {
-      if (data?.access_token) {
-        setAccessToken(data.access_token);
-      }
-      setIsAuthInitialized(true);
-    } else if (status === "error") {
-      setIsAuthInitialized(true);
-    }
-  }, [status, data]);
+  const accessToken =
+    explicitAccessToken !== undefined
+      ? explicitAccessToken
+      : (data?.access_token ?? null);
+
+  const isAuthInitialized = status === "success" || status === "error";
+
+  const contextValue = {
+    accessToken,
+    setAccessToken: setExplicitAccessToken,
+    isAuthInitialized,
+  };
 
   return (
-    <AuthContext.Provider value={{ accessToken, setAccessToken, isAuthInitialized }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 

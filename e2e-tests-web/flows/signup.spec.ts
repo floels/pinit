@@ -19,7 +19,7 @@ test("user can sign up", async ({ page }) => {
   await page.click("div[data-testid='overlay-modal'] >> text=Continue");
 
   // After successful signup the page reloads; the refreshToken cookie is set
-  // and AccessTokenRefresher obtains an access token → authenticated header
+  // and the startup refresh obtains an access token → authenticated header
   await page.waitForSelector('[data-testid="sidebar-home-link"]');
 
   // Navigating away and back keeps the session alive

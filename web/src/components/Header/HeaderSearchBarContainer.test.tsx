@@ -230,9 +230,16 @@ it("does not display any suggestion in case of KO response from the API", async 
 
   await typeSearchTerm("bar");
 
+  // The suggestions of the previous search term are dropped as soon as the term
+  // changes. We therefore wait for the KO response before we assert, so that the
+  // assertion covers the KO response and not just the change of search term.
   await waitFor(() => {
-    expect(screen.queryByTestId("search-suggestions-list")).toBeNull();
+    expect(fetch).toHaveBeenCalledWith(
+      `${API_URL_SEARCH_SUGGESTIONS}?search=foobar`,
+    );
   });
+
+  expect(screen.queryByTestId("search-suggestions-list")).toBeNull();
 });
 
 it("does not display any suggestion in case of fetch error", async () => {
@@ -255,9 +262,15 @@ it("does not display any suggestion in case of fetch error", async () => {
 
   await typeSearchTerm("bar");
 
+  // See the comment in the test above: we wait for the failed request before we
+  // assert, so that the assertion covers the fetch error.
   await waitFor(() => {
-    expect(screen.queryByTestId("search-suggestions-list")).toBeNull();
+    expect(fetch).toHaveBeenCalledWith(
+      `${API_URL_SEARCH_SUGGESTIONS}?search=foobar`,
+    );
   });
+
+  expect(screen.queryByTestId("search-suggestions-list")).toBeNull();
 });
 
 // These debounce tests drive the input with synchronous `fireEvent` rather

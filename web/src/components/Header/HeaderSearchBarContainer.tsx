@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import debounce from "lodash/debounce";
 import { useNavigate } from "react-router";
 import { API_URL_SEARCH_SUGGESTIONS } from "@/lib/constants";
 import HeaderSearchBar from "./HeaderSearchBar";
@@ -35,10 +34,48 @@ const getSuggestionsWithSearchTermAtTop = ({
   return [searchTerm, ...remainingSuggestions];
 };
 
+// Returns an empty list for every failure: a request that fails must clear the
+// suggestions of the previous search term.
+const fetchSearchSuggestions = async (
+  searchTerm: string,
+): Promise<string[]> => {
+  let response;
+
+  try {
+    response = await fetch(
+      `${API_URL_SEARCH_SUGGESTIONS}?search=${searchTerm.toLowerCase()}`,
+    );
+  } catch {
+    return [];
+  }
+
+  if (!response.ok) {
+    return [];
+  }
+
+  let responseData;
+
+  try {
+    responseData = await response.json();
+  } catch {
+    return [];
+  }
+
+  return getSuggestionsWithSearchTermAtTop({
+    searchTerm,
+    originalSuggestions: responseData.results,
+  });
+};
+
 const HeaderSearchBarContainer = () => {
   const navigate = useNavigate();
 
-  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  // The suggestions are stored together with the search term they were fetched
+  // for. Suggestions for any other term, and for an empty input, read as empty.
+  const [fetchedSuggestions, setFetchedSuggestions] = useState<{
+    searchTerm: string;
+    suggestions: string[];
+  }>({ searchTerm: "", suggestions: [] });
 
   const {
     state: { inputValue, isInputFocused },
@@ -72,59 +109,21 @@ const HeaderSearchBarContainer = () => {
     dispatch({ type: "SET_INPUT_VALUE", payload: "" });
   };
 
-  const fetchSearchSuggestions = async ({
-    searchTerm,
-  }: {
-    searchTerm: string;
-  }) => {
-    let response;
-
-    try {
-      response = await fetch(
-        `${API_URL_SEARCH_SUGGESTIONS}?search=${searchTerm.toLowerCase()}`,
-      );
-    } catch {
-      setSearchSuggestions([]);
-      return;
-    }
-
-    if (!response.ok) {
-      setSearchSuggestions([]);
-      return;
-    }
-
-    let responseData;
-
-    try {
-      responseData = await response.json();
-    } catch {
-      setSearchSuggestions([]);
-      return;
-    }
-
-    const suggestionsWithSearchTermAtTop = getSuggestionsWithSearchTermAtTop({
-      searchTerm,
-      originalSuggestions: responseData.results,
-    });
-
-    setSearchSuggestions(suggestionsWithSearchTermAtTop);
-  };
-
-  const debouncedFetchSearchSuggestions = debounce(
-    fetchSearchSuggestions,
-    AUTOCOMPLETE_DEBOUNCE_TIME_MS,
-  );
-
+  // The timeout of the Effect debounces the request: a new input value clears
+  // the pending timeout before it schedules the next one.
   useEffect(() => {
     if (!inputValue) {
-      setSearchSuggestions([]);
       return;
     }
 
-    debouncedFetchSearchSuggestions({ searchTerm: inputValue });
+    const timeoutId = setTimeout(async () => {
+      const suggestions = await fetchSearchSuggestions(inputValue);
+
+      setFetchedSuggestions({ searchTerm: inputValue, suggestions });
+    }, AUTOCOMPLETE_DEBOUNCE_TIME_MS);
 
     return () => {
-      debouncedFetchSearchSuggestions.cancel();
+      clearTimeout(timeoutId);
     };
   }, [inputValue]);
 
@@ -132,6 +131,11 @@ const HeaderSearchBarContainer = () => {
     dispatch({ type: "SET_INPUT_VALUE", payload: "" });
     dispatch({ type: "BLUR_INPUT" });
   };
+
+  const searchSuggestions =
+    fetchedSuggestions.searchTerm === inputValue
+      ? fetchedSuggestions.suggestions
+      : [];
 
   return (
     <HeaderSearchBar

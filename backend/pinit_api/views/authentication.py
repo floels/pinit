@@ -34,7 +34,7 @@ def get_user_from_credentials(email, password):
 
 def set_refresh_token_cookie(response, refresh_token):
     # Production uses HTTPS: SameSite=None + Secure for cross-domain support.
-    # Development uses HTTP on 127.0.0.1: SameSite=Lax so the browser accepts
+    # Development uses HTTP on localhost: SameSite=Lax so the browser accepts
     # the cookie (Chromium rejects SameSite=None without Secure on HTTP).
     samesite = "None" if not settings.DEBUG else "Lax"
     response.set_cookie(

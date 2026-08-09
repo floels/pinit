@@ -21,9 +21,9 @@ const CreatedAndSavedPins = ({ account }: CreatedAndSavedPinsProps) => {
 
   const getTabHandler =
     ({ tab }: { tab: TAB }) =>
-    () => {
-      setActiveTab(tab);
-    };
+      () => {
+        setActiveTab(tab);
+      };
 
   const createdTabButtonClasses = [
     styles.tabButton,
@@ -70,7 +70,13 @@ const CreatedAndSavedPins = ({ account }: CreatedAndSavedPinsProps) => {
           />
         </div>
       </div>
-      {activeTab === TAB.CREATED && <CreatedPinsContainer username={account.username} />}
+      {/* We pass the username as a key to <CreatedPinsContainer /> so its state is reset when the profile changes: */}
+      {activeTab === TAB.CREATED && (
+        <CreatedPinsContainer
+          key={account.username}
+          username={account.username}
+        />
+      )}
       {activeTab === TAB.SAVED && <SavedPins account={account} />}
     </div>
   );
