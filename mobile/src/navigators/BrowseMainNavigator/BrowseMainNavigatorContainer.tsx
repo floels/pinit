@@ -44,12 +44,6 @@ const BrowseMainNavigatorContainer = ({
     setIsCreateSelectModalVisible(false);
   };
 
-  useEffect(() => {
-    if (createdPin && createdPinImageAspectRatio) {
-      showPinCreationToast();
-    }
-  }, [createdPin, createdPinImageAspectRatio]);
-
   const showPinCreationToast = () => {
     if (!createdPin || !account) {
       return;
@@ -73,6 +67,12 @@ const BrowseMainNavigatorContainer = ({
       props: { handlePressView },
     });
   };
+
+  useEffect(() => {
+    if (createdPin && createdPinImageAspectRatio) {
+      showPinCreationToast();
+    }
+  }, [createdPin, createdPinImageAspectRatio]);
 
   return (
     <BrowseMainNavigator
