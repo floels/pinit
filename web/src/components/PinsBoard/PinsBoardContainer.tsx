@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { appendQueryParam } from "@/lib/utils/strings";
@@ -30,27 +29,24 @@ const PinsBoardContainer = ({
 
   const resolvedFetchFn: FetchFn = fetchFn ?? fetch;
 
-  const fetchPage = useCallback(
-    async ({ pageParam }: { pageParam: number }) => {
-      const url =
-        pageParam === 1
-          ? fetchPinsAPIRoute
-          : appendQueryParam({
-              url: fetchPinsAPIRoute,
-              key: "page",
-              value: String(pageParam),
-            });
+  const fetchPage = async ({ pageParam }: { pageParam: number }) => {
+    const url =
+      pageParam === 1
+        ? fetchPinsAPIRoute
+        : appendQueryParam({
+            url: fetchPinsAPIRoute,
+            key: "page",
+            value: String(pageParam),
+          });
 
-      const response = await resolvedFetchFn(url);
+    const response = await resolvedFetchFn(url);
 
-      throwIfKO(response);
+    throwIfKO(response);
 
-      const { results } = await response.json();
+    const { results } = await response.json();
 
-      return serializePinsWithAuthorDetails(results) as PinWithAuthorDetails[];
-    },
-    [fetchPinsAPIRoute, resolvedFetchFn],
-  );
+    return serializePinsWithAuthorDetails(results) as PinWithAuthorDetails[];
+  };
 
   const {
     data,
