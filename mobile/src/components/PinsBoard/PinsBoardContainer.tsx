@@ -1,21 +1,27 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 
 import PinsBoard, { THRESHOLD_PULL_TO_REFRESH } from "./PinsBoard";
 
-import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
-import { Response401Error, ResponseKOError } from "@/src/lib/customErrors";
+import { fetchPublic } from "@/src/lib/api/fetchers";
+import { ResponseKOError } from "@/src/lib/customErrors";
 import { PinWithAuthorDetails } from "@/src/lib/types";
-import { clearStoredAuthData } from "@/src/lib/utils/authentication";
-import { fetchWithAuthentication } from "@/src/lib/utils/fetch";
 import { serializePinsWithAuthorDetails } from "@/src/lib/utils/serializers";
 import { appendQueryParam } from "@/src/lib/utils/strings";
 
+type FetchFn = (url: string, options?: RequestInit) => Promise<Response>;
+
 type PinsBoardContainerProps = {
   fetchEndpoint: string;
-  shouldAuthenticate?: boolean;
+  // The kind of call this board makes. It defaults to a public read, so a board
+  // of an authenticated endpoint has to pass 'fetchAuthenticated' from 'useAPI'.
+  fetchFn?: FetchFn;
   emptyResultsMessageKey?: string;
   getTapHandlerForPin: ({
     pin,
@@ -41,15 +47,15 @@ export const DEBOUNCE_TIME_SCROLL_DOWN_TO_FETCH_MORE_PINS_MS = 500; // this debo
 
 const PinsBoardContainer = ({
   fetchEndpoint,
-  shouldAuthenticate,
+  fetchFn,
   emptyResultsMessageKey,
   getTapHandlerForPin,
 }: PinsBoardContainerProps) => {
   const { t } = useTranslation();
 
-  const { dispatch } = useAuthenticationContext();
-
   const queryClient = useQueryClient();
+
+  const resolvedFetchFn: FetchFn = fetchFn ?? fetchPublic;
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasJustRefreshed, setHasJustRefreshed] = useState(false);
@@ -68,13 +74,7 @@ const PinsBoardContainer = ({
       value: page.toString(),
     });
 
-    const response = await fetchWithAuthenticationIfNeeded(
-      endpointWithPageParameter,
-    );
-
-    if (response.status === 401) {
-      throw new Response401Error();
-    }
+    const response = await resolvedFetchFn(endpointWithPageParameter);
 
     if (!response.ok) {
       throw new ResponseKOError();
@@ -83,14 +83,6 @@ const PinsBoardContainer = ({
     const responseData = await response.json();
 
     return serializePinsWithAuthorDetails(responseData.results);
-  };
-
-  const fetchWithAuthenticationIfNeeded = async (url: string) => {
-    if (shouldAuthenticate) {
-      return fetchWithAuthentication(url);
-    }
-
-    return fetch(url);
   };
 
   const {
@@ -113,51 +105,39 @@ const PinsBoardContainer = ({
 
   const pins = data?.pages.flat() ?? [];
 
-  // A 401 ends the session, so we clear the stored tokens and let the
-  // authentication context switch to the unauthenticated tree.
-  useEffect(() => {
-    if (!(error instanceof Response401Error)) {
-      return;
-    }
+  const fetchMorePinsError = error ? t("Common.ERROR_FETCH_MORE_PINS") : "";
 
-    const logOut = async () => {
-      await clearStoredAuthData();
-      dispatch({ type: "GOT_401_RESPONSE" });
-    };
-
-    logOut();
-  }, [error]);
-
-  // A failed refresh reports its own message, so we suppress the general one
-  // while it shows.
-  const shouldReportFetchMorePinsError =
-    !!error && !(error instanceof Response401Error) && !refreshError;
-
-  const fetchMorePinsError = shouldReportFetchMorePinsError
-    ? t("Common.ERROR_FETCH_MORE_PINS")
-    : "";
-
-  // Pull to refresh drops every loaded page and fetches the first one again, so
-  // the board returns to the top. 'resetQueries' also cancels a fetch that is
-  // still running, which stops it from overwriting the refreshed pins.
+  // Pull to refresh fetches the first page and writes it as the only page, so
+  // the board returns to the top. We fetch it here rather than resetting the
+  // query, because resetting drops the loaded pages before the new ones arrive:
+  // a refresh that then fails would leave the board empty.
   const onRefresh = async () => {
     setIsRefreshing(true);
     setRefreshError("");
 
-    await queryClient.resetQueries({ queryKey });
+    let firstPins;
 
-    // A 401 logs the user out through the Effect above, so it needs no message.
-    const errorAfterRefresh = queryClient.getQueryState(queryKey)?.error;
+    try {
+      // Cancel first. A fetch that is still running must not land after us and
+      // overwrite the refreshed pins.
+      await queryClient.cancelQueries({ queryKey });
 
-    if (errorAfterRefresh && !(errorAfterRefresh instanceof Response401Error)) {
+      firstPins = await fetchPins(1);
+    } catch {
       setRefreshError(t("Common.ERROR_REFRESH_PINS"));
+      return;
+    } finally {
+      setIsRefreshing(false);
+      setHasJustRefreshed(true);
+      setTimeout(() => {
+        setHasJustRefreshed(false);
+      }, DEBOUNCE_TIME_REFRESH_MS);
     }
 
-    setIsRefreshing(false);
-    setHasJustRefreshed(true);
-    setTimeout(() => {
-      setHasJustRefreshed(false);
-    }, DEBOUNCE_TIME_REFRESH_MS);
+    queryClient.setQueryData<InfiniteData<PinWithAuthorDetails[], number>>(
+      queryKey,
+      { pages: [firstPins], pageParams: [1] },
+    );
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {

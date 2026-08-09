@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PinNavigatorParamList } from "./PinNavigator";
 
 import AccountDetailsView from "@/src/components/AccountDetailsView/AccountDetailsView";
+import { fetchPublic } from "@/src/lib/api/fetchers";
 import {
   API_BASE_URL,
   API_ENDPOINT_ACCOUNT_DETAILS,
@@ -24,7 +25,7 @@ const AuthorScreen = ({ route, navigation }: AuthorScreenProps) => {
   const fetchAccountDetails = async () => {
     const url = `${API_BASE_URL}/${API_ENDPOINT_ACCOUNT_DETAILS}/${username}/`;
 
-    const response = await fetch(url);
+    const response = await fetchPublic(url);
 
     throwIfKO(response);
 

@@ -5,6 +5,7 @@ import styles from "./BaseScreen.styles";
 
 import PinsBoardContainer from "@/src/components/PinsBoard/PinsBoardContainer";
 import { useMyAccountDetails } from "@/src/hooks/useMyAccountDetails";
+import { useAPI } from "@/src/lib/api/useAPI";
 import {
   API_BASE_URL,
   API_ENDPOINT_PIN_SUGGESTIONS,
@@ -18,6 +19,10 @@ type HomeScreenProps = {
 
 const BaseScreen = ({ navigation }: HomeScreenProps) => {
   useMyAccountDetails();
+
+  // The pin suggestions endpoint is 'IsAuthenticated', so the board carries the
+  // access token.
+  const { fetchAuthenticated } = useAPI();
 
   const getTapHandlerForPin =
     ({
@@ -40,7 +45,7 @@ const BaseScreen = ({ navigation }: HomeScreenProps) => {
     <View style={styles.container}>
       <PinsBoardContainer
         fetchEndpoint={pinSuggestionsEndpoint}
-        shouldAuthenticate
+        fetchFn={fetchAuthenticated}
         getTapHandlerForPin={getTapHandlerForPin}
       />
     </View>
