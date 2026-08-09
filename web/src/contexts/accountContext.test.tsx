@@ -150,6 +150,47 @@ it("exposes isFetchError: true when the fetch fails", async () => {
   });
 });
 
+it(`refetches the account when the access token changes,
+and reads null in between`, async () => {
+  fetchMock.mockResponse(MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS]);
+
+  const testQueryClient = createTestQueryClient();
+
+  let accessToken = "token.one";
+
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <AuthContext.Provider
+      value={{ accessToken, setAccessToken: vi.fn(), isAuthInitialized: true }}
+    >
+      <QueryClientProvider client={testQueryClient}>
+        <AccountContextProvider>{children}</AccountContextProvider>
+      </QueryClientProvider>
+    </AuthContext.Provider>
+  );
+
+  const { result, rerender } = renderHook(() => useAccountContext(), {
+    wrapper,
+  });
+
+  await waitFor(() => {
+    expect(result.current.account).toEqual(ACCOUNT_SERIALIZED);
+  });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+
+  accessToken = "token.two";
+  rerender();
+
+  // The query key carries the access token, so a new token is a new cache
+  // entry. `doc/authentication.md` §1 records this behavior. If the blank
+  // window disappears, update that section too.
+  expect(result.current.account).toBeNull();
+
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.account).toEqual(ACCOUNT_SERIALIZED);
+  });
+});
+
 it("exposes the account passed to 'setAccount'", async () => {
   fetchMock.mockOnceIf(
     API_URL_MY_ACCOUNT_DETAILS,

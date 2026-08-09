@@ -22,6 +22,17 @@ keeping the refresh token in an httpOnly cookie prevents any script from reading
 it. The refresh token cookie is set, rotated, and cleared entirely by the
 backend — the web code never sees its value.
 
+No credential is in `localStorage`. Two display values are:
+
+| `localStorage` key | Value | Written by | Read by |
+|---|---|---|---|
+| `username` | Username of the logged-in account | the `/accounts/me/` query function (§1) | `HeaderAuthenticatedContainer` |
+| `profilePictureURL` | URL of the profile picture | the `/accounts/me/` query function (§1) | `HeaderAuthenticatedContainer` |
+
+Neither value grants access to the API. They let the header paint the profile
+link on the first render, before `/accounts/me/` resolves. See §4 for their
+lifetime after a logout.
+
 ## Auth state
 
 `AuthContext` ([`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx))
@@ -85,9 +96,18 @@ settles, to avoid a flash of unauthenticated UI.
 4. Throughout, `Layout` gates `<Outlet />` on `isAuthInitialized` (spinner until
    the attempt settles).
 
-Once authenticated, `Layout` uses `useAccountDetails` to fetch `/accounts/me/`
-and populate `AccountContext` (and cache username / profile-picture URL in
-`localStorage`).
+Once the attempt settles and an access token exists, `AccountContextProvider`
+([`src/contexts/accountContext.tsx`](../src/contexts/accountContext.tsx))
+fetches `/accounts/me/` through `useFetchWithAuth`. The provider hosts that
+query and passes the result through the context, so the query cache holds the
+account. No Effect copies it into component state. The query function also
+writes the two `localStorage` values listed in the Overview.
+
+The query key carries the access token: `["fetchMyAccountDetails", accessToken]`.
+A new access token is therefore a new cache entry. So after the reactive refresh
+of §3 replaces the token, the provider refetches `/accounts/me/`, and `account`
+reads `null` until the new request resolves. During that window the header falls
+back to the `localStorage` values.
 
 ### 2. Login / signup
 
@@ -108,8 +128,8 @@ the backend returns an access token and sets the refresh cookie.
 `useFetchWithAuth` ([`src/lib/hooks/useFetchWithAuth.ts`](../src/lib/hooks/useFetchWithAuth.ts))
 attaches the access token and transparently recovers from expiry. Because access
 tokens last only 15 minutes, this is the mechanism that keeps a session alive
-without the user noticing. All authenticated data hooks go through it
-(`useAccountDetails`, `useCreatePin`, `useUpdatePin`, `useDeletePin`,
+without the user noticing. All authenticated data fetches go through it
+(`AccountContextProvider`, `useCreatePin`, `useUpdatePin`, `useDeletePin`,
 `useCreateBoard`, `HomePage`).
 
 1. `useFetchWithAuth` sends the request with `Authorization: Bearer <access token>`.
@@ -143,9 +163,16 @@ reloads to `/`.
 
 The backend **revokes the refresh token server-side** on logout, so it cannot be
 reused. The access token is stateless and only in memory, so it is gone as soon
-as the page unloads. Logout is **best-effort**: `useLogOut` clears the token and
-redirects even if the request fails, so a failed call never leaves the user
-stuck logged in.
+as the page unloads. The redirect is a full page load, so it also drops the
+query cache, and with it the account. Logout is **best-effort**: `useLogOut`
+clears the token and redirects even if the request fails, so a failed call never
+leaves the user stuck logged in.
+
+**Known gap: the two `localStorage` values survive a logout.** `useLogOut` does
+not remove `username` and `profilePictureURL`. They hold no credential, so no
+session survives. But if a second account then logs in on the same browser, the
+header shows the previous username and profile picture until `/accounts/me/`
+resolves. A fix must remove both keys in `useLogOut`.
 
 ### 5. Auth state machine
 
@@ -170,5 +197,5 @@ The app moves between three states — **Initializing** (on mount),
 | [`src/lib/hooks/useLogin.ts`](../src/lib/hooks/useLogin.ts) | Login — posts credentials, stores the access token. |
 | [`src/lib/hooks/useSignup.ts`](../src/lib/hooks/useSignup.ts) | Signup — same shape as login. |
 | [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout — calls the endpoint, clears the token, redirects. |
-| [`src/lib/hooks/useAccountDetails.ts`](../src/lib/hooks/useAccountDetails.ts) | Fetches `/accounts/me/` once authenticated. |
+| [`src/contexts/accountContext.tsx`](../src/contexts/accountContext.tsx) | `AccountContext` + provider; fetches `/accounts/me/` once authenticated and passes the query result through the context. |
 | [`src/lib/constants.ts`](../src/lib/constants.ts) | API URLs. |
