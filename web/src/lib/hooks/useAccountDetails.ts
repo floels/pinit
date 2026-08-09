@@ -17,19 +17,26 @@ export const useAccountDetails = () => {
   const { setAccount } = useAccountContext();
   const { accessToken, isAuthInitialized } = useAuthContext();
 
-  const fetchAccountDetails = async () => {
-    const response = await fetchWithAuth(API_URL_MY_ACCOUNT_DETAILS);
-    throwIfKO(response);
-    const responseData = await response.json();
-    return serializeAccountWithPrivateDetails(responseData);
-  };
-
   const persistAccountData = (data: AccountWithPrivateDetails) => {
     const { username, profilePictureURL } = data;
     localStorage?.setItem(USERNAME_LOCAL_STORAGE_KEY, username);
     if (profilePictureURL) {
       localStorage?.setItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY, profilePictureURL);
     }
+  };
+
+  const fetchAccountDetails = async () => {
+    const response = await fetchWithAuth(API_URL_MY_ACCOUNT_DETAILS);
+    throwIfKO(response);
+    const responseData = await response.json();
+
+    const account = serializeAccountWithPrivateDetails(responseData);
+
+    // The write belongs to the fetch, not to the render, so it happens here
+    // rather than in an effect:
+    persistAccountData(account);
+
+    return account;
   };
 
   const { data, isError } = useQuery({
@@ -39,12 +46,13 @@ export const useAccountDetails = () => {
     retry: false,
   });
 
+  // 'setAccount' is the state setter from 'accountContext', which React keeps
+  // stable, so listing it does not re-run the effect.
   useEffect(() => {
     if (data) {
       setAccount(data);
-      persistAccountData(data);
     }
-  }, [data]);
+  }, [data, setAccount]);
 
   return { isError };
 };

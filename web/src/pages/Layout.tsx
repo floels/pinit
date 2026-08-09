@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useEffectEvent } from "react";
 import { Outlet } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 import { useTranslation } from "react-i18next";
@@ -17,11 +17,18 @@ const Layout = () => {
   const { accessToken, isAuthInitialized } = useAuthContext();
   const { isError: isAccountDetailsFetchError } = useAccountDetails();
 
+  // 'useEffectEvent' so that the toast reacts to the fetch failing, not to a
+  // new 't' function. 'useTranslation' returns a new 't' on every render, so
+  // listing it as a dependency would show the toast again on each render.
+  const showFetchErrorToast = useEffectEvent(() => {
+    toast.warn(t("ACCOUNT_DETAILS_FETCH_ERROR"), {
+      toastId: "toast-account-details-fetch-error",
+    });
+  });
+
   useEffect(() => {
     if (isAccountDetailsFetchError) {
-      toast.warn(t("ACCOUNT_DETAILS_FETCH_ERROR"), {
-        toastId: "toast-account-details-fetch-error",
-      });
+      showFetchErrorToast();
     }
   }, [isAccountDetailsFetchError]);
 
