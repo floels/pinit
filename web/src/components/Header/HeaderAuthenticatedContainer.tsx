@@ -26,17 +26,19 @@ const HeaderAuthenticatedContainer = () => {
     setIsAccountOptionsFlyoutOpen(!isAccountOptionsFlyoutOpen);
   };
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      setIsAccountOptionsFlyoutOpen(false);
-    }
-  };
-
   const handleClickOutOfAccountOptionsFlyout = () => {
     setIsAccountOptionsFlyoutOpen(false);
   };
 
+  // The handler only calls a state setter, which React keeps stable, so it
+  // lives inside the effect and the empty dependency array is correct:
   useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsAccountOptionsFlyoutOpen(false);
+      }
+    };
+
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {

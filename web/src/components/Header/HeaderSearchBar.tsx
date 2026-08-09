@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef } from "react";
+import { FormEvent, useEffect, useEffectEvent, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleXmark, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router";
@@ -41,16 +41,23 @@ const HeaderSearchBar = ({
     navigate(`/search/pins?q=${inputValue}`);
   };
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      onPressEscape();
-      if (inputRef.current) {
-        inputRef.current.blur();
-      }
+  // 'useEffectEvent' so that the listener always calls the current
+  // 'onPressEscape', while the effect below subscribes only once:
+  const onEscape = useEffectEvent(() => {
+    onPressEscape();
+
+    if (inputRef.current) {
+      inputRef.current.blur();
     }
-  };
+  });
 
   useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onEscape();
+      }
+    };
+
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {

@@ -108,14 +108,6 @@ const PinThumbnailContainer = ({
     setIsEditPanelOpen(true);
   };
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      setIsSaveFlyoutOpen(false);
-      setIsMoreActionsDropdownOpen(false);
-      setIsEditPanelOpen(false);
-    }
-  };
-
   const getClickHandlerForBoard = ({ boardIndex }: { boardIndex: number }) => {
     return () => {
       savePinInBoard({ boardIndex, pin });
@@ -182,7 +174,17 @@ const PinThumbnailContainer = ({
     );
   };
 
+  // The handler only calls state setters, which React keeps stable, so it
+  // lives inside the effect and the empty dependency array is correct:
   useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsSaveFlyoutOpen(false);
+        setIsMoreActionsDropdownOpen(false);
+        setIsEditPanelOpen(false);
+      }
+    };
+
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {

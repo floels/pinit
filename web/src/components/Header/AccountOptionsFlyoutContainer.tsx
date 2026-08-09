@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import AccountOptionsFlyout from "./AccountOptionsFlyout";
 import { useAccountContext } from "@/contexts/accountContext";
 import { useLogOut } from "@/lib/hooks/useLogOut";
@@ -24,18 +24,23 @@ const AccountOptionsFlyoutContainer = ({
     await logOut();
   };
 
-  const handleClickDocument = (event: MouseEvent) => {
-    const target = event.target as Node;
-
+  // 'useEffectEvent' so that the listener always calls the current
+  // 'handleClickOutOfAccountOptionsFlyout', while the effect below
+  // subscribes only once:
+  const onClickDocument = useEffectEvent((target: Node) => {
     const userClickedOut =
       !ref.current?.contains(target) && !openerRef.current?.contains(target);
 
     if (userClickedOut) {
       handleClickOutOfAccountOptionsFlyout();
     }
-  };
+  });
 
   useEffect(() => {
+    const handleClickDocument = (event: MouseEvent) => {
+      onClickDocument(event.target as Node);
+    };
+
     document.addEventListener("click", handleClickDocument);
 
     return () => {

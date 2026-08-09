@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useEffectEvent } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import styles from "./OverlayModal.module.css";
@@ -9,11 +9,11 @@ type OverlayModalProps = {
 };
 
 const OverlayModal = ({ onClose, children }: OverlayModalProps) => {
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      onClose();
-    }
-  };
+  // 'useEffectEvent' so that the listener always calls the current 'onClose',
+  // while the effect below subscribes only once:
+  const onEscape = useEffectEvent(() => {
+    onClose();
+  });
 
   const handleClickModal = (event: React.MouseEvent<HTMLDivElement>) => {
     // We need to stop the propagation of a click event on the modal itself,
@@ -22,6 +22,12 @@ const OverlayModal = ({ onClose, children }: OverlayModalProps) => {
   };
 
   useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onEscape();
+      }
+    };
+
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {

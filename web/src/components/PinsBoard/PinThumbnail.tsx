@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import styles from "./PinThumbnail.module.css";
@@ -67,16 +67,23 @@ const PinThumbnail = ({
   const saveButtonRef = useRef<HTMLButtonElement>(null);
   const moreActionsWrapperRef = useRef<HTMLDivElement>(null);
 
+  // 'useEffectEvent' so that the listener always calls the current
+  // 'handleClickOutOfMoreActionsDropdown', while the effect below subscribes
+  // only when the dropdown opens:
+  const onClickOutside = useEffectEvent((target: Node) => {
+    if (
+      moreActionsWrapperRef.current &&
+      !moreActionsWrapperRef.current.contains(target)
+    ) {
+      handleClickOutOfMoreActionsDropdown();
+    }
+  });
+
   useEffect(() => {
     if (!isMoreActionsDropdownOpen) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        moreActionsWrapperRef.current &&
-        !moreActionsWrapperRef.current.contains(event.target as Node)
-      ) {
-        handleClickOutOfMoreActionsDropdown();
-      }
+      onClickOutside(event.target as Node);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
