@@ -144,18 +144,21 @@ class Command(BaseCommand):
 
         accounts = list(Account.objects.all())
 
+        # Each entry holds the URL of an image and the real pixel dimensions of
+        # that image. We report the dimensions rather than the placeholder values
+        # of the factory, which would distort every thumbnail. An entry that you
+        # add must therefore carry its "width" and "height", measured from the
+        # image itself.
         with open(file_path) as f:
-            image_urls = json.load(f)
+            pin_images = json.load(f)
 
         for _ in range(NUMBER_PINS_TO_CREATE):
-            # The images come from real URLs of many shapes, and we do not read
-            # their bytes here. So we leave the dimensions null rather than
-            # report the placeholder values of the factory, which would distort
-            # every thumbnail. The clients measure such images themselves.
+            pin_image = random.choice(pin_images)
+
             PinFactory.create(
-                image_url=random.choice(image_urls),
-                image_width=None,
-                image_height=None,
+                image_url=pin_image["url"],
+                image_width=pin_image["width"],
+                image_height=pin_image["height"],
                 author=random.choice(accounts),
             )
 
