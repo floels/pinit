@@ -7,9 +7,9 @@ from rest_framework import status
 from ..testing_utils import AccountFactory
 from pinit_api.lib.constants import ERROR_CODE_INVALID_PIN_IMAGE_FILE_EXTENSION
 
-S3_BUCKET_NAME = "pinit-staging"
+S3_BUCKET_NAME = "pinit-pins"
 S3_BUCKET_REGION = "eu-north-1"
-S3_CUSTOM_DOMAIN = "pinit-staging.s3.eu-west-3.amazonaws.com"
+S3_CUSTOM_DOMAIN = "pinit-pins.s3.eu-west-3.amazonaws.com"
 
 IMAGE_FILE_KEY_PATTERN = re.compile(r"^pins/pin_image_[0-9a-f]{32}\.(jpg|png)$")
 
