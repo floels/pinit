@@ -127,13 +127,6 @@ const PinThumbnail = ({
 
   const shouldShowImageOverlay = isImageHovered || isSaveFlyoutOpen;
 
-  // The 'width' and 'height' attributes give the browser the aspect ratio of the
-  // image, so it reserves the correct box before the image loads and the grid
-  // does not shift. They are undefined for pins created before the API reported
-  // the dimensions, and the browser then falls back to a reflow on load.
-  const imageWidthAttribute = pin.imageWidth ?? undefined;
-  const imageHeightAttribute = pin.imageHeight ?? undefined;
-
   const moreActionsButton = (
     <div
       ref={moreActionsWrapperRef}
@@ -184,8 +177,10 @@ const PinThumbnail = ({
                 : `${t("ALT_PIN_BY")} ${pin.author.displayName}`
             }
             src={pin.imageURL}
-            width={imageWidthAttribute}
-            height={imageHeightAttribute}
+            // The attributes give the browser the aspect ratio, so it reserves
+            // the correct box before the image loads and the grid does not shift.
+            width={pin.imageWidth}
+            height={pin.imageHeight}
             className={styles.image}
           />
           {shouldShowImageOverlay && imageOverlay}

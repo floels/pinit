@@ -26,8 +26,8 @@ const serializePinWithAuthorDetails = (
     id: pin.unique_id,
     title: pin.title,
     imageURL: pin.image_url,
-    imageWidth: pin.image_width ?? null,
-    imageHeight: pin.image_height ?? null,
+    imageWidth: pin.image_width,
+    imageHeight: pin.image_height,
     author: serializeAccount(pin.author),
   };
 };

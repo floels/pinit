@@ -6,13 +6,11 @@ import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
 
 const pin = MOCK_API_RESPONSES_SERIALIZED[API_URL_PIN_SUGGESTIONS].results[0];
 
-const renderComponent = ({
-  pinOverrides,
-}: { pinOverrides?: Partial<typeof pin> } = {}) => {
+const renderComponent = () => {
   render(
     <MemoryRouter>
       <PinThumbnail
-        pin={{ ...pin, ...pinOverrides }}
+        pin={pin}
         isInFirstColumn={false}
         isInLastColumn={false}
         boards={[]}
@@ -52,11 +50,3 @@ it("sets the width and height attributes from the reported dimensions", () => {
   expect(pinImage).toHaveAttribute("height", String(pin.imageHeight));
 });
 
-it("omits the width and height attributes when the API reports no dimensions", () => {
-  renderComponent({ pinOverrides: { imageWidth: null, imageHeight: null } });
-
-  const pinImage = screen.getByAltText(pin.title);
-
-  expect(pinImage).not.toHaveAttribute("width");
-  expect(pinImage).not.toHaveAttribute("height");
-});

@@ -19,6 +19,11 @@ TEST_PIN_UNIQUE_ID = "e2e70001-0000-4000-8000-000000000001"
 SEARCH_SEED_TERM = "playwrightuniquesearch"
 NUMBER_OF_SEARCH_PINS = 3
 
+# The images above do not exist, so no client can measure them. Every pin must
+# report its dimensions, because the clients lay out a pin from them.
+PIN_IMAGE_WIDTH = 236
+PIN_IMAGE_HEIGHT = 354
+
 
 class Command(BaseCommand):
     help = "Clears the E2E database and seeds it with known test data."
@@ -60,6 +65,8 @@ class Command(BaseCommand):
             title="Pin title",
             description="Pin description.",
             image_url="https://example.com/test-pin-image.jpg",
+            image_width=PIN_IMAGE_WIDTH,
+            image_height=PIN_IMAGE_HEIGHT,
             author=johndoe_account,
         )
 
@@ -69,6 +76,8 @@ class Command(BaseCommand):
                 title=f"Sample pin {i} {SEARCH_SEED_TERM}",
                 description=f"Description of sample pin {i}.",
                 image_url=f"https://example.com/sample-pin-{i}.jpg",
+                image_width=PIN_IMAGE_WIDTH,
+                image_height=PIN_IMAGE_HEIGHT,
                 author=johndoe_account,
             )
 
@@ -80,6 +89,8 @@ class Command(BaseCommand):
             title="Pin to edit",
             description="Original description.",
             image_url="https://example.com/created-pin-1.jpg",
+            image_width=PIN_IMAGE_WIDTH,
+            image_height=PIN_IMAGE_HEIGHT,
             author=test_user_account,
         )
         Pin.objects.create(
@@ -87,6 +98,8 @@ class Command(BaseCommand):
             title="Pin to delete",
             description="This pin will be deleted.",
             image_url="https://example.com/created-pin-2.jpg",
+            image_width=PIN_IMAGE_WIDTH,
+            image_height=PIN_IMAGE_HEIGHT,
             author=test_user_account,
         )
 

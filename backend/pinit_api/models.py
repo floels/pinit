@@ -124,8 +124,9 @@ class Pin(UUIDModel):
     # Pixel dimensions of the image at 'image_url'. Clients need them to lay out
     # the masonry grid before the image loads. The client that creates the pin
     # reports them, because the image is uploaded straight to S3 and the backend
-    # never reads its bytes. They are null for pins created before this field
-    # existed, so clients must keep a fallback.
+    # never reads its bytes. 'CreatePinView' requires both, so every pin created
+    # through the API carries them. The columns stay nullable for the rows that
+    # predate them.
     image_width = models.PositiveIntegerField(null=True, blank=True)
     image_height = models.PositiveIntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)

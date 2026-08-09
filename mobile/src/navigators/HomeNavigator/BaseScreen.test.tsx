@@ -4,7 +4,6 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react-native";
-import { Image } from "react-native";
 
 import BaseScreen from "./BaseScreen";
 
@@ -27,14 +26,10 @@ jest.mock("@/src/hooks/useMyAccountDetails", () => ({
   useMyAccountDetails: () => ({ isError: false }),
 }));
 
-Image.getSize = jest.fn();
+const firstPin =
+  MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_PIN_SUGGESTIONS].results[0];
 
-const pinImagesWidth = 100;
-const pinImagesAspectRatio = 1.5;
-
-(Image.getSize as jest.Mock).mockImplementation((_, success) => {
-  success(pinImagesWidth, pinImagesWidth / pinImagesAspectRatio);
-});
+const firstPinImageAspectRatio = firstPin.imageWidth / firstPin.imageHeight;
 
 const mockNavigation = {
   navigate: jest.fn(),
@@ -67,7 +62,7 @@ it("should navigate to screen with proper params when user taps on a pin", async
     {
       pin: MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_PIN_SUGGESTIONS]
         .results[0],
-      pinImageAspectRatio: pinImagesAspectRatio,
+      pinImageAspectRatio: firstPinImageAspectRatio,
     },
   );
 });

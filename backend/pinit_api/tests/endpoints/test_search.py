@@ -65,30 +65,6 @@ class SearchPinsTests(APITestCase):
         self.assertEqual(data["results"][0]["image_height"], 768)
 
     @patch("pinit_api.views.search.get_es_client")
-    def test_returns_null_dimensions_for_documents_indexed_before_the_fields(
-        self, mock_get_client
-    ):
-        # Documents indexed before the dimensions existed carry neither key. The
-        # endpoint must return null for both instead of failing.
-        legacy_hit = make_hit("Beautiful sunset")
-        del legacy_hit["_source"]["image_width"]
-        del legacy_hit["_source"]["image_height"]
-
-        mock_get_client.return_value.search.return_value = make_es_response(
-            total=1, hits=[legacy_hit]
-        )
-
-        response = self.get()
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        result = response.json()["results"][0]
-
-        self._assert_result_shape(result)
-        self.assertIsNone(result["image_width"])
-        self.assertIsNone(result["image_height"])
-
-    @patch("pinit_api.views.search.get_es_client")
     def test_happy_path_second_page_sends_correct_offset(self, mock_get_client):
         mock_get_client.return_value.search.return_value = make_es_response(
             total=150, hits=[make_hit("Some title", unique_id=str(i)) for i in range(50)]

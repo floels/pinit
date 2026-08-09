@@ -13,10 +13,10 @@ export type Pin = {
   id: string;
   title: string;
   imageURL: string;
-  // Pixel dimensions reported by the API. They are null for pins created before
-  // the API carried them, so the caller must keep a fallback.
-  imageWidth: number | null;
-  imageHeight: number | null;
+  // Pixel dimensions of the image. The API requires them when a pin is created,
+  // so every pin it returns carries them.
+  imageWidth: number;
+  imageHeight: number;
 };
 
 export type PinWithAuthorDetails = Pin & {

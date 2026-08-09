@@ -200,7 +200,10 @@ it("calls 'handleCreateSuccess' with proper arguments upon successful pin creati
           MOCK_API_RESPONSES_JSON[API_ENDPOINT_CREATE_PIN].image_height,
         title: MOCK_API_RESPONSES_JSON[API_ENDPOINT_CREATE_PIN].title,
       },
-      createdPinImageAspectRatio: 1.5,
+      // Derived from the dimensions that the created pin reports:
+      createdPinImageAspectRatio:
+        MOCK_API_RESPONSES_JSON[API_ENDPOINT_CREATE_PIN].image_width /
+        MOCK_API_RESPONSES_JSON[API_ENDPOINT_CREATE_PIN].image_height,
     });
   });
 });
@@ -240,13 +243,13 @@ it("displays error response toast when the S3 upload fails", async () => {
 });
 
 it("fetches image size itself if aspect ratio wasn't provided", async () => {
+  // The fetched ratio sizes the preview of the selected image. The ratio of the
+  // created pin comes from the API response instead, so it is not asserted here.
   const fetchedAspectRatio = 1.2;
 
   (Image.getSize as jest.Mock).mockImplementationOnce((_, success) => {
     success(100, 100 / fetchedAspectRatio);
   });
-
-  mockBackendResponses();
 
   renderComponent({
     route: {
@@ -257,13 +260,11 @@ it("fetches image size itself if aspect ratio wasn't provided", async () => {
     },
   });
 
-  pressButton({ testID: "create-pin-submit-button" });
-
   await waitFor(() => {
-    expect(mockHandleCreateSuccess).toHaveBeenCalledWith({
-      createdPin: expect.anything(), // already tested above
-      createdPinImageAspectRatio: fetchedAspectRatio,
-    });
+    expect(Image.getSize).toHaveBeenCalledWith(
+      "file:///my/image/path.jpeg",
+      expect.any(Function),
+    );
   });
 });
 

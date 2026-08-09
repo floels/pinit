@@ -33,32 +33,20 @@ it("closes the bitmap so it does not leak", async () => {
   expect(mockClose).toHaveBeenCalled();
 });
 
-it("returns null when the browser cannot decode the file", async () => {
+it("rejects when the browser cannot decode the file", async () => {
   vi.stubGlobal(
     "createImageBitmap",
     vi.fn().mockRejectedValue(new Error("undecodable")),
   );
 
-  const dimensions = await readImageDimensions(MOCK_FILE);
-
-  expect(dimensions).toBeNull();
+  await expect(readImageDimensions(MOCK_FILE)).rejects.toThrow("undecodable");
 });
 
-it("returns null when the browser has no 'createImageBitmap'", async () => {
-  vi.stubGlobal("createImageBitmap", undefined);
-
-  const dimensions = await readImageDimensions(MOCK_FILE);
-
-  expect(dimensions).toBeNull();
-});
-
-it("returns null when a dimension is zero", async () => {
+it("rejects when a dimension is zero", async () => {
   vi.stubGlobal(
     "createImageBitmap",
     vi.fn().mockResolvedValue({ width: 0, height: 768, close: mockClose }),
   );
 
-  const dimensions = await readImageDimensions(MOCK_FILE);
-
-  expect(dimensions).toBeNull();
+  await expect(readImageDimensions(MOCK_FILE)).rejects.toThrow();
 });

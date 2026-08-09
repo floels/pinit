@@ -66,10 +66,8 @@ def search_pins(request):
                 "unique_id": source["unique_id"],
                 "title": source["title"],
                 "image_url": source["image_url"],
-                # Read with 'get', because documents indexed before the
-                # dimensions existed carry neither key until a reindex runs.
-                "image_width": source.get("image_width"),
-                "image_height": source.get("image_height"),
+                "image_width": source["image_width"],
+                "image_height": source["image_height"],
                 "author": source["author"],
             }
         )

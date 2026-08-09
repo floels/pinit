@@ -91,9 +91,8 @@ class PinCreationTests(APITestCase):
         self.assertEqual(created_pin.image_width, 1024)
         self.assertEqual(created_pin.image_height, 768)
 
-    def test_create_pin_without_image_dimensions(self):
-        # The dimensions are optional. A client that does not know them still
-        # creates a pin, and the clients fall back to measuring the image.
+    def test_create_pin_rejects_absent_image_dimensions(self):
+        # Both dimensions are required, so that every read returns them.
         payload = {
             key: value
             for key, value in self.request_payload.items()
@@ -102,17 +101,12 @@ class PinCreationTests(APITestCase):
 
         response = self.post(data=payload)
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        created_pin = Pin.objects.get()
-
-        self.assertIsNone(created_pin.image_width)
-        self.assertIsNone(created_pin.image_height)
-
-        response_data = response.json()
-
-        self.assertIsNone(response_data["image_width"])
-        self.assertIsNone(response_data["image_height"])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json()["errors"],
+            [{"code": ERROR_CODE_INVALID_PIN_IMAGE_DIMENSIONS}],
+        )
+        self.assertEqual(Pin.objects.count(), 0)
 
     def test_create_pin_accepts_image_dimensions_as_strings(self):
         response = self.post(

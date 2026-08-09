@@ -17,7 +17,6 @@ import { PinWithAuthorDetails } from "@/src/lib/types";
 
 type PinsBoardProps = {
   pins: PinWithAuthorDetails[];
-  pinImageAspectRatios: (number | null)[];
   isFetchingMorePins: boolean;
   fetchMorePinsError: string;
   isRefreshing: boolean;
@@ -40,7 +39,6 @@ const SIZE_REFRESH_SPINNER = 40;
 
 const PinsBoard = ({
   pins,
-  pinImageAspectRatios,
   isFetchingMorePins,
   fetchMorePinsError,
   isRefreshing,
@@ -194,7 +192,6 @@ const PinsBoard = ({
       {displayEmptyResultsMessageIfNeeded}
       <PinThumbnailsGrid
         pins={pins}
-        pinImageAspectRatios={pinImageAspectRatios}
         getTapHandlerForPin={getTapHandlerForPin}
       />
       {isFetchingMorePins && fetchMorePinsSpinner}

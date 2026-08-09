@@ -6,7 +6,6 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import { FetchMock } from "jest-fetch-mock";
-import { Image } from "react-native";
 
 import PinsBoardContainer, {
   DEBOUNCE_TIME_REFRESH_MS,
@@ -49,12 +48,6 @@ jest.mock("@/src/components/Spinner/Spinner", () => {
   return (props: any) => <View testID="mocked-spinner" />;
 });
 
-Image.getSize = jest.fn();
-
-(Image.getSize as jest.Mock).mockImplementation((_, success) => {
-  success(100, MOCKED_PIN_THUMBNAIL_HEIGHT);
-});
-
 // To simulate the response upon refresh, simply shift the 'unique_id' of each pin:
 const mockPinSuggestions =
   MOCK_API_RESPONSES_JSON[API_ENDPOINT_PIN_SUGGESTIONS].results;
@@ -62,14 +55,6 @@ const mockPinSuggestions =
 const mockRefreshedPinSuggestions = mockPinSuggestions.map((result, index) => ({
   ...result,
   unique_id: String(mockPinSuggestions.length + index).padStart(18, "0"),
-}));
-
-// Pins created after the API carried the image dimensions report them, so the
-// board lays them out without measuring their image:
-const mockPinSuggestionsWithDimensions = mockPinSuggestions.map((result) => ({
-  ...result,
-  image_width: 1024,
-  image_height: 768,
 }));
 
 const pinSuggestionsEndpoint = `${API_BASE_URL}/${API_ENDPOINT_PIN_SUGGESTIONS}`;
@@ -115,7 +100,6 @@ const pullToRefresh = () => {
 
 beforeEach(() => {
   fetchMock.resetMocks();
-  (Image.getSize as jest.Mock).mockClear();
 });
 
 afterEach(() => {
@@ -162,38 +146,6 @@ and fetches second page upon scroll`, async () => {
       `${pinSuggestionsEndpoint}?page=2`,
     );
   });
-});
-
-it("renders pins without measuring their image when the API reports the dimensions", async () => {
-  fetchMock.mockOnceIf(
-    `${pinSuggestionsEndpoint}?page=1`,
-    JSON.stringify({ results: mockPinSuggestionsWithDimensions }),
-  );
-
-  renderComponent();
-
-  await waitFor(() => {
-    const pinThumbnails = screen.queryAllByTestId(/^mocked-pin-thumbnail-/);
-    expect(pinThumbnails.length).toEqual(mockPinSuggestions.length);
-  });
-
-  expect(Image.getSize).not.toHaveBeenCalled();
-});
-
-it("measures the image of pins for which the API reports no dimensions", async () => {
-  fetchMock.mockOnceIf(
-    `${pinSuggestionsEndpoint}?page=1`,
-    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
-  );
-
-  renderComponent();
-
-  await waitFor(() => {
-    const pinThumbnails = screen.queryAllByTestId(/^mocked-pin-thumbnail-/);
-    expect(pinThumbnails.length).toEqual(mockPinSuggestions.length);
-  });
-
-  expect(Image.getSize).toHaveBeenCalledTimes(mockPinSuggestions.length);
 });
 
 it("fetches first page with authentication if relevant", async () => {
@@ -252,31 +204,6 @@ it("displays error message upon 400 response when fetching initial pins", async 
   await waitFor(() => {
     screen.getByText(enTranslations.Common.ERROR_FETCH_MORE_PINS);
   });
-});
-
-it("still renders the other pins when a single image fails to size", async () => {
-  fetchMock.mockOnceIf(
-    `${pinSuggestionsEndpoint}?page=1`,
-    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
-  );
-
-  // The first pin's image fails to size; the remaining pins size successfully.
-  (Image.getSize as jest.Mock).mockImplementationOnce((_, __, error) => {
-    error(new Error());
-  });
-
-  renderComponent();
-
-  // A single failed image must not discard the whole page: the other pins
-  // still render, and no error message is shown.
-  await waitFor(() => {
-    expect(
-      screen.getAllByTestId(/mocked-pin-thumbnail-/).length,
-    ).toBeGreaterThan(0);
-  });
-  expect(
-    screen.queryByText(enTranslations.Common.ERROR_FETCH_MORE_PINS),
-  ).toBeNull();
 });
 
 it(`refreshes pins when pulling to refresh, and does not refresh

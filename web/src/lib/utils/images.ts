@@ -4,29 +4,21 @@ export type ImageDimensions = {
 };
 
 // Reads the pixel dimensions of an image file. The pin creation flow sends them
-// to the API, which lets every client lay out the pin before its image loads.
-// Returns null when the browser cannot decode the file. Pin creation then
-// proceeds without the dimensions, because the API treats them as optional.
+// to the API, which requires them. Throws when the browser cannot decode the
+// file, because a pin without dimensions cannot be laid out before its image
+// loads.
 export const readImageDimensions = async (
   file: File,
-): Promise<ImageDimensions | null> => {
-  if (typeof createImageBitmap !== "function") {
-    return null;
+): Promise<ImageDimensions> => {
+  const bitmap = await createImageBitmap(file);
+
+  const { width, height } = bitmap;
+
+  bitmap.close();
+
+  if (!width || !height) {
+    throw new Error("The image reports no usable dimensions.");
   }
 
-  try {
-    const bitmap = await createImageBitmap(file);
-
-    const { width, height } = bitmap;
-
-    bitmap.close();
-
-    if (!width || !height) {
-      return null;
-    }
-
-    return { width, height };
-  } catch {
-    return null;
-  }
+  return { width, height };
 };

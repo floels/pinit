@@ -205,7 +205,9 @@ it("makes correct API calls when user clicks submit", async () => {
   });
 });
 
-it("omits the image dimensions when the browser cannot decode the image", async () => {
+it("displays error toast and creates no pin when the image cannot be decoded", async () => {
+  // The API requires the dimensions, so a file that the browser cannot decode
+  // must not produce a pin at all.
   stubImageDecoder({ succeeds: false });
 
   renderComponent();
@@ -218,19 +220,10 @@ it("omits the image dimensions when the browser cannot decode the image", async 
   await userEvent.click(submitButton);
 
   await waitFor(() => {
-    const mockedFetch = fetch as FetchMock;
-
-    expect(mockedFetch).toHaveBeenCalledTimes(3);
-
-    const [, createPinOptions] = mockedFetch.mock.calls[2];
-
-    const body = JSON.parse(createPinOptions?.body as string);
-
-    // The API requires both dimensions together, or neither. So a pin is still
-    // created, and the clients fall back to measuring the image.
-    expect(body).not.toHaveProperty("image_width");
-    expect(body).not.toHaveProperty("image_height");
+    screen.getByText(en.ERROR_POSTING_PIN);
   });
+
+  expect(fetch).not.toHaveBeenCalled();
 });
 
 it(`displays success toast with proper link and resets form

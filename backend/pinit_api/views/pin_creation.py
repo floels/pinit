@@ -37,25 +37,19 @@ def parse_dimension(raw_value):
 
 
 def parse_image_dimensions(data):
-    """Reads the image dimensions of the request.
+    """Returns a (width, height) pair, or None if the request does not carry one.
 
-    The dimensions are optional, because a client that does not know them still
-    creates a pin. Returns a (width, height) pair and a validity flag. Both
-    values must be present together, so a pin never carries one dimension only.
+    Both dimensions are required. Every client holds the image that it uploads,
+    so it knows them. Requiring them here lets every read return them, and lets
+    the clients lay out a pin without measuring its image.
     """
-    raw_width = data.get("image_width")
-    raw_height = data.get("image_height")
-
-    if raw_width is None and raw_height is None:
-        return (None, None), True
-
-    width = parse_dimension(raw_width)
-    height = parse_dimension(raw_height)
+    width = parse_dimension(data.get("image_width"))
+    height = parse_dimension(data.get("image_height"))
 
     if width is None or height is None:
-        return (None, None), False
+        return None
 
-    return (width, height), True
+    return width, height
 
 
 class CreatePinView(generics.CreateAPIView):
@@ -79,9 +73,9 @@ class CreatePinView(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        dimensions, dimensions_are_valid = parse_image_dimensions(request.data)
+        dimensions = parse_image_dimensions(request.data)
 
-        if not dimensions_are_valid:
+        if dimensions is None:
             return Response(
                 {"errors": [{"code": ERROR_CODE_INVALID_PIN_IMAGE_DIMENSIONS}]},
                 status=status.HTTP_400_BAD_REQUEST,

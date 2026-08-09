@@ -79,10 +79,12 @@ const EnterPinDetailsScreenContainer = ({
       setIsPosting(false);
     }
 
+    // The created pin reports the dimensions of the image we uploaded, so we
+    // derive the aspect ratio from the response rather than from the preview.
     handleCreateSuccess({
       createdPin,
-      createdPinImageAspectRatio: imageAspectRatio || 1, // If the aspect ratio
-      // couldn't be determined, we default to 1 (square image).
+      createdPinImageAspectRatio:
+        createdPin.imageWidth / createdPin.imageHeight,
     });
   };
 

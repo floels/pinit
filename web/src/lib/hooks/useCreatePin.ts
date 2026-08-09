@@ -44,16 +44,12 @@ export const useCreatePin = () => {
       const createPinResponse = await fetchWithAuth(API_URL_CREATE_PIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // The API requires both dimensions together, or neither. So we omit
-        // both when the browser could not decode the image.
         body: JSON.stringify({
           title: pinDetails.title,
           description: pinDetails.description,
           image_file_key,
-          ...(imageDimensions && {
-            image_width: imageDimensions.width,
-            image_height: imageDimensions.height,
-          }),
+          image_width: imageDimensions.width,
+          image_height: imageDimensions.height,
         }),
       });
       throwIfKO(createPinResponse);

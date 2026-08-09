@@ -4,9 +4,8 @@ type PinFromAPI = {
   unique_id: string;
   title: string | null;
   image_url: string;
-  // Null for pins created before the API carried the dimensions.
-  image_width: number | null;
-  image_height: number | null;
+  image_width: number;
+  image_height: number;
 };
 
 export type PinWithAuthorDetailsFromAPI = PinFromAPI & {

@@ -50,20 +50,6 @@ describe("serializePinsWithAuthorDetails", () => {
     expect(result[0].imageHeight).toBe(768);
   });
 
-  it("maps absent image dimensions to null", () => {
-    // Pins created before the API carried the dimensions report null.
-    const pinWithoutDimensions = {
-      ...MOCK_PIN_FROM_API,
-      image_width: null,
-      image_height: null,
-    };
-
-    const result = serializePinsWithAuthorDetails([pinWithoutDimensions]);
-
-    expect(result[0].imageWidth).toBeNull();
-    expect(result[0].imageHeight).toBeNull();
-  });
-
   it("serializes the nested author", () => {
     const result = serializePinsWithAuthorDetails([MOCK_PIN_FROM_API]);
 

@@ -144,11 +144,6 @@ class Command(BaseCommand):
 
         accounts = list(Account.objects.all())
 
-        # Each entry holds the URL of an image and the real pixel dimensions of
-        # that image. We report the dimensions rather than the placeholder values
-        # of the factory, which would distort every thumbnail. An entry that you
-        # add must therefore carry its "width" and "height", measured from the
-        # image itself.
         with open(file_path) as f:
             pin_images = json.load(f)
 
