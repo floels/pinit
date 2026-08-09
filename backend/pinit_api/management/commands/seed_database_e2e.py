@@ -19,8 +19,6 @@ TEST_PIN_UNIQUE_ID = "e2e70001-0000-4000-8000-000000000001"
 SEARCH_SEED_TERM = "playwrightuniquesearch"
 NUMBER_OF_SEARCH_PINS = 3
 
-# The images above do not exist, so no client can measure them. Every pin must
-# report its dimensions, because the clients lay out a pin from them.
 PIN_IMAGE_WIDTH = 236
 PIN_IMAGE_HEIGHT = 354
 

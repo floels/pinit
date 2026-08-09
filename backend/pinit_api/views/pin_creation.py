@@ -15,8 +15,9 @@ VALID_IMAGE_FILE_KEY_PATTERN = re.compile(
     r"^pins/pin_image_[0-9a-f]{32}\.(jpg|png)$"
 )
 
-# The largest dimension a JPEG can declare. It also bounds what a client can
-# store, so a wrong value cannot grow without limit.
+# A sanity ceiling. Nothing enforces the dimensions that a client reports, and a
+# bad ratio distorts the pin on every board that shows it. The value is the JPEG
+# limit, which no realistic PNG reaches either.
 MAX_IMAGE_DIMENSION = 65535
 
 
