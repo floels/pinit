@@ -11,6 +11,7 @@ import {
   API_BASE_URL,
   API_ENDPOINT_PIN_SUGGESTIONS,
 } from "@/src/lib/constants";
+import { withQueryClient } from "@/src/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_SERIALIZED,
@@ -36,7 +37,7 @@ const mockNavigation = {
 };
 
 const renderComponent = () => {
-  render(<BaseScreen navigation={mockNavigation as any} />);
+  render(withQueryClient(<BaseScreen navigation={mockNavigation as any} />));
 };
 
 const endpointWithBaseURL = `${API_BASE_URL}/${API_ENDPOINT_PIN_SUGGESTIONS}`;

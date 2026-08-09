@@ -1,3 +1,4 @@
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
@@ -48,92 +49,38 @@ const PinsBoardContainer = ({
 
   const { dispatch } = useAuthenticationContext();
 
-  const [pins, setPins] = useState<PinWithAuthorDetails[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isFetchingMorePins, setIsFetchingMorePins] = useState(false);
-  const hasJustFetchedMorePins = useRef(false);
-  const [fetchMorePinsError, setFetchMorePinsError] = useState("");
+  const queryClient = useQueryClient();
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasJustRefreshed, setHasJustRefreshed] = useState(false);
   const [refreshError, setRefreshError] = useState("");
+  const hasJustFetchedMorePins = useRef(false);
 
-  const onNextPage = async (page: number) => {
-    setIsFetchingMorePins(true);
-    resetAllErrors();
+  // The endpoint identifies the board, and a search endpoint carries its search
+  // term, so it keys the cache on its own. A change of endpoint therefore reads
+  // another cache entry instead of resetting local state.
+  const queryKey = ["pinsBoard", fetchEndpoint];
 
-    let nextPins;
-
-    try {
-      nextPins = await fetchNextPins(page);
-    } catch (error) {
-      if (error instanceof Response401Error) {
-        await clearStoredAuthData();
-        dispatch({ type: "GOT_401_RESPONSE" });
-        return;
-      }
-
-      setFetchMorePinsError(t("Common.ERROR_FETCH_MORE_PINS"));
-      return;
-    } finally {
-      setIsFetchingMorePins(false);
-      hasJustFetchedMorePins.current = true;
-      setTimeout(() => {
-        hasJustFetchedMorePins.current = false;
-      }, DEBOUNCE_TIME_SCROLL_DOWN_TO_FETCH_MORE_PINS_MS);
-    }
-
-    setPins((previousPins) => [...previousPins, ...nextPins]);
-  };
-
-  const onRefresh = async () => {
-    setCurrentPage(1);
-    setIsRefreshing(true);
-    resetAllErrors();
-
-    let firstPins;
-
-    try {
-      firstPins = await fetchNextPins(1);
-    } catch (error) {
-      if (error instanceof Response401Error) {
-        await clearStoredAuthData();
-        dispatch({ type: "GOT_401_RESPONSE" });
-        return;
-      }
-
-      setRefreshError(t("Common.ERROR_REFRESH_PINS"));
-      return;
-    } finally {
-      setIsRefreshing(false);
-      setHasJustRefreshed(true);
-      setTimeout(() => {
-        setHasJustRefreshed(false);
-      }, DEBOUNCE_TIME_REFRESH_MS);
-    }
-
-    setPins(firstPins);
-  };
-
-  const fetchNextPins = async (page: number) => {
+  const fetchPins = async (page: number) => {
     const endpointWithPageParameter = appendQueryParam({
       url: fetchEndpoint,
       key: "page",
       value: page.toString(),
     });
 
-    const newPinsResponse = await fetchWithAuthenticationIfNeeded(
+    const response = await fetchWithAuthenticationIfNeeded(
       endpointWithPageParameter,
     );
 
-    if (newPinsResponse.status === 401) {
+    if (response.status === 401) {
       throw new Response401Error();
     }
 
-    if (!newPinsResponse.ok) {
+    if (!response.ok) {
       throw new ResponseKOError();
     }
 
-    const responseData = await newPinsResponse.json();
+    const responseData = await response.json();
 
     return serializePinsWithAuthorDetails(responseData.results);
   };
@@ -146,9 +93,71 @@ const PinsBoardContainer = ({
     return fetch(url);
   };
 
-  const resetAllErrors = () => {
-    setFetchMorePinsError("");
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteQuery({
+    queryKey,
+    queryFn: ({ pageParam }) => fetchPins(pageParam),
+    initialPageParam: 1,
+    // An empty page means that the board reached its end, so we stop asking for
+    // more. Otherwise every scroll to the bottom sends one more empty request.
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === 0 ? undefined : allPages.length + 1,
+    retry: false,
+  });
+
+  const pins = data?.pages.flat() ?? [];
+
+  // A 401 ends the session, so we clear the stored tokens and let the
+  // authentication context switch to the unauthenticated tree.
+  useEffect(() => {
+    if (!(error instanceof Response401Error)) {
+      return;
+    }
+
+    const logOut = async () => {
+      await clearStoredAuthData();
+      dispatch({ type: "GOT_401_RESPONSE" });
+    };
+
+    logOut();
+  }, [error]);
+
+  // A failed refresh reports its own message, so we suppress the general one
+  // while it shows.
+  const shouldReportFetchMorePinsError =
+    !!error && !(error instanceof Response401Error) && !refreshError;
+
+  const fetchMorePinsError = shouldReportFetchMorePinsError
+    ? t("Common.ERROR_FETCH_MORE_PINS")
+    : "";
+
+  // Pull to refresh drops every loaded page and fetches the first one again, so
+  // the board returns to the top. 'resetQueries' also cancels a fetch that is
+  // still running, which stops it from overwriting the refreshed pins.
+  const onRefresh = async () => {
+    setIsRefreshing(true);
     setRefreshError("");
+
+    await queryClient.resetQueries({ queryKey });
+
+    // A 401 logs the user out through the Effect above, so it needs no message.
+    const errorAfterRefresh = queryClient.getQueryState(queryKey)?.error;
+
+    if (errorAfterRefresh && !(errorAfterRefresh instanceof Response401Error)) {
+      setRefreshError(t("Common.ERROR_REFRESH_PINS"));
+    }
+
+    setIsRefreshing(false);
+    setHasJustRefreshed(true);
+    setTimeout(() => {
+      setHasJustRefreshed(false);
+    }, DEBOUNCE_TIME_REFRESH_MS);
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -185,34 +194,28 @@ const PinsBoardContainer = ({
       offsetY > pinsBoardHeight - MARGIN_SCROLL_BEFORE_NEW_FETCH;
 
     const shouldTriggerNextPage =
-      !isFetchingMorePins &&
+      !isPending &&
+      !isFetchingNextPage &&
+      hasNextPage &&
       hasJustFetchedMorePins.current === false &&
       crossesScrollThreshold;
 
     if (shouldTriggerNextPage) {
-      setCurrentPage((prevPage) => prevPage + 1);
+      setRefreshError("");
+
+      hasJustFetchedMorePins.current = true;
+      setTimeout(() => {
+        hasJustFetchedMorePins.current = false;
+      }, DEBOUNCE_TIME_SCROLL_DOWN_TO_FETCH_MORE_PINS_MS);
+
+      fetchNextPage();
     }
   };
-
-  // Fetch first page on component mount and whenever
-  // 'fetchEndpoint' changes:
-  useEffect(() => {
-    setCurrentPage(1);
-    setPins([]);
-    onNextPage(1);
-  }, [fetchEndpoint]);
-
-  // React to user scrolling down to next page:
-  useEffect(() => {
-    if (currentPage > 1) {
-      onNextPage(currentPage);
-    }
-  }, [currentPage]);
 
   return (
     <PinsBoard
       pins={pins}
-      isFetchingMorePins={isFetchingMorePins}
+      isFetchingMorePins={!isRefreshing && (isPending || isFetchingNextPage)}
       fetchMorePinsError={fetchMorePinsError}
       isRefreshing={isRefreshing}
       hasJustRefreshed={hasJustRefreshed}

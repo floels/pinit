@@ -6,6 +6,7 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import { FetchMock } from "jest-fetch-mock";
+import { StrictMode } from "react";
 
 import PinsBoardContainer, {
   DEBOUNCE_TIME_REFRESH_MS,
@@ -17,6 +18,7 @@ import {
   API_BASE_URL,
   API_ENDPOINT_PIN_SUGGESTIONS,
 } from "@/src/lib/constants";
+import { withQueryClient } from "@/src/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
@@ -63,13 +65,13 @@ const mockDispatch = jest.fn();
 
 const mockGetTapHandlerForPin = () => () => {};
 
-const renderComponent = (props?: any) => {
+const buildComponent = (props?: any) => {
   const initialState = {
     isCheckingAccessToken: false,
     isAuthenticated: true,
   };
 
-  render(
+  return (
     <AuthenticationContext.Provider
       value={{ state: initialState, dispatch: mockDispatch }}
     >
@@ -79,8 +81,41 @@ const renderComponent = (props?: any) => {
         emptyResultsMessageKey="SearchScreen.NO_RESULTS"
         {...props}
       />
-    </AuthenticationContext.Provider>,
+    </AuthenticationContext.Provider>
   );
+};
+
+const renderComponent = (props?: any) => {
+  const initialState = {
+    isCheckingAccessToken: false,
+    isAuthenticated: true,
+  };
+
+  render(
+    withQueryClient(
+      <AuthenticationContext.Provider
+        value={{ state: initialState, dispatch: mockDispatch }}
+      >
+        <PinsBoardContainer
+          fetchEndpoint={pinSuggestionsEndpoint}
+          getTapHandlerForPin={mockGetTapHandlerForPin}
+          emptyResultsMessageKey="SearchScreen.NO_RESULTS"
+          {...props}
+        />
+      </AuthenticationContext.Provider>,
+    ),
+  );
+};
+
+const scrollToBottom = () => {
+  const scrollView = screen.getByTestId("pins-board-scroll-view");
+
+  fireEvent.scroll(scrollView, {
+    nativeEvent: {
+      contentOffset: { y: SCROLL_VIEW_HEIGHT },
+      contentSize: { height: SCROLL_VIEW_HEIGHT },
+    },
+  });
 };
 
 const pullToRefresh = () => {
@@ -146,6 +181,89 @@ and fetches second page upon scroll`, async () => {
       `${pinSuggestionsEndpoint}?page=2`,
     );
   });
+});
+
+it(`renders the first page once when the mount Effect runs twice,
+as it does under StrictMode`, async () => {
+  // React Query keys the pages on the endpoint and dedupes concurrent fetches,
+  // so a double mount cannot append page 1 twice.
+  fetchMock.mockOnceIf(
+    `${pinSuggestionsEndpoint}?page=1`,
+    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
+  );
+  fetchMock.mockOnceIf(
+    `${pinSuggestionsEndpoint}?page=1`,
+    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
+  );
+
+  render(<StrictMode>{withQueryClient(buildComponent())}</StrictMode>);
+
+  await waitFor(() => {
+    const pinThumbnails = screen.queryAllByTestId(/^mocked-pin-thumbnail-/);
+    expect(pinThumbnails.length).toEqual(mockPinSuggestions.length);
+  });
+
+  // Let any second response settle before counting again. Without this wait the
+  // assertion above would pass even if a second page were appended afterwards.
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  });
+
+  const pinThumbnails = screen.queryAllByTestId(/^mocked-pin-thumbnail-/);
+  expect(pinThumbnails.length).toEqual(mockPinSuggestions.length);
+});
+
+it("stops fetching further pages once a page comes back empty", async () => {
+  jest.useFakeTimers();
+
+  fetchMock.mockOnceIf(
+    `${pinSuggestionsEndpoint}?page=1`,
+    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
+  );
+  fetchMock.mockOnceIf(
+    `${pinSuggestionsEndpoint}?page=2`,
+    JSON.stringify({ results: [] }),
+  );
+
+  renderComponent();
+
+  await waitFor(() => {
+    expect(screen.queryAllByTestId(/^mocked-pin-thumbnail-/).length).toEqual(
+      mockPinSuggestions.length,
+    );
+  });
+
+  act(() => {
+    jest.advanceTimersByTime(
+      2 * DEBOUNCE_TIME_SCROLL_DOWN_TO_FETCH_MORE_PINS_MS,
+    );
+  });
+
+  scrollToBottom();
+
+  await waitFor(() => {
+    expect(fetch as FetchMock).toHaveBeenLastCalledWith(
+      `${pinSuggestionsEndpoint}?page=2`,
+    );
+  });
+
+  (fetch as FetchMock).mockClear();
+
+  act(() => {
+    jest.advanceTimersByTime(
+      2 * DEBOUNCE_TIME_SCROLL_DOWN_TO_FETCH_MORE_PINS_MS,
+    );
+  });
+
+  scrollToBottom();
+
+  jest.useRealTimers();
+
+  await new Promise((resolve) => setTimeout(resolve, 1)); // Without this wait,
+  // the assertion below would be inoperative, meaning it would pass even if the
+  // board asked for a third page.
+
+  expect(fetch).not.toHaveBeenCalled();
 });
 
 it("fetches first page with authentication if relevant", async () => {
