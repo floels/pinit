@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { View, Animated, Image } from "react-native";
+import { useEffect } from "react";
+import { View, Animated, Image, useAnimatedValue } from "react-native";
 
 import styles from "./LandingScreenGallery.styles";
 
@@ -60,7 +60,7 @@ const MAX_SCROLL = 3000;
 const SCROLL_DURATION_MS = 2 * 60 * 1000;
 
 const LandingScreenGallery = () => {
-  const translateY = useRef(new Animated.Value(0)).current;
+  const translateY = useAnimatedValue(0);
 
   useEffect(() => {
     Animated.timing(translateY, {

@@ -1,5 +1,12 @@
-import { useEffect, useRef } from "react";
-import { Animated, Easing, StyleProp, View, ViewStyle } from "react-native";
+import { useEffect } from "react";
+import {
+  Animated,
+  Easing,
+  StyleProp,
+  View,
+  ViewStyle,
+  useAnimatedValue,
+} from "react-native";
 
 type SpinnerProps = {
   containerStyle?: StyleProp<ViewStyle>;
@@ -9,7 +16,7 @@ type SpinnerProps = {
 const FULL_SPIN_DURATION_MS = 2000;
 
 const Spinner = ({ containerStyle, children }: SpinnerProps) => {
-  const spinValue = useRef(new Animated.Value(0)).current;
+  const spinValue = useAnimatedValue(0);
 
   useEffect(() => {
     Animated.loop(

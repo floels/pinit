@@ -1,5 +1,11 @@
-import { useEffect, useRef } from "react";
-import { Animated, StyleProp, View, ViewStyle } from "react-native";
+import { useEffect } from "react";
+import {
+  Animated,
+  StyleProp,
+  View,
+  ViewStyle,
+  useAnimatedValue,
+} from "react-native";
 
 import styles from "./BlinkingDots.style";
 
@@ -10,9 +16,9 @@ type BlinkingDotsProps = {
 const ANIMATION_DURATION_MS = 200;
 
 const BlinkingDots = ({ style }: BlinkingDotsProps = {}) => {
-  const opacityFirstDot = useRef(new Animated.Value(0)).current;
-  const opacitySecondDot = useRef(new Animated.Value(0)).current;
-  const opacityThirdDot = useRef(new Animated.Value(0)).current;
+  const opacityFirstDot = useAnimatedValue(0);
+  const opacitySecondDot = useAnimatedValue(0);
+  const opacityThirdDot = useAnimatedValue(0);
 
   useEffect(() => {
     const animate = () => {
