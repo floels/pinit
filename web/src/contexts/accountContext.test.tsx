@@ -1,6 +1,6 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useAccountDetails } from "./useAccountDetails";
+import { AccountContextProvider, useAccountContext } from "./accountContext";
 import {
   API_URL_MY_ACCOUNT_DETAILS,
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
@@ -10,8 +10,8 @@ import {
   MockLocalStorage,
   createTestQueryClient,
 } from "@/lib/testing-utils/misc";
-import { AccountContext } from "@/contexts/accountContext";
 import { AuthContext } from "@/contexts/authContext";
+import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_SERIALIZED,
@@ -25,16 +25,19 @@ vi.mock("@/lib/hooks/useLogOut", () => ({
 
 localStorage = new MockLocalStorage();
 
-const mockSetAccount = vi.fn();
 const MOCK_ACCESS_TOKEN = "mock.access.token";
+
+const ACCOUNT_SERIALIZED = MOCK_API_RESPONSES_SERIALIZED[
+  API_URL_MY_ACCOUNT_DETAILS
+] as AccountWithPrivateDetails;
 
 beforeEach(() => {
   fetchMock.resetMocks();
   mockLogOut.mockClear();
-  mockSetAccount.mockClear();
+  localStorage.clear();
 });
 
-const renderHookInContext = ({
+const renderAccountContext = ({
   accessToken = MOCK_ACCESS_TOKEN,
   isAuthInitialized = true,
 }: {
@@ -49,40 +52,33 @@ const renderHookInContext = ({
     <AuthContext.Provider
       value={{ accessToken, setAccessToken: vi.fn(), isAuthInitialized }}
     >
-      <AccountContext.Provider
-        value={{ account: null, setAccount: mockSetAccount }}
-      >
-        <QueryClientProvider client={testQueryClient}>
-          {children}
-        </QueryClientProvider>
-      </AccountContext.Provider>
+      <QueryClientProvider client={testQueryClient}>
+        <AccountContextProvider>{children}</AccountContextProvider>
+      </QueryClientProvider>
     </AuthContext.Provider>
   );
 
-  return renderHook(() => useAccountDetails(), { wrapper });
+  return renderHook(() => useAccountContext(), { wrapper });
 };
 
-it(`calls 'setAccount' with proper arguments and persists
-relevant data upon successful fetch`, async () => {
+it(`exposes the account and persists relevant data
+upon successful fetch`, async () => {
   fetchMock.mockOnceIf(
     API_URL_MY_ACCOUNT_DETAILS,
     MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS],
   );
 
-  renderHookInContext();
-
-  const responseSerialized =
-    MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
+  const { result } = renderAccountContext();
 
   await waitFor(() => {
-    expect(mockSetAccount).toHaveBeenCalledWith(responseSerialized);
+    expect(result.current.account).toEqual(ACCOUNT_SERIALIZED);
 
     expect(localStorage.getItem(USERNAME_LOCAL_STORAGE_KEY)).toEqual(
-      responseSerialized.username,
+      ACCOUNT_SERIALIZED.username,
     );
 
     expect(localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY)).toEqual(
-      responseSerialized.profilePictureURL,
+      ACCOUNT_SERIALIZED.profilePictureURL,
     );
   });
 });
@@ -93,7 +89,7 @@ it("sends the access token as Authorization header", async () => {
     MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS],
   );
 
-  renderHookInContext();
+  renderAccountContext();
 
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledWith(
@@ -112,14 +108,14 @@ it("triggers logout upon 401 response when refresh also fails", async () => {
     .mockResponseOnce("{}", { status: 401 }) // fetch account details → 401
     .mockResponseOnce("{}", { status: 401 }); // refresh attempt → 401
 
-  renderHookInContext();
+  renderAccountContext();
 
   await waitFor(() => {
     expect(mockLogOut).toHaveBeenCalledTimes(1);
   });
 });
 
-it("retries and sets account upon 401 response when refresh succeeds", async () => {
+it("retries and exposes the account upon 401 response when refresh succeeds", async () => {
   fetchMock
     .mockResponseOnce("{}", { status: 401 }) // fetch account details → 401
     .mockResponseOnce(JSON.stringify({ access_token: "new.access.token" }), {
@@ -127,18 +123,16 @@ it("retries and sets account upon 401 response when refresh succeeds", async () 
     }) // refresh → new token
     .mockResponseOnce(MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS]); // retry → success
 
-  renderHookInContext();
+  const { result } = renderAccountContext();
 
   await waitFor(() => {
-    expect(mockSetAccount).toHaveBeenCalledWith(
-      MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS],
-    );
+    expect(result.current.account).toEqual(ACCOUNT_SERIALIZED);
   });
   expect(mockLogOut).not.toHaveBeenCalled();
 });
 
 it("does not fetch account details when not authenticated", async () => {
-  renderHookInContext({ accessToken: null });
+  renderAccountContext({ accessToken: null });
 
   // Give React Query a chance to fire if it were going to
   await new Promise((resolve) => setTimeout(resolve, 50));
@@ -146,12 +140,47 @@ it("does not fetch account details when not authenticated", async () => {
   expect(fetch).not.toHaveBeenCalled();
 });
 
-it("returns isError: true when fetch fails", async () => {
+it("exposes isFetchError: true when the fetch fails", async () => {
   fetchMock.mockResponseOnce("{}", { status: 500 });
 
-  const { result } = renderHookInContext();
+  const { result } = renderAccountContext();
 
   await waitFor(() => {
-    expect(result.current.isError).toBe(true);
+    expect(result.current.isFetchError).toBe(true);
+  });
+});
+
+it("exposes the account passed to 'setAccount'", async () => {
+  fetchMock.mockOnceIf(
+    API_URL_MY_ACCOUNT_DETAILS,
+    MOCK_API_RESPONSES[API_URL_MY_ACCOUNT_DETAILS],
+  );
+
+  const { result } = renderAccountContext();
+
+  await waitFor(() => {
+    expect(result.current.account).toEqual(ACCOUNT_SERIALIZED);
+  });
+
+  const newBoard = {
+    id: "000000000000000003",
+    name: "New board",
+    slug: "new-board",
+    firstImageURLs: [],
+  };
+
+  const updatedAccount = {
+    ...ACCOUNT_SERIALIZED,
+    boards: [...ACCOUNT_SERIALIZED.boards, newBoard],
+  };
+
+  act(() => {
+    result.current.setAccount(updatedAccount);
+  });
+
+  // React Query notifies its observers asynchronously, so the new value
+  // reaches the consumer on a later tick.
+  await waitFor(() => {
+    expect(result.current.account).toEqual(updatedAccount);
   });
 });

@@ -19,7 +19,11 @@ const defaultAccount = MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS]
 const renderComponent = () => {
   render(
     <AccountContext.Provider
-      value={{ account: defaultAccount, setAccount: vi.fn() }}
+      value={{
+        account: defaultAccount,
+        setAccount: vi.fn(),
+        isFetchError: false,
+      }}
     >
       <AccountOptionsFlyoutContainer
         handleClickOutOfAccountOptionsFlyout={

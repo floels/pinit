@@ -20,6 +20,7 @@ const authContext = {
 const accountContext = {
   account,
   setAccount: () => {},
+  isFetchError: false,
 };
 
 const testPin = {
