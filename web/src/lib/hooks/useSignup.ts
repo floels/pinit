@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { API_URL_SIGN_UP, ERROR_CODE_FETCH_FAILED } from "../constants";
 import { useAuthContext } from "@/contexts/authContext";
+import { fetchWithRefreshCookie } from "@/lib/api/fetchers";
 
 type SignupData = { email: string; password: string; birthdate: string };
 
@@ -12,11 +13,10 @@ export const useSignup = () => {
       let response: Response;
 
       try {
-        response = await fetch(API_URL_SIGN_UP, {
+        response = await fetchWithRefreshCookie(API_URL_SIGN_UP, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-          credentials: "include",
         });
       } catch {
         throw new Error(ERROR_CODE_FETCH_FAILED);

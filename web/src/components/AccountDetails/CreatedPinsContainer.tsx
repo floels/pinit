@@ -5,6 +5,7 @@ import CreatedPins from "./CreatedPins";
 import { PinWithFullDetails } from "@/lib/types/frontendTypes";
 import { serializePinsWithFullDetails } from "@/lib/utils/serializers";
 import { throwIfKO } from "@/lib/utils/fetch";
+import { fetchPublic } from "@/lib/api/fetchers";
 import { API_URL_CREATED_PINS } from "@/lib/constants";
 import { useAccountContext } from "@/contexts/accountContext";
 
@@ -35,7 +36,7 @@ const CreatedPinsContainer = ({ username }: CreatedPinsProps) => {
         value: currentPage.toString(),
       });
 
-      const response = await fetch(url);
+      const response = await fetchPublic(url);
       throwIfKO(response);
       const responseData = await response.json();
 

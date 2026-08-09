@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { API_URL_SEARCH_SUGGESTIONS } from "@/lib/constants";
+import { fetchPublic } from "@/lib/api/fetchers";
 import HeaderSearchBar from "./HeaderSearchBar";
 import { useHeaderSearchBarContext } from "@/contexts/headerSearchBarContext";
 
@@ -42,7 +43,7 @@ const fetchSearchSuggestions = async (
   let response;
 
   try {
-    response = await fetch(
+    response = await fetchPublic(
       `${API_URL_SEARCH_SUGGESTIONS}?search=${searchTerm.toLowerCase()}`,
     );
   } catch {

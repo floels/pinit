@@ -26,6 +26,24 @@ export default [
     ...reactHooksPlugin.configs.flat["recommended-latest"],
   },
   {
+    // 'src/lib/api/' owns every network call. Elsewhere, a bare 'fetch' is how a
+    // request loses its access token without anybody noticing, so ban the
+    // global and let the call site name what it needs instead. Tests are
+    // exempt: they assert on the 'fetch' mock.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/lib/api/**", "src/**/*.test.{ts,tsx}"],
+    rules: {
+      "no-restricted-globals": [
+        "error",
+        {
+          name: "fetch",
+          message:
+            "Do not call fetch directly. Use useAPI() for an authenticated call, or fetchPublic / fetchWithRefreshCookie / fetchExternal from '@/lib/api/fetchers'.",
+        },
+      ],
+    },
+  },
+  {
     files: ["**/*.test.{ts,tsx}", "setupTests.ts", "reactI18nextMock.ts"],
     languageOptions: {
       sourceType: "module",

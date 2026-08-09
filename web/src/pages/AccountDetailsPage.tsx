@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { API_URL_ACCOUNT_DETAILS } from "@/lib/constants";
 import { throwIfKO } from "@/lib/utils/fetch";
+import { fetchPublic } from "@/lib/api/fetchers";
 import { serializeAccountWithPublicDetails } from "@/lib/utils/serializers";
 import { Response404Error } from "@/lib/customErrors";
 import AccountDetailsView from "@/components/AccountDetails/AccountDetails";
@@ -16,7 +17,7 @@ const AccountDetailsPage = () => {
   const fetchAccountDetails = async () => {
     const url = `${API_URL_ACCOUNT_DETAILS}/${username}/`;
 
-    const response = await fetch(url);
+    const response = await fetchPublic(url);
 
     if (response.status === 404) {
       throw new Response404Error();

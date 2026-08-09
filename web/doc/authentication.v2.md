@@ -62,9 +62,9 @@ The app attempts a refresh at exactly two moments. It runs no timer, and it does
 not track the expiry of the access token.
 
 1. **Once on app load.** The startup refresh reads the refresh cookie (§5).
-2. **After a 401.** `useFetchWithAuth` attempts one refresh (§7). If the refresh
-   returns a token, it retries the request. If the refresh fails, it logs the
-   user out.
+2. **After a 401.** `useAPI().fetchAuthenticated` attempts one refresh (§7). If
+   the refresh returns a token, it retries the request. If the refresh fails, it
+   logs the user out.
 
 Between those moments the access token sits in memory. The app discovers an
 expired token only when a request returns 401. The access token lasts 15
@@ -147,7 +147,7 @@ so `isAuthInitialized` turns `true` on both paths.
 
 Once the refresh settles and an access token exists, `AccountContextProvider`
 ([`src/contexts/accountContext.tsx`](../src/contexts/accountContext.tsx))
-fetches `/accounts/me/` through `useFetchWithAuth`. The provider hosts that
+fetches `/accounts/me/` through `useAPI().fetchAuthenticated`. The provider hosts that
 query and passes its result through the context. The query cache therefore holds
 the account. The query function also writes the two `localStorage` values of §1.
 
@@ -176,17 +176,38 @@ refresh cookie. No page reload is needed.
 
 ## 7. Flow: authenticated request and reactive refresh
 
-`useFetchWithAuth` ([`src/lib/hooks/useFetchWithAuth.ts`](../src/lib/hooks/useFetchWithAuth.ts))
+### One door for every API call
+
+`src/lib/api/` is the only place that calls the `fetch` global. An ESLint rule
+(`no-restricted-globals` in `eslint.config.mjs`) bans that global everywhere else
+under `src/`, so each call site must name the kind of call it makes.
+
+| Function | Access token | Cookie | Used for |
+|---|---|---|---|
+| `useAPI().fetchAuthenticated` | `Authorization: Bearer …` | no | every protected endpoint |
+| `useAPI().fetchPublic` | no | no | the public read endpoints |
+| `fetchWithRefreshCookie` | no | `credentials: "include"` | login, signup, logout, refresh |
+| `useAPI().fetchExternal` | no | `credentials: "omit"` | the S3 upload, a pin image download |
+
+The rule replaces an earlier arrangement where each call site chose whether to
+authenticate. A call site that called the global directly sent no token, and the
+omission looked exactly like a deliberate public read. `fetchExternal` also
+states a security property: no cookie and no token of ours reaches another
+origin.
+
+### The reactive refresh
+
+`fetchAuthenticated` ([`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts))
 attaches the access token and recovers from an expired one. This is the
 mechanism that keeps a session alive without the user noticing. Every
 authenticated fetch goes through it: `AccountContextProvider`, `useCreatePin`,
-`useUpdatePin`, `useDeletePin`, `useCreateBoard`, and `HomePage`.
+`useUpdatePin`, `useDeletePin`, `useCreateBoard`, `useSavePin`, and `HomePage`.
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant C as Caller
-    participant F as useFetchWithAuth
+    participant F as fetchAuthenticated
     participant B as Backend
 
     C->>F: fetch a protected URL
@@ -211,7 +232,7 @@ sequenceDiagram
     end
 ```
 
-The retry runs once. `useFetchWithAuth` returns whatever that retry produces,
+The retry runs once. `fetchAuthenticated` returns whatever that retry produces,
 including a second 401. Rotation stays invisible here, because each refresh
 re-sets the cookie server-side and the browser stores it.
 
@@ -267,8 +288,9 @@ The reload also drops the query cache, and with it the account.
 | [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` and its provider. Runs the startup refresh. Exposes `accessToken` and `isAuthInitialized`, both derived. |
 | [`src/contexts/accountContext.tsx`](../src/contexts/accountContext.tsx) | `AccountContext` and its provider. Fetches `/accounts/me/` once authenticated, and passes the query result through the context. |
 | [`src/pages/Layout.tsx`](../src/pages/Layout.tsx) | Gates the route on `isAuthInitialized`. Picks the authenticated or unauthenticated shell from `accessToken`. |
-| [`src/lib/hooks/useFetchWithAuth.ts`](../src/lib/hooks/useFetchWithAuth.ts) | Adds the Bearer header. Refreshes and retries once on a 401. Logs out when the refresh fails. |
-| [`src/lib/utils/refreshAccessToken.ts`](../src/lib/utils/refreshAccessToken.ts) | The shared refresh key and fetcher, used by §5 and §7. |
+| [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | The one hook for API traffic. `fetchAuthenticated` adds the Bearer header, refreshes and retries once on a 401, and logs out when the refresh fails. |
+| [`src/lib/api/fetchers.ts`](../src/lib/api/fetchers.ts) | The only module allowed to call the `fetch` global. Holds `fetchPublic`, `fetchWithRefreshCookie` and `fetchExternal`. |
+| [`src/lib/api/refreshAccessToken.ts`](../src/lib/api/refreshAccessToken.ts) | The shared refresh key and fetcher, used by §5 and §7. |
 | [`src/lib/hooks/useLogin.ts`](../src/lib/hooks/useLogin.ts) | Login. Posts the credentials, stores the access token. |
 | [`src/lib/hooks/useSignup.ts`](../src/lib/hooks/useSignup.ts) | Signup. Same shape as login. |
 | [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout. Calls the endpoint, clears the token and the two `localStorage` values, reloads. |

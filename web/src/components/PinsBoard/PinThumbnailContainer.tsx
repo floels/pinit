@@ -12,6 +12,7 @@ import EditPinPanelContainer from "./EditPinPanelContainer";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSavePin } from "@/lib/hooks/useSavePin";
+import { fetchExternal } from "@/lib/api/fetchers";
 
 type PinThumbnailContainerProps = {
   pin: PinWithAuthorDetails;
@@ -90,7 +91,7 @@ const PinThumbnailContainer = ({
     event.preventDefault();
     setIsMoreActionsDropdownOpen(false);
 
-    const response = await fetch(pin.imageURL);
+    const response = await fetchExternal(pin.imageURL);
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");

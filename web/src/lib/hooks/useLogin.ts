@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { API_URL_OBTAIN_TOKEN, ERROR_CODE_FETCH_FAILED } from "../constants";
 import { useAuthContext } from "@/contexts/authContext";
+import { fetchWithRefreshCookie } from "@/lib/api/fetchers";
 
 type LoginCredentials = { email: string; password: string };
 
@@ -12,11 +13,10 @@ export const useLogin = () => {
       let response: Response;
 
       try {
-        response = await fetch(API_URL_OBTAIN_TOKEN, {
+        response = await fetchWithRefreshCookie(API_URL_OBTAIN_TOKEN, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(credentials),
-          credentials: "include",
         });
       } catch {
         throw new Error(ERROR_CODE_FETCH_FAILED);

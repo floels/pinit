@@ -1,17 +1,23 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/authContext";
+import { useLogOut } from "@/lib/hooks/useLogOut";
 import {
   REFRESH_ACCESS_TOKEN_QUERY_KEY,
   fetchRefreshedAccessToken,
-} from "@/lib/utils/refreshAccessToken";
-import { useLogOut } from "./useLogOut";
+} from "./refreshAccessToken";
+import { fetchExternal, fetchPublic } from "./fetchers";
 
-export const useFetchWithAuth = () => {
+// The single entry point for API traffic from a component or a hook. It returns
+// three named methods, so every call site states whether it needs the access
+// token. `fetchPublic` and `fetchExternal` are re-exported unchanged from
+// './fetchers': they need no auth state, and they are passed through here only
+// so that a call site has one import to reach for.
+export const useAPI = () => {
   const { accessToken, setAccessToken } = useAuthContext();
   const queryClient = useQueryClient();
   const logOut = useLogOut();
 
-  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  const fetchAuthenticated = async (url: string, options: RequestInit = {}) => {
     const { headers: existingHeaders, ...restOptions } = options;
 
     const response = await fetch(url, {
@@ -47,9 +53,12 @@ export const useFetchWithAuth = () => {
 
     return fetch(url, {
       ...restOptions,
-      headers: { ...existingHeaders, Authorization: `Bearer ${newAccessToken}` },
+      headers: {
+        ...existingHeaders,
+        Authorization: `Bearer ${newAccessToken}`,
+      },
     });
   };
 
-  return fetchWithAuth;
+  return { fetchAuthenticated, fetchPublic, fetchExternal };
 };

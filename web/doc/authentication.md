@@ -62,7 +62,8 @@ The access token gets refreshed at exactly two moments:
 1. **Once on app load** — the startup refresh (§1) bootstraps the access token from the refresh cookie.
 2. **Reactively, after a 401** — when an authenticated request is rejected
    because the access token has expired (or is otherwise invalid),
-   `useFetchWithAuth` refreshes once and retries the original request (§3).
+   `useAPI().fetchAuthenticated` refreshes once and retries the original
+   request (§3).
 
 Between those two events the access token simply sits in memory; the app only
 discovers it has expired when a request comes back `401`. With the 15-minute
@@ -89,7 +90,7 @@ settles, to avoid a flash of unauthenticated UI.
 
 Once the attempt settles and an access token exists, `AccountContextProvider`
 ([`src/contexts/accountContext.tsx`](../src/contexts/accountContext.tsx))
-fetches `/accounts/me/` through `useFetchWithAuth`. The provider hosts that
+fetches `/accounts/me/` through `useAPI().fetchAuthenticated`. The provider hosts that
 query and passes the result through the context, so the query cache holds the
 account. No Effect copies it into component state. The query function also
 writes the two `localStorage` values listed in the Overview.
@@ -116,14 +117,15 @@ the backend returns an access token and sets the refresh cookie.
 
 ### 3. Authenticated requests (reactive refresh)
 
-`useFetchWithAuth` ([`src/lib/hooks/useFetchWithAuth.ts`](../src/lib/hooks/useFetchWithAuth.ts))
-attaches the access token and transparently recovers from expiry. Because access
-tokens last only 15 minutes, this is the mechanism that keeps a session alive
-without the user noticing. All authenticated data fetches go through it
+`useAPI` ([`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts)) is the single
+entry point for API traffic. Its `fetchAuthenticated` method attaches the access
+token and transparently recovers from expiry. Because access tokens last only 15
+minutes, this is the mechanism that keeps a session alive without the user
+noticing. All authenticated data fetches go through it
 (`AccountContextProvider`, `useCreatePin`, `useUpdatePin`, `useDeletePin`,
-`useCreateBoard`, `HomePage`).
+`useCreateBoard`, `useSavePin`, `HomePage`).
 
-1. `useFetchWithAuth` sends the request with `Authorization: Bearer <access token>`.
+1. `fetchAuthenticated` sends the request with `Authorization: Bearer <access token>`.
 2. **Not a 401** → the response is returned as-is.
 3. **401** → it POSTs `/token/web/refresh/` (cookie):
    - **Refresh succeeds** → `200 { access_token }` (rotated cookie re-set); it
@@ -187,7 +189,9 @@ The app moves between three states — **Initializing** (on mount),
 |---|---|
 | [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` + provider; runs the startup refresh; exposes `accessToken` and `isAuthInitialized`, both derived from that query. |
 | [`src/pages/Layout.tsx`](../src/pages/Layout.tsx) | Gates routed content on `isAuthInitialized`; renders the authenticated vs. unauthenticated shell from `accessToken`. |
-| [`src/lib/hooks/useFetchWithAuth.ts`](../src/lib/hooks/useFetchWithAuth.ts) | Adds the Bearer header; reactive refresh + retry on 401; logs out on failed refresh. |
+| [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | `fetchAuthenticated` — adds the Bearer header; reactive refresh + retry on 401; logs out on failed refresh. Also exposes `fetchPublic` and `fetchExternal`. |
+| [`src/lib/api/fetchers.ts`](../src/lib/api/fetchers.ts) | The only module allowed to call the `fetch` global. Holds `fetchPublic`, `fetchWithRefreshCookie` and `fetchExternal`. |
+| [`src/lib/api/refreshAccessToken.ts`](../src/lib/api/refreshAccessToken.ts) | The shared refresh query key and fetcher. |
 | [`src/lib/hooks/useLogin.ts`](../src/lib/hooks/useLogin.ts) | Login — posts credentials, stores the access token. |
 | [`src/lib/hooks/useSignup.ts`](../src/lib/hooks/useSignup.ts) | Signup — same shape as login. |
 | [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout — calls the endpoint, clears the token and the cached display data, redirects. |
