@@ -1,6 +1,5 @@
 import { NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { Image } from "react-native";
 
 import { CreatePinNavigatorParamList } from "./CreateNavigator";
 import SelectPinImageScreen from "./SelectPinImageScreen";
@@ -28,16 +27,14 @@ const SelectPinImageScreenContainer = ({
     }, []),
   );
 
-  const [selectedImageAspectRatio, setSelectedImageAspectRatio] = useState<
-    number | null
-  >(null);
-
   const { cameraRollPhotos, refusedCameraRollAccess } = useCameraRollPhotos();
 
   const handlePressNext = () => {
+    const selectedPhoto = cameraRollPhotos[selectedImageIndex as number];
+
     navigation.navigate("EnterPinDetails", {
-      selectedImageURI: cameraRollPhotos[selectedImageIndex as number].uri,
-      providedImageAspectRatio: selectedImageAspectRatio,
+      selectedImageURI: selectedPhoto.uri,
+      imageAspectRatio: selectedPhoto.width / selectedPhoto.height,
     });
   };
 
@@ -46,18 +43,7 @@ const SelectPinImageScreenContainer = ({
     () => {
       const isImageAlreadySelected = imageIndex === selectedImageIndex;
 
-      if (isImageAlreadySelected) {
-        setSelectedImageIndex(null);
-        setSelectedImageAspectRatio(null);
-      } else {
-        setSelectedImageIndex(imageIndex);
-        Image.getSize(
-          cameraRollPhotos[imageIndex].uri,
-          (width: number, height: number) => {
-            setSelectedImageAspectRatio(width / height);
-          },
-        );
-      }
+      setSelectedImageIndex(isImageAlreadySelected ? null : imageIndex);
     };
 
   return (
