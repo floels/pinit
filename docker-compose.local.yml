@@ -62,6 +62,11 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
+    # `web_node_modules` survives a rebuild and hides the `node_modules` that
+    # the image installed, so a new dependency never reaches the container.
+    # Install again at startup to keep the volume aligned with the lockfile.
+    # The install is a no-op when nothing changed.
+    command: sh -c "pnpm install --frozen-lockfile && pnpm dev"
     ports:
       - "3000:3000"
       - "3001:3001"
@@ -72,6 +77,9 @@ services:
       - backend
     environment:
       BACKEND_URL: http://localhost:8000/api
+      # The container has no TTY. Without this, pnpm aborts instead of asking
+      # before it replaces a `node_modules` that an older image created.
+      CI: "true"
 
 volumes:
   postgres_data:
