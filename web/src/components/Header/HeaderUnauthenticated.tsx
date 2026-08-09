@@ -15,12 +15,12 @@ const HeaderUnauthenticated = () => {
 
   const { t } = useTranslation("HeaderUnauthenticated");
 
-  const { sessionExpired, clearSessionExpiry } = useAuthContext();
+  const { isPromptingLogin, stopPromptingLogin } = useAuthContext();
 
   // This component mounts at the moment 'Layout' swaps to the unauthenticated
-  // shell, which is the moment the session ends. So an expired session opens
-  // the modal through the initial state, with no Effect.
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(sessionExpired);
+  // shell, which is the moment a session ends. So the initial state is enough to
+  // show the prompt, and no Effect is needed.
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(isPromptingLogin);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
   const openLogInModal = () => {
@@ -31,18 +31,19 @@ const HeaderUnauthenticated = () => {
     setIsSignupModalOpen(true);
   };
 
-  // Leaving the login form means the user accepts being logged out, whether they
-  // move on to signup or close the modal. An authenticated-only route then stops
-  // holding its URL and redirects home.
+  // Leaving the login form is the user declining to log back in, whether they
+  // close it or move on to signup. Both therefore stop the prompt, which lets
+  // 'PinCreationToolPage' redirect home instead of holding a URL for a login
+  // that is not coming.
   const handleClickNoAccountYet = () => {
     setIsLoginModalOpen(false);
     setIsSignupModalOpen(true);
-    clearSessionExpiry();
+    stopPromptingLogin();
   };
 
   const handleCloseLoginModal = () => {
     setIsLoginModalOpen(false);
-    clearSessionExpiry();
+    stopPromptingLogin();
   };
 
   const handleClickAlreadyHaveAccount = () => {

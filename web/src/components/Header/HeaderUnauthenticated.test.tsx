@@ -8,7 +8,7 @@ import { MemoryRouter } from "react-router";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
-const mockClearSessionExpiry = vi.fn();
+const mockStopPromptingLogin = vi.fn();
 
 const buildAuthContextValue = (
   overrides: Partial<AuthContextType> = {},
@@ -16,10 +16,10 @@ const buildAuthContextValue = (
   accessToken: null,
   setAccessToken: vi.fn(),
   isAuthInitialized: true,
-  sessionExpired: false,
+  isPromptingLogin: false,
   clearSession: vi.fn(),
   endSession: vi.fn(),
-  clearSessionExpiry: mockClearSessionExpiry,
+  stopPromptingLogin: mockStopPromptingLogin,
   ...overrides,
 });
 
@@ -146,7 +146,7 @@ it(`opens the login modal with the reason when the session just expired,
 without any click`, () => {
   renderComponent(
     "/some-page",
-    buildAuthContextValue({ sessionExpired: true }),
+    buildAuthContextValue({ isPromptingLogin: true }),
   );
 
   const modal = screen.getByTestId("overlay-modal");
@@ -166,25 +166,25 @@ it("shows no reason in the login modal when the user opens it themselves", async
   expect(within(modal).queryByText(common.SESSION_EXPIRED)).toBeNull();
 });
 
-it("stops treating the session as expired when the user closes the modal", async () => {
+it("stops prompting for a login when the user closes the modal", async () => {
   renderComponent(
     "/some-page",
-    buildAuthContextValue({ sessionExpired: true }),
+    buildAuthContextValue({ isPromptingLogin: true }),
   );
 
   await userEvent.click(screen.getByTestId("overlay-modal-close-button"));
 
   expect(screen.queryByTestId("overlay-modal")).toBeNull();
-  expect(mockClearSessionExpiry).toHaveBeenCalledTimes(1);
+  expect(mockStopPromptingLogin).toHaveBeenCalledTimes(1);
 });
 
-it("stops treating the session as expired when the user switches to signup", async () => {
+it("stops prompting for a login when the user switches to signup", async () => {
   renderComponent(
     "/some-page",
-    buildAuthContextValue({ sessionExpired: true }),
+    buildAuthContextValue({ isPromptingLogin: true }),
   );
 
   await userEvent.click(screen.getByText(en.LoginForm.NO_ACCOUNT_YET_CTA));
 
-  expect(mockClearSessionExpiry).toHaveBeenCalledTimes(1);
+  expect(mockStopPromptingLogin).toHaveBeenCalledTimes(1);
 });

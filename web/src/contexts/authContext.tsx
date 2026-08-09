@@ -13,27 +13,30 @@ export type AuthContextType = {
   accessToken: string | null;
   setAccessToken: (accessToken: string | null) => void;
   isAuthInitialized: boolean;
-  // True from the moment a reactive refresh fails until the user logs back in
-  // or dismisses the prompt. It is what makes the login modal open itself, and
-  // what tells an authenticated-only route to hold its URL instead of
-  // redirecting home.
-  sessionExpired: boolean;
-  // Ends the session locally: no request, and no navigation. Logout calls this
-  // one, because a logout is not an expiry.
+  // True while the app is asking the user to log back in, which happens when a
+  // session ends without the user asking for it. Two components read it:
+  //   - 'HeaderUnauthenticated' opens the login modal when it is true.
+  //   - 'PinCreationToolPage' holds its URL while it is true, so a successful
+  //     login lands the user back on the page they were using.
+  isPromptingLogin: boolean;
+  // Ends the session locally and asks the user for nothing. No request, and no
+  // navigation. Logout calls this one: the user asked to leave, so no prompt.
   clearSession: () => void;
-  // 'clearSession' plus the 'sessionExpired' flag. A failed refresh calls this.
+  // 'clearSession', and then ask for a new login. A failed refresh calls this.
   endSession: () => void;
-  clearSessionExpiry: () => void;
+  // The user declined to log back in. Stopping the prompt releases the route
+  // guards, so an authenticated-only route redirects home again.
+  stopPromptingLogin: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
   accessToken: null,
   setAccessToken: () => {},
   isAuthInitialized: false,
-  sessionExpired: false,
+  isPromptingLogin: false,
   clearSession: () => {},
   endSession: () => {},
-  clearSessionExpiry: () => {},
+  stopPromptingLogin: () => {},
 });
 
 export const AuthContextProvider = ({
@@ -48,7 +51,7 @@ export const AuthContextProvider = ({
     string | null | undefined
   >(undefined);
 
-  const [sessionExpired, setSessionExpired] = useState(false);
+  const [isPromptingLogin, setIsPromptingLogin] = useState(false);
 
   const { data, status } = useQuery({
     queryKey: REFRESH_ACCESS_TOKEN_QUERY_KEY,
@@ -69,9 +72,12 @@ export const AuthContextProvider = ({
 
     // A token means that somebody logged in, so there is nothing left to ask.
     if (newAccessToken !== null) {
-      setSessionExpired(false);
+      setIsPromptingLogin(false);
     }
   };
+
+  // The three functions below are the only ways a session ends. They differ in
+  // one thing: whether the app then asks the user to log back in.
 
   const clearSession = () => {
     setExplicitAccessToken(null);
@@ -83,23 +89,26 @@ export const AuthContextProvider = ({
     localStorage?.removeItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY);
   };
 
+  // A refresh fails only when the refresh token is gone, expired or revoked. So
+  // the session is over through no choice of the user, and the app asks them to
+  // log back in rather than moving them elsewhere.
   const endSession = () => {
     clearSession();
-    setSessionExpired(true);
+    setIsPromptingLogin(true);
   };
 
-  const clearSessionExpiry = () => {
-    setSessionExpired(false);
+  const stopPromptingLogin = () => {
+    setIsPromptingLogin(false);
   };
 
   const contextValue = {
     accessToken,
     setAccessToken,
     isAuthInitialized,
-    sessionExpired,
+    isPromptingLogin,
     clearSession,
     endSession,
-    clearSessionExpiry,
+    stopPromptingLogin,
   };
 
   return (

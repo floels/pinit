@@ -52,7 +52,7 @@ stateDiagram-v2
 returns to it, because the app never reloads the document. Every later
 transition is a state change in React.
 
-| State | `accessToken` | `isAuthInitialized` | `sessionExpired` | What renders |
+| State | `accessToken` | `isAuthInitialized` | `isPromptingLogin` | What renders |
 |---|---|---|---|---|
 | Initializing | `null` | `false` | `false` | the unauthenticated shell, with a spinner in place of the route |
 | Unauthenticated | `null` | `true` | `false` | the unauthenticated shell and the route |
@@ -61,7 +61,8 @@ transition is a state change in React.
 
 **Expired** differs from **Unauthenticated** in two ways only: the login modal
 opens by itself, and an authenticated-only route holds its URL instead of
-redirecting home. Both read `sessionExpired`.
+redirecting home. Both read `isPromptingLogin`, which is why the flag is named
+for the prompt it drives rather than for the expiry that caused it.
 
 ## 3. When the access token is refreshed
 
@@ -85,11 +86,11 @@ exposes the state and the four ways to change it.
 ```
 accessToken: string | null   — null until the startup refresh or a login supplies one
 isAuthInitialized: boolean   — false until the startup refresh settles
-sessionExpired: boolean      — true from a failed refresh until a login, or until the user closes the prompt
-setAccessToken(value)        — sets an explicit token, or null. A token clears sessionExpired
-clearSession()               — drops the token and the two localStorage values
-endSession()                 — clearSession(), plus sessionExpired = true
-clearSessionExpiry()         — sessionExpired = false, so the app stops asking for a login
+isPromptingLogin: boolean    — true while the app asks the user to log back in
+setAccessToken(value)        — sets an explicit token, or null. A token stops the prompt
+clearSession()               — drops the token and the two localStorage values, and asks nothing
+endSession()                 — clearSession(), and then ask for a new login
+stopPromptingLogin()         — the user declined, so stop asking
 ```
 
 `isAuthInitialized` separates "not checked yet" from "checked, and the user is
@@ -100,7 +101,7 @@ moment, even for an authenticated user.
 Logout calls `clearSession`, so no login prompt appears: the user asked to
 leave. A failed refresh calls `endSession`, so the prompt does appear.
 
-The provider stores **two** values, `explicitAccessToken` and `sessionExpired`.
+The provider stores **two** values, `explicitAccessToken` and `isPromptingLogin`.
 It computes `accessToken` and `isAuthInitialized` on every render.
 
 ```mermaid
@@ -317,7 +318,7 @@ session is over, and no request can save it.
 1. `fetchAuthenticated` calls `endSession()` (§7). It sends no request: the
    cookie that the backend just rejected has nothing left to revoke.
 2. `Layout` swaps to the unauthenticated shell. **The URL does not change.**
-3. `HeaderUnauthenticated` mounts, reads `sessionExpired`, and opens the login
+3. `HeaderUnauthenticated` mounts, reads `isPromptingLogin`, and opens the login
    modal with the reason in it.
 4. The user logs in. `setAccessToken` stores the token and clears the flag, the
    authenticated shell returns, and the queries refetch on the same route.
@@ -325,12 +326,12 @@ session is over, and no request can save it.
 The cached queries stay on this path. The person logging back in is the same
 person, so the data is theirs.
 
-If the user dismisses the modal instead, `clearSessionExpiry()` clears the
+If the user dismisses the modal instead, `stopPromptingLogin()` clears the
 flag, and the app is plainly **Unauthenticated**.
 
 **Authenticated-only routes.** `PinCreationToolPage` redirects to `/` when no
 token exists, which would destroy the URL before the user can act. It therefore
-holds the route while `sessionExpired` is true, and redirects once the flag
+holds the route while `isPromptingLogin` is true, and redirects once the flag
 clears.
 
 **The failed request is not replayed.** A save that hit the 401 stays failed, and
@@ -341,7 +342,7 @@ something twice.
 
 | File | Role |
 |---|---|
-| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` and its provider. Runs the startup refresh. Exposes `accessToken` and `isAuthInitialized`, both derived, plus `sessionExpired` and the three session mutators. |
+| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` and its provider. Runs the startup refresh. Exposes `accessToken` and `isAuthInitialized`, both derived, plus `isPromptingLogin` and the three session mutators. |
 | [`src/contexts/accountContext.tsx`](../src/contexts/accountContext.tsx) | `AccountContext` and its provider. Fetches `/accounts/me/` once authenticated, and passes the query result through the context. |
 | [`src/pages/Layout.tsx`](../src/pages/Layout.tsx) | Gates the route on `isAuthInitialized`. Picks the authenticated or unauthenticated shell from `accessToken`. |
 | [`src/components/Header/HeaderUnauthenticated.tsx`](../src/components/Header/HeaderUnauthenticated.tsx) | Holds the login and signup modals. Opens the login modal by itself after an expiry. |

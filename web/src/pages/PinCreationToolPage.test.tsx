@@ -14,8 +14,8 @@ vi.mock("@/components/PinCreationView/PinCreationViewContainer", () => {
 
 const renderComponent = ({
   accessToken = null,
-  sessionExpired = false,
-}: { accessToken?: string | null; sessionExpired?: boolean } = {}) => {
+  isPromptingLogin = false,
+}: { accessToken?: string | null; isPromptingLogin?: boolean } = {}) => {
   const router = createMemoryRouter(
     [
       { path: "/", element: <div>Home</div> },
@@ -30,10 +30,10 @@ const renderComponent = ({
         accessToken,
         setAccessToken: vi.fn(),
         isAuthInitialized: true,
-        sessionExpired,
+        isPromptingLogin,
         clearSession: vi.fn(),
         endSession: vi.fn(),
-        clearSessionExpiry: vi.fn(),
+        stopPromptingLogin: vi.fn(),
       }}
     >
       <RouterProvider router={router} />
@@ -53,17 +53,17 @@ it("renders pin creation view when authenticated", () => {
   screen.getByTestId("pin-creation-view-container");
 });
 
-it("holds the route without redirecting when the session just expired", () => {
+it("holds the route while the app asks for a login", () => {
   // The login modal comes from the header shell, and a successful login must
   // land the user back on this page. So the URL must survive.
-  renderComponent({ sessionExpired: true });
+  renderComponent({ isPromptingLogin: true });
 
   expect(screen.queryByText("Home")).toBeNull();
   expect(screen.queryByTestId("pin-creation-view-container")).toBeNull();
 });
 
-it("redirects home once the app stops treating the session as expired", () => {
-  renderComponent({ sessionExpired: false });
+it("redirects home when the app is not asking for a login", () => {
+  renderComponent({ isPromptingLogin: false });
 
   screen.getByText("Home");
 });

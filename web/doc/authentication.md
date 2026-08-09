@@ -39,14 +39,20 @@ is the single source of truth:
 ```
 accessToken: string | null   — null until obtained via startup refresh or login
 isAuthInitialized: boolean   — false until the startup refresh attempt settles
-sessionExpired: boolean      — true from a failed reactive refresh until a login, or until the user closes the prompt
+isPromptingLogin: boolean    — true while the app asks the user to log back in
 ```
 
-Alongside `setAccessToken`, the context exposes three session mutators:
-`clearSession()` (drops the token and the cached display data), `endSession()`
-(`clearSession()` plus `sessionExpired = true`), and `clearSessionExpiry()`.
-Logout uses the first, a failed refresh uses the second. A logout is not an
-expiry, so only the second one prompts a login.
+Alongside `setAccessToken`, the context exposes the three ways a session ends.
+They differ in one thing: whether the app then asks the user to log back in.
+
+| Function | Ends the session | Asks for a login | Caller |
+|---|---|---|---|
+| `clearSession()` | yes | no | logout: the user asked to leave |
+| `endSession()` | yes | yes | a failed refresh: the user did not choose this |
+| `stopPromptingLogin()` | already ended | stops asking | the user closes the prompt |
+
+`isPromptingLogin` is named for the prompt it drives, not for the expiry that
+caused it. That is what the two readers below actually test.
 
 `isAuthInitialized` distinguishes "we haven't checked yet" from "we checked and
 the user is unauthenticated". Without it, the app would briefly render as logged
@@ -60,7 +66,7 @@ out on every page load, even for authenticated users.
   unauthenticated even while the cached refresh result still holds a token.
 
 The provider therefore holds two pieces of state: the explicit token, which is
-`undefined` until something sets it, and `sessionExpired`.
+`undefined` until something sets it, and `isPromptingLogin`.
 
 ## Flows
 
@@ -186,17 +192,17 @@ so the session is over. `fetchAuthenticated` calls `endSession()`, and the app
 keeps the current URL.
 
 1. `Layout` swaps to the unauthenticated shell. The route does not change.
-2. `HeaderUnauthenticated` mounts, reads `sessionExpired`, and opens the login
+2. `HeaderUnauthenticated` mounts, reads `isPromptingLogin`, and opens the login
    modal with the reason in it.
 3. On a successful login, `setAccessToken` clears the flag, the authenticated
    shell returns, and the queries refetch on the same route.
 
 The cached queries stay on this path: the person logging back in is the same
-person. If the user dismisses the modal, `clearSessionExpiry()` clears the flag
+person. If the user dismisses the modal, `stopPromptingLogin()` clears the flag
 and the app is plainly **Unauthenticated**.
 
 `PinCreationToolPage` redirects to `/` when no token exists, which would destroy
-the URL. It therefore holds the route while `sessionExpired` is true, and
+the URL. It therefore holds the route while `isPromptingLogin` is true, and
 redirects once the flag clears.
 
 The request that hit the 401 is **not** replayed after the login. The user
@@ -226,7 +232,7 @@ authenticated-only route holds its URL.
 
 | File | Role |
 |---|---|
-| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` + provider; runs the startup refresh; exposes `accessToken` and `isAuthInitialized`, both derived from that query, plus `sessionExpired` and the three session mutators. |
+| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` + provider; runs the startup refresh; exposes `accessToken` and `isAuthInitialized`, both derived from that query, plus `isPromptingLogin` and the three session mutators. |
 | [`src/pages/Layout.tsx`](../src/pages/Layout.tsx) | Gates routed content on `isAuthInitialized`; renders the authenticated vs. unauthenticated shell from `accessToken`. |
 | [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | `fetchAuthenticated` — adds the Bearer header; reactive refresh + retry on 401; ends the session on failed refresh. Also exposes `fetchPublic` and `fetchExternal`. |
 | [`src/lib/api/fetchers.ts`](../src/lib/api/fetchers.ts) | The only module allowed to call the `fetch` global. Holds `fetchPublic`, `fetchWithRefreshCookie` and `fetchExternal`. |

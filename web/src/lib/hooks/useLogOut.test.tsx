@@ -24,10 +24,10 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
         accessToken: "mock.token",
         setAccessToken: vi.fn(),
         isAuthInitialized: true,
-        sessionExpired: false,
+        isPromptingLogin: false,
         clearSession: mockClearSession,
         endSession: vi.fn(),
-        clearSessionExpiry: vi.fn(),
+        stopPromptingLogin: vi.fn(),
       }}
     >
       {children}

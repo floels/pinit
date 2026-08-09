@@ -33,7 +33,7 @@ const LoginFormContainer = ({
 }: LoginFormContainerProps) => {
   const loginMutation = useLogin();
 
-  const { sessionExpired } = useAuthContext();
+  const { isPromptingLogin } = useAuthContext();
 
   const [credentials, setCredentials] = useState({
     email: "",
@@ -94,7 +94,7 @@ const LoginFormContainer = ({
       handleInputChange={handleInputChange}
       handleSubmit={handleSubmit}
       handleClickNoAccountYet={handleClickNoAccountYet}
-      showSessionExpiredMessage={sessionExpired}
+      showSessionExpiredMessage={isPromptingLogin}
     />
   );
 };

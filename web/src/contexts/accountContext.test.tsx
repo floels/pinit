@@ -50,10 +50,10 @@ const renderAccountContext = ({
         accessToken,
         setAccessToken: vi.fn(),
         isAuthInitialized,
-        sessionExpired: false,
+        isPromptingLogin: false,
         clearSession: vi.fn(),
         endSession: mockEndSession,
-        clearSessionExpiry: vi.fn(),
+        stopPromptingLogin: vi.fn(),
       }}
     >
       <QueryClientProvider client={testQueryClient}>

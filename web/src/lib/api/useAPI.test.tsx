@@ -22,10 +22,10 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
         accessToken: MOCK_ACCESS_TOKEN,
         setAccessToken: mockSetAccessToken,
         isAuthInitialized: true,
-        sessionExpired: false,
+        isPromptingLogin: false,
         clearSession: vi.fn(),
         endSession: mockEndSession,
-        clearSessionExpiry: vi.fn(),
+        stopPromptingLogin: vi.fn(),
       }}
     >
       {children}
