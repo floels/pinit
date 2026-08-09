@@ -25,6 +25,14 @@ export const useCreatePin = () => {
     mutationFn: async ({ pinImageFile, pinDetails }: CreatePinVariables) => {
       const fileExtension = MIME_TYPE_TO_EXTENSION[pinImageFile.type];
 
+      // The API requires the dimensions. They let every client lay out the pin
+      // before its image loads. 'createImageBitmap' rejects a file that the
+      // browser cannot decode, so no pin is created for such a file.
+      const bitmap = await createImageBitmap(pinImageFile);
+      const imageWidth = bitmap.width;
+      const imageHeight = bitmap.height;
+      bitmap.close();
+
       const presignedUrlResponse = await fetchWithAuth(
         `${API_URL_PIN_IMAGE_UPLOAD_URL}?file_extension=${fileExtension}`,
       );
@@ -45,6 +53,8 @@ export const useCreatePin = () => {
           title: pinDetails.title,
           description: pinDetails.description,
           image_file_key,
+          image_width: imageWidth,
+          image_height: imageHeight,
         }),
       });
       throwIfKO(createPinResponse);

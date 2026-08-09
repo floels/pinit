@@ -145,11 +145,15 @@ class Command(BaseCommand):
         accounts = list(Account.objects.all())
 
         with open(file_path) as f:
-            image_urls = json.load(f)
+            pin_images = json.load(f)
 
         for _ in range(NUMBER_PINS_TO_CREATE):
+            pin_image = random.choice(pin_images)
+
             PinFactory.create(
-                image_url=random.choice(image_urls),
+                image_url=pin_image["url"],
+                image_width=pin_image["width"],
+                image_height=pin_image["height"],
                 author=random.choice(accounts),
             )
 

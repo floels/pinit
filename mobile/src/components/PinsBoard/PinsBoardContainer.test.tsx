@@ -6,7 +6,6 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import { FetchMock } from "jest-fetch-mock";
-import { Image } from "react-native";
 
 import PinsBoardContainer, {
   DEBOUNCE_TIME_REFRESH_MS,
@@ -47,12 +46,6 @@ jest.mock("@/src/components/Spinner/Spinner", () => {
   const View = jest.requireActual("react-native").View;
 
   return (props: any) => <View testID="mocked-spinner" />;
-});
-
-Image.getSize = jest.fn();
-
-(Image.getSize as jest.Mock).mockImplementation((_, success) => {
-  success(100, MOCKED_PIN_THUMBNAIL_HEIGHT);
 });
 
 // To simulate the response upon refresh, simply shift the 'unique_id' of each pin:
@@ -211,31 +204,6 @@ it("displays error message upon 400 response when fetching initial pins", async 
   await waitFor(() => {
     screen.getByText(enTranslations.Common.ERROR_FETCH_MORE_PINS);
   });
-});
-
-it("still renders the other pins when a single image fails to size", async () => {
-  fetchMock.mockOnceIf(
-    `${pinSuggestionsEndpoint}?page=1`,
-    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
-  );
-
-  // The first pin's image fails to size; the remaining pins size successfully.
-  (Image.getSize as jest.Mock).mockImplementationOnce((_, __, error) => {
-    error(new Error());
-  });
-
-  renderComponent();
-
-  // A single failed image must not discard the whole page: the other pins
-  // still render, and no error message is shown.
-  await waitFor(() => {
-    expect(
-      screen.getAllByTestId(/mocked-pin-thumbnail-/).length,
-    ).toBeGreaterThan(0);
-  });
-  expect(
-    screen.queryByText(enTranslations.Common.ERROR_FETCH_MORE_PINS),
-  ).toBeNull();
 });
 
 it(`refreshes pins when pulling to refresh, and does not refresh

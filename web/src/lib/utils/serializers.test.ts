@@ -28,6 +28,8 @@ const MOCK_PIN_FROM_API: PinWithAuthorDetailsFromAPI = {
   unique_id: "100000000000000001",
   title: "My pin",
   image_url: "https://example.com/img.jpg",
+  image_width: 1024,
+  image_height: 768,
   author: MOCK_ACCOUNT_FROM_API,
 };
 
@@ -39,6 +41,13 @@ describe("serializePinsWithAuthorDetails", () => {
     expect(result[0].id).toBe("100000000000000001");
     expect(result[0].imageURL).toBe("https://example.com/img.jpg");
     expect(result[0].title).toBe("My pin");
+  });
+
+  it("maps the image dimensions", () => {
+    const result = serializePinsWithAuthorDetails([MOCK_PIN_FROM_API]);
+
+    expect(result[0].imageWidth).toBe(1024);
+    expect(result[0].imageHeight).toBe(768);
   });
 
   it("serializes the nested author", () => {

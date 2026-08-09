@@ -46,10 +46,12 @@ class GetPinSuggestionsTests(APITestCase, AccessTokenAuthenticationMixin):
         )
 
     def check_response_item_against_pin_object(self, response_item=None, pin=None):
-        self.assertEqual(len(response_item), 4)
+        self.assertEqual(len(response_item), 6)
 
         self.assertEqual(response_item["unique_id"], str(pin.unique_id))
         self.assertEqual(response_item["image_url"], pin.image_url)
+        self.assertEqual(response_item["image_width"], pin.image_width)
+        self.assertEqual(response_item["image_height"], pin.image_height)
         self.assertEqual(response_item["title"], pin.title)
 
         author_data = response_item["author"]

@@ -2,6 +2,11 @@ type Pin = {
   id: string;
   title: string | null;
   imageURL: string;
+  // Pixel dimensions of the image. They let the browser reserve the box of the
+  // image before it loads. The API requires them when a pin is created, so every
+  // pin it returns carries them.
+  imageWidth: number;
+  imageHeight: number;
 };
 
 export type PinWithAuthorDetails = Pin & {

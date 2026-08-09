@@ -177,6 +177,10 @@ const PinThumbnail = ({
                 : `${t("ALT_PIN_BY")} ${pin.author.displayName}`
             }
             src={pin.imageURL}
+            // The attributes give the browser the aspect ratio, so it reserves
+            // the correct box before the image loads and the grid does not shift.
+            width={pin.imageWidth}
+            height={pin.imageHeight}
             className={styles.image}
           />
           {shouldShowImageOverlay && imageOverlay}

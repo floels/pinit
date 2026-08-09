@@ -121,6 +121,8 @@ class Pin(UUIDModel):
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200, null=True, blank=True)
     image_url = models.URLField(null=True, blank=True)
+    image_width = models.PositiveIntegerField(null=True, blank=True)
+    image_height = models.PositiveIntegerField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     author = models.ForeignKey(Account, on_delete=models.CASCADE)
 

@@ -67,9 +67,31 @@ const setupMocksForSuccessfulFlow = () => {
 
 const mockUseBlocker = useBlocker as Mock;
 
+const MOCK_IMAGE_WIDTH = 1024;
+const MOCK_IMAGE_HEIGHT = 768;
+
+// jsdom implements no 'createImageBitmap', so we stub the decoder the pin
+// creation flow uses to read the dimensions of the dropped image.
+const stubImageDecoder = ({ succeeds = true } = {}) => {
+  const decode = succeeds
+    ? vi.fn().mockResolvedValue({
+        width: MOCK_IMAGE_WIDTH,
+        height: MOCK_IMAGE_HEIGHT,
+        close: vi.fn(),
+      })
+    : vi.fn().mockRejectedValue(new Error("undecodable"));
+
+  vi.stubGlobal("createImageBitmap", decode);
+};
+
 beforeEach(() => {
   fetchMock.resetMocks();
   mockUseBlocker.mockReturnValue({ state: "unblocked" });
+  stubImageDecoder();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 it("renders header, have input fields disabled, and not render submit button initially", () => {
@@ -176,8 +198,32 @@ it("makes correct API calls when user clicks submit", async () => {
       description: "Pin description",
       image_file_key:
         "pins/pin_image_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4.png",
+      // The dimensions let every client lay out the pin before its image loads.
+      image_width: MOCK_IMAGE_WIDTH,
+      image_height: MOCK_IMAGE_HEIGHT,
     });
   });
+});
+
+it("displays error toast and creates no pin when the image cannot be decoded", async () => {
+  // The API requires the dimensions, so a file that the browser cannot decode
+  // must not produce a pin at all.
+  stubImageDecoder({ succeeds: false });
+
+  renderComponent();
+
+  await dropImageFile();
+
+  setupMocksForSuccessfulFlow();
+
+  const submitButton = screen.getByTestId("pin-creation-submit-button");
+  await userEvent.click(submitButton);
+
+  await waitFor(() => {
+    screen.getByText(en.ERROR_POSTING_PIN);
+  });
+
+  expect(fetch).not.toHaveBeenCalled();
 });
 
 it(`displays success toast with proper link and resets form

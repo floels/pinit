@@ -39,10 +39,12 @@ class GetPinDetailsTests(APITestCase):
         return self.client.get(f"/api/pins/{unique_id}/")
 
     def check_response_data_against_pin_object(self, response_data=None, pin=None):
-        self.assertEqual(len(response_data), 5)
+        self.assertEqual(len(response_data), 7)
 
         self.assertEqual(response_data["unique_id"], str(pin.unique_id))
         self.assertEqual(response_data["image_url"], pin.image_url)
+        self.assertEqual(response_data["image_width"], pin.image_width)
+        self.assertEqual(response_data["image_height"], pin.image_height)
         self.assertEqual(response_data["title"], pin.title)
         self.assertEqual(response_data["description"], pin.description)
 

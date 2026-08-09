@@ -192,10 +192,12 @@ class GetBoardDetailsViewTests(APITestCase):
             self.check_pin_data(pin_data=pin_data, pin=pin)
 
     def check_pin_data(self, pin_data=None, pin=None):
-        self.assertEqual(len(pin_data), 4)
+        self.assertEqual(len(pin_data), 6)
 
         self.assertEqual(pin_data["unique_id"], str(pin.unique_id))
         self.assertEqual(pin_data["image_url"], pin.image_url)
+        self.assertEqual(pin_data["image_width"], pin.image_width)
+        self.assertEqual(pin_data["image_height"], pin.image_height)
         self.assertEqual(pin_data["title"], pin.title)
 
         pin_author_data = pin_data["author"]

@@ -69,9 +69,9 @@ const EnterPinDetailsScreenContainer = ({
     let createdPin;
 
     try {
-      const imageFileKey = await uploadImageToS3();
+      const uploadedImage = await uploadImageToS3();
 
-      createdPin = await createPin(imageFileKey);
+      createdPin = await createPin(uploadedImage);
     } catch {
       handlePostError();
       return;
@@ -79,10 +79,12 @@ const EnterPinDetailsScreenContainer = ({
       setIsPosting(false);
     }
 
+    // The created pin reports the dimensions of the image we uploaded, so we
+    // derive the aspect ratio from the response rather than from the preview.
     handleCreateSuccess({
       createdPin,
-      createdPinImageAspectRatio: imageAspectRatio || 1, // If the aspect ratio
-      // couldn't be determined, we default to 1 (square image).
+      createdPinImageAspectRatio:
+        createdPin.imageWidth / createdPin.imageHeight,
     });
   };
 
@@ -92,7 +94,7 @@ const EnterPinDetailsScreenContainer = ({
   const uploadImageToS3 = async () => {
     // Normalize to JPEG so HEIC (the default iOS camera format) and other
     // formats upload as something the backend accepts (it only allows jpg/png).
-    const jpegURI = await convertToJpeg(selectedImageURI);
+    const jpegImage = await convertToJpeg(selectedImageURI);
 
     const uploadURLResponse = await fetchWithAuthentication(
       `${API_BASE_URL}/${API_ENDPOINT_PIN_IMAGE_UPLOAD_URL}?file_extension=.jpg`,
@@ -101,7 +103,7 @@ const EnterPinDetailsScreenContainer = ({
 
     const { upload_url, image_file_key } = await uploadURLResponse.json();
 
-    const uploadResult = await new File(jpegURI).upload(upload_url, {
+    const uploadResult = await new File(jpegImage.uri).upload(upload_url, {
       httpMethod: "PUT",
       uploadType: UploadType.BINARY_CONTENT,
       headers: { "Content-Type": "image/jpeg" },
@@ -111,20 +113,32 @@ const EnterPinDetailsScreenContainer = ({
       throw new Error(`S3 upload failed with status ${uploadResult.status}`);
     }
 
-    return image_file_key as string;
+    return {
+      imageFileKey: image_file_key as string,
+      width: jpegImage.width,
+      height: jpegImage.height,
+    };
   };
 
   const convertToJpeg = async (uri: string) => {
     const context = ImageManipulator.manipulate(uri);
     const renderedImage = await context.renderAsync();
-    const { uri: jpegURI } = await renderedImage.saveAsync({
-      format: SaveFormat.JPEG,
-    });
 
-    return jpegURI;
+    // 'saveAsync' reports the dimensions of the JPEG we are about to upload, so
+    // they describe the stored object exactly. We send them to the API, which
+    // lets every client lay out the pin before its image loads.
+    return renderedImage.saveAsync({ format: SaveFormat.JPEG });
   };
 
-  const createPin = async (imageFileKey: string) => {
+  const createPin = async ({
+    imageFileKey,
+    width,
+    height,
+  }: {
+    imageFileKey: string;
+    width: number;
+    height: number;
+  }) => {
     const response = await fetchWithAuthentication(
       `${API_BASE_URL}/${API_ENDPOINT_CREATE_PIN}`,
       {
@@ -134,6 +148,8 @@ const EnterPinDetailsScreenContainer = ({
           title: pinTitle,
           description: pinDescription,
           image_file_key: imageFileKey,
+          image_width: width,
+          image_height: height,
         }),
       },
     );

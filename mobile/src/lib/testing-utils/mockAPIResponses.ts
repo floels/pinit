@@ -26,6 +26,8 @@ export const MOCK_API_RESPONSES_JSON = {
       unique_id: String(index).padStart(18, "0"),
       image_url:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      image_width: 236,
+      image_height: 354,
       title: `Pin ${index + 1} title`,
       author: {
         username: "johndoe",
@@ -70,6 +72,8 @@ export const MOCK_API_RESPONSES_JSON = {
   [API_ENDPOINT_PIN_DETAILS]: {
     unique_id: "837672678962535495",
     image_url: "http://example.com",
+    image_width: 1024,
+    image_height: 768,
     title: "Pin title",
     author: {
       username: "johndoe",
@@ -92,6 +96,8 @@ export const MOCK_API_RESPONSES_JSON = {
     unique_id: "000000000000000001",
     image_url:
       "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+    image_width: 1024,
+    image_height: 768,
     title: "Pin title",
   },
   [API_ENDPOINT_SEARCH_PINS]: {
@@ -99,6 +105,8 @@ export const MOCK_API_RESPONSES_JSON = {
       unique_id: String(index).padStart(18, "0"),
       image_url:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      image_width: 236,
+      image_height: 354,
       title: `Pin ${index + 1} title`,
       author: {
         username: "johndoe",
@@ -182,6 +190,8 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
       title: `Pin ${index + 1} title`,
       imageURL:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      imageWidth: 236,
+      imageHeight: 354,
       author: {
         username: "johndoe",
         displayName: "John Doe",
@@ -193,6 +203,8 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
   [API_ENDPOINT_PIN_DETAILS]: {
     id: "837672678962535495",
     imageURL: "http://example.com",
+    imageWidth: 1024,
+    imageHeight: 768,
     title: "Pin title",
     author: {
       username: "johndoe",
@@ -236,6 +248,8 @@ export const MOCK_API_RESPONSES_SERIALIZED = {
       id: String(index).padStart(18, "0"),
       imageURL:
         "https://i.pinimg.com/564x/fb/71/38/fb7138bb24bc5dabdaf3908a961cdfc6.jpg",
+      imageWidth: 236,
+      imageHeight: 354,
       title: `Pin ${index + 1} title`,
       author: {
         username: "johndoe",

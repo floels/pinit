@@ -7,7 +7,6 @@ import { PinWithAuthorDetails } from "@/src/lib/types";
 
 type PinsThumbnailsGridProps = {
   pins: PinWithAuthorDetails[];
-  pinImageAspectRatios: (number | null)[];
   getTapHandlerForPin: ({
     pin,
     pinImageAspectRatio,
@@ -22,7 +21,6 @@ const MARGIN_BETWEEN_COLUMNS = 10;
 
 const PinThumbnailsGrid = ({
   pins,
-  pinImageAspectRatios,
   getTapHandlerForPin,
 }: PinsThumbnailsGridProps) => {
   const { width: windowWidth } = useWindowDimensions();
@@ -54,11 +52,9 @@ const PinThumbnailsGrid = ({
             const pinBelongsInThisColumn =
               pinIndex % NUMBER_COLUMNS === columnIndex;
 
-            const pinImageAspectRatio = pinImageAspectRatios[pinIndex];
+            const pinImageAspectRatio = pin.imageWidth / pin.imageHeight;
 
-            const pinHasImageAspectRatio = !!pinImageAspectRatio;
-
-            if (pinBelongsInThisColumn && pinHasImageAspectRatio) {
+            if (pinBelongsInThisColumn) {
               return (
                 <TouchableOpacity
                   key={`pin-thumbnail-${pinIndex + 1}`}
