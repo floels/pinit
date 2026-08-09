@@ -27,12 +27,7 @@ const getNumberOfColumns = (viewportWidth: number) => {
 const PinThumbnailsGrid = ({ pins }: PinThumbnailsGridProps) => {
   const viewportWidth = useViewportWidth();
 
-  const numberOfColumns =
-    viewportWidth === undefined ? undefined : getNumberOfColumns(viewportWidth);
-
-  if (numberOfColumns === undefined) {
-    return null;
-  }
+  const numberOfColumns = getNumberOfColumns(viewportWidth);
 
   // Here the logic is to:
   // - render as many columns as `numberOfColumns`,

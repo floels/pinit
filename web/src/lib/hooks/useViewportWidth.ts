@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 
 export const useViewportWidth = () => {
-  const [width, setWidth] = useState<number | undefined>(); // NB: we need
-  // to initialize `width` to `undefined` because the `window` object is not available
-  // during the initial SSR pass.
+  // Read the width during the first render. This app is a client-only SPA, so
+  // `window` always exists here. Callers therefore never see `undefined`, and
+  // they render their real content on the first pass.
+  const [width, setWidth] = useState(() => window.innerWidth);
 
   useEffect(() => {
     const handleResize = () => {
@@ -12,7 +13,7 @@ export const useViewportWidth = () => {
 
     window.addEventListener("resize", handleResize);
 
-    // Call handler right away so state gets updated with initial window width:
+    // The width can change between the first render and this subscription:
     handleResize();
 
     return () => {
