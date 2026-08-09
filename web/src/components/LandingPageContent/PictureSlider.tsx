@@ -109,6 +109,10 @@ const PictureSlider = ({ onClickSeeBelow }: PictureSliderProps) => {
   }, [state.currentStep]);
 
   // Clear previousStep once all exit animations have had time to finish.
+  // The dependency is 'previousStep', the value the effect reads. Depending on
+  // 'currentStep' instead skipped the timer whenever a step change set
+  // 'previousStep' without changing 'currentStep', which happens when the user
+  // clicks the stepper button of the active topic.
   useEffect(() => {
     if (state.previousStep === null) return;
 
@@ -117,7 +121,7 @@ const PictureSlider = ({ onClickSeeBelow }: PictureSliderProps) => {
     }, PREVIOUS_STEP_CLEAR_DELAY_MS);
 
     return () => clearTimeout(timerId);
-  }, [state.currentStep]);
+  }, [state.previousStep]);
 
   const moveToStep = (newStep: number) => {
     setState((prevState) => ({
