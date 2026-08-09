@@ -31,7 +31,7 @@ test("shows unauthenticated state when the refresh token is invalid", async ({
   context,
 }) => {
   // An invalid token causes POST /api/token/web/refresh/ to return 4xx,
-  // so AccessTokenRefresher leaves accessToken null and the landing page is shown.
+  // so the startup refresh leaves accessToken null and the landing page is shown.
   await context.addCookies([
     {
       name: "refreshToken",

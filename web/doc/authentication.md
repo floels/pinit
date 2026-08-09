@@ -36,6 +36,19 @@ isAuthInitialized: boolean   — false until the startup refresh attempt settles
 the user is unauthenticated". Without it, the app would briefly render as logged
 out on every page load, even for authenticated users.
 
+The provider derives both values during render instead of copying them into
+state from an Effect:
+
+- `isAuthInitialized` is `true` once the startup refresh query settles, on
+  success or on error.
+- `accessToken` is the token from that query result, unless login, signup,
+  logout or a reactive refresh has set an explicit value. An explicit value
+  always takes precedence, so `setAccessToken(null)` on logout keeps the app
+  unauthenticated.
+
+The provider therefore holds one piece of state: the explicit token, which is
+`undefined` until something sets it.
+
 ## Flows
 
 **When is the access token refreshed?** At exactly two moments — there is no
@@ -61,13 +74,14 @@ on mount that calls the refresh endpoint (the browser attaches the httpOnly
 cookie automatically). `Layout` withholds the routed content until the attempt
 settles, to avoid a flash of unauthenticated UI.
 
-1. On mount, `AuthContextProvider` sets `isAuthInitialized = false` and POSTs
-   `/token/web/refresh/` (the browser attaches the httpOnly cookie automatically).
+1. On mount, `AuthContextProvider` POSTs `/token/web/refresh/` (the browser
+   attaches the httpOnly cookie automatically). While the query is pending,
+   `isAuthInitialized` reads `false`.
 2. **Refresh token valid** → `200 { access_token }` (backend re-sets the rotated
-   refresh cookie); the provider calls `setAccessToken(token)` and
-   `setIsAuthInitialized(true)`.
-3. **No cookie / expired** → `401`; the provider calls `setIsAuthInitialized(true)`
-   with `accessToken` left `null`.
+   refresh cookie); `accessToken` reads the token from the query result, and
+   `isAuthInitialized` reads `true`.
+3. **No cookie / expired** → `401`; `isAuthInitialized` reads `true` and
+   `accessToken` stays `null`.
 4. Throughout, `Layout` gates `<Outlet />` on `isAuthInitialized` (spinner until
    the attempt settles).
 
@@ -150,7 +164,7 @@ The app moves between three states — **Initializing** (on mount),
 
 | File | Role |
 |---|---|
-| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` + provider; runs the startup refresh; holds `accessToken`, `isAuthInitialized`. |
+| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` + provider; runs the startup refresh; exposes `accessToken` and `isAuthInitialized`, both derived from that query. |
 | [`src/pages/Layout.tsx`](../src/pages/Layout.tsx) | Gates routed content on `isAuthInitialized`; renders the authenticated vs. unauthenticated shell from `accessToken`. |
 | [`src/lib/hooks/useFetchWithAuth.ts`](../src/lib/hooks/useFetchWithAuth.ts) | Adds the Bearer header; reactive refresh + retry on 401; logs out on failed refresh. |
 | [`src/lib/hooks/useLogin.ts`](../src/lib/hooks/useLogin.ts) | Login — posts credentials, stores the access token. |
