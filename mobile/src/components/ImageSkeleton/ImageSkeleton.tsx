@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Animated,
@@ -7,6 +7,7 @@ import {
   StyleProp,
   ViewStyle,
   LayoutChangeEvent,
+  useAnimatedValue,
 } from "react-native";
 
 import styles from "./ImageSkeleton.styles";
@@ -21,7 +22,7 @@ const GLAZE_ANIMATION_DURATION = 2000;
 const ImageSkeleton = ({ style, testID }: ImageSkeletonProps) => {
   const [parentWidth, setParentWidth] = useState(0);
 
-  const animatedValue = useRef(new Animated.Value(0)).current;
+  const animatedValue = useAnimatedValue(0);
 
   // The glaze sweeps for as long as the skeleton is mounted. Starting the
   // animation during render would leak one loop per render and would leave the
