@@ -1,16 +1,20 @@
+import { NavigatorScreenParams } from "@react-navigation/native";
 import {
   createStackNavigator,
   TransitionPresets,
 } from "@react-navigation/stack";
 
-import BrowseNavigator from "../BrowseNavigator/BrowseNavigator";
+import BrowseNavigator, {
+  BrowseNavigatorParamList,
+} from "../BrowseNavigator/BrowseNavigator";
 
-import { Pin } from "@/src/lib/types";
 import CreateNavigator from "@/src/navigators/CreateNavigator/CreateNavigator";
 
 export type AuthenticatedNavigatorParamList = {
+  // 'NavigatorScreenParams' lets a caller target a screen of the nested
+  // Browse navigator, which is how the pin creation toast opens the new pin.
   "Authenticated.Browse":
-    undefined | { createdPin: Pin; createdPinImageAspectRatio: number };
+    NavigatorScreenParams<BrowseNavigatorParamList> | undefined;
   "Authenticated.Create": undefined;
 };
 

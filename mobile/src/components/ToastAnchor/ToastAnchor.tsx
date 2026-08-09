@@ -20,26 +20,38 @@ const ToastAnchor = () => {
         <Text>{text1}</Text>
       </View>
     ),
-    pinCreationSuccess: ({ props }: { props: any }) => {
+    pinCreationSuccess: ({
+      props,
+    }: {
+      props: { handlePressView?: () => void };
+    }) => {
+      const { handlePressView } = props;
+
       const handlePressViewPin = () => {
-        props.handlePressView();
+        handlePressView?.();
         Toast.hide();
       };
+
+      // The caller omits 'handlePressView' when it cannot build the
+      // destination yet. The toast then reports the success on its own.
+      const viewButton = handlePressView ? (
+        <TouchableOpacity
+          onPress={handlePressViewPin}
+          style={styles.pinCreationSuccessButton}
+          testID="pin-creation-success-toast-view-button"
+        >
+          <Text style={styles.pinCreationSuccessButtonText}>
+            {t("CreatePin.CREATION_SUCCESS_TOAST_VIEW")}
+          </Text>
+        </TouchableOpacity>
+      ) : null;
 
       return (
         <View style={styles.pinCreationSuccessContainer}>
           <Text style={styles.pinCreationSuccessText}>
             {t("CreatePin.CREATION_SUCCESS_MESSAGE")}
           </Text>
-          <TouchableOpacity
-            onPress={handlePressViewPin}
-            style={styles.pinCreationSuccessButton}
-            testID="pin-creation-success-toast-view-button"
-          >
-            <Text style={styles.pinCreationSuccessButtonText}>
-              {t("CreatePin.CREATION_SUCCESS_TOAST_VIEW")}
-            </Text>
-          </TouchableOpacity>
+          {viewButton}
         </View>
       );
     },

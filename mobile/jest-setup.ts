@@ -1,5 +1,8 @@
 // Built-in Jest matchers are included automatically since @testing-library/react-native v13:
 import fetchMock from "jest-fetch-mock";
+// Stubs the native gesture handler module, which a real stack navigator needs.
+// See https://docs.swmansion.com/react-native-gesture-handler/docs/guides/testing/
+import "react-native-gesture-handler/jestSetup";
 
 import enTranslations from "@/translations/en.json";
 
