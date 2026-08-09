@@ -29,6 +29,15 @@ const TAB_BAR_ICON_NAMES: Record<string, string> = {
   "Authenticated.Browse.Main.Create": "plus",
 };
 
+// The E2E flows tap the tab button, not the icon inside it. An icon renders
+// nested views that all carry its testID, which makes the match ambiguous.
+const TAB_BAR_BUTTON_TEST_IDS: Record<string, string> = {
+  "Authenticated.Browse.Main.Home": "tab-bar-button-home",
+  "Authenticated.Browse.Main.Search": "tab-bar-button-search",
+  "Authenticated.Browse.Main.Create": "tab-bar-button-create",
+  "Authenticated.Browse.Main.Profile": "tab-bar-button-profile",
+};
+
 const screenOptions = ({
   route,
 }: {
@@ -57,6 +66,7 @@ const screenOptions = ({
 
   return {
     tabBarIcon,
+    tabBarButtonTestID: TAB_BAR_BUTTON_TEST_IDS[route.name],
     tabBarShowLabel: false,
     headerShown: false,
     tabBarActiveTintColor: "black",

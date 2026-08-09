@@ -8,6 +8,9 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "eslint .",
+    "type-check": "tsc --noEmit && tsc --noEmit -p e2e",
+    "test:e2e:build": "detox build --configuration ios.sim.release",
+    "test:e2e": "detox test --configuration ios.sim.release",
     "prepare": "husky"
   },
   "dependencies": {
@@ -48,6 +51,7 @@
     "@types/lodash": "^4.17.24",
     "@types/react": "~19.2.4",
     "babel-plugin-module-resolver": "^5.0.3",
+    "detox": "^20.51.4",
     "eslint": "^9.39.5",
     "eslint-config-universe": "^16.0.0",
     "husky": "^9.1.7",

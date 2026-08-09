@@ -64,7 +64,7 @@ yarn web           # run the app in a browser
 yarn jest          # unit tests
 yarn jest --coverage --runInBand   # with coverage (as CI runs them)
 yarn lint          # ESLint
-yarn tsc           # TypeScript type-check
+yarn type-check    # TypeScript type-check (app and e2e/)
 ```
 
 Or from the repo root:
@@ -72,6 +72,65 @@ Or from the repo root:
 ```bash
 make test-mobile   # installs deps (Yarn Classic via Corepack) and runs Jest
 ```
+
+### End-to-end tests
+
+[Detox](https://wix.github.io/Detox/) drives the real app on the iOS Simulator
+against the real API. The flows live in [`e2e/`](e2e).
+
+Prerequisites:
+
+- Xcode with an iOS Simulator runtime.
+- `applesimutils`:
+
+  ```bash
+  brew tap wix/brew
+  brew trust --formula wix/brew/applesimutils
+  brew install applesimutils
+  ```
+
+Run the whole suite from the repo root:
+
+```bash
+make test-e2e-mobile
+```
+
+That target starts the E2E backend, builds the app, and runs the flows. Stop the
+local stack first, because both stacks bind port 8000.
+
+From this directory, once the backend runs:
+
+```bash
+yarn test:e2e:build   # xcodebuild for the simulator, in Release
+yarn test:e2e         # run the flows
+```
+
+While you write a flow, the debug configuration avoids a rebuild after every
+JavaScript change. Start Metro with `yarn start`, then:
+
+```bash
+detox build --configuration ios.sim.debug
+detox test --configuration ios.sim.debug
+```
+
+`scripts/build-ios-e2e.sh` runs `expo prebuild -p ios` only when `ios/` is
+absent. Delete `ios/` after a change to `app.json` or to the Expo dependencies.
+
+**Writing a new flow.** Detox synchronization is off, because the app animates
+without end: `Spinner` runs `Animated.loop`, and the landing gallery scrolls for
+two minutes. Detox treats a running animation as work in progress, so it would
+never consider the app idle. The flows therefore wait on explicit conditions,
+the same way the Playwright suite does. Two rules follow:
+
+- Tap through the `tap()` helper in [`e2e/helpers.ts`](e2e/helpers.ts). It waits
+  for the target first.
+- Start each test with `launchSignedOut()`. It resets the simulator keychain,
+  which is the only reliable way to clear `expo-secure-store`.
+
+Detox writes screenshots and logs for a failed flow under `artifacts/`.
+
+CI does not run these tests. They need macOS and a simulator, so the
+`mobile-checks` job only lints and type-checks them.
 
 ## Structure
 
@@ -84,11 +143,14 @@ mobile/
 │   ├── hooks/           # Custom hooks
 │   ├── navigators/      # React Navigation structure (authenticated/unauthenticated, tabs, stacks)
 │   └── lib/             # Constants, types, utils, testing helpers
+├── e2e/                 # Detox end-to-end flows (iOS Simulator)
+├── scripts/             # build-ios-e2e.sh
 ├── doc/                 # Developer documentation
 ├── translations/        # i18next translation resources
 ├── assets/              # Images and icons
 ├── app.json             # Expo app config
-├── jest.config.ts       # Jest (jest-expo preset)
+├── jest.config.ts       # Jest for the unit tests (jest-expo preset)
+├── .detoxrc.js          # Detox devices, apps, and build commands
 └── tsconfig.json        # TypeScript config
 ```
 

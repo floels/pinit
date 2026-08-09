@@ -57,6 +57,7 @@ const LoginScreen = ({
             keyboardType="email-address"
             autoCapitalize="none"
             style={styles.emailInput}
+            testID="login-screen-email-input"
           />
         </View>
         <View style={styles.passwordLabelAndInput}>
@@ -69,6 +70,7 @@ const LoginScreen = ({
               secureTextEntry={!isPasswordVisible}
               autoCapitalize="none"
               style={styles.passwordInput}
+              testID="login-screen-password-input"
             />
             <TouchableOpacity
               onPress={onTogglePasswordVisibility}

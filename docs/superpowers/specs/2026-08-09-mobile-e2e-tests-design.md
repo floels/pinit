@@ -31,9 +31,8 @@ One test file, `mobile/e2e/authentication.test.ts`, with three cases.
    that `pins-board-scroll-view` is visible.
 2. **Log in with a wrong password.** Assert that the error text appears, and
    that the app stays on the login screen.
-3. **Log out.** Start from a logged-in state. Tap
-   `tab-bar-icon-profile-picture`. Tap `log-out-button`. Assert that
-   `log-in-button` is visible again.
+3. **Log out.** Start from a logged-in state. Tap `tab-bar-button-profile`. Tap
+   `log-out-button`. Assert that `log-in-button` is visible again.
 
 Out of scope for this iteration:
 
@@ -54,10 +53,12 @@ The tests live inside the app package. Detox resolves the app project and its
 mobile/
 ├── .detoxrc.js            # devices, apps, build commands
 ├── jest.config.ts         # gains testPathIgnorePatterns for e2e/
+├── scripts/
+│   └── build-ios-e2e.sh   # prebuild when needed, then xcodebuild
 ├── e2e/
 │   ├── jest.config.js     # Detox test environment, maxWorkers 1
 │   ├── tsconfig.json      # adds the detox types
-│   ├── helpers.ts         # credentials, logIn(), ensureLoggedOut()
+│   ├── helpers.ts         # credentials, launchSignedOut(), logIn(), tap()
 │   └── authentication.test.ts
 scripts/
 └── e2e-backend-up.sh      # starts the stack, migrates, seeds
@@ -70,7 +71,7 @@ docker-compose.e2e.yml     # moved from e2e-tests-web/
 |---|---|---|
 | `scripts/e2e-backend-up.sh` | Start Docker services, wait for the API, migrate, seed | `docker-compose.e2e.yml` |
 | `mobile/.detoxrc.js` | Describe the simulator, the app binary, and the build commands | Xcode, `applesimutils` |
-| `mobile/e2e/helpers.ts` | Credentials and reusable login and logout steps | Detox API |
+| `mobile/e2e/helpers.ts` | Credentials, a signed-out launch, and the wait-then-tap step | Detox API |
 | `mobile/e2e/authentication.test.ts` | The three assertions | `helpers.ts` |
 
 Each unit is replaceable on its own. A move from Detox to Maestro keeps
@@ -90,6 +91,30 @@ already ignores `/ios/`, so the generated project stays out of git.
 `@config-plugins/detox` is not used. It declares `expo: ^53` as a peer, and it
 is only needed for Android. On the iOS Simulator, Detox 20 injects its native
 library at launch, so the prebuild output needs no source change.
+
+### Detox synchronization is off
+
+Detox normally waits for the app to become idle before each command. This app
+never becomes idle, for two reasons:
+
+- `Spinner` runs `Animated.loop`, which never ends. `LoadingOverlay` shows it
+  during login.
+- `LandingScreenGallery` scrolls for two minutes on every launch.
+
+Detox counts a running animation as work in progress. The first run therefore
+timed out in every hook at exactly 120002 ms, which matches the gallery
+animation. `detox test --debug-synchronization` named the cause: one recurring
+native timer, and one pending work item on the main queue.
+
+The flows therefore launch the app with `detoxEnableSynchronization: 0` and wait
+on explicit conditions instead. This is the same model as the Playwright suite,
+which also polls for a selector. The consequence is a rule for the flows: a tap
+must wait for its target first. The `tap()` helper in `e2e/helpers.ts` enforces
+that, and every flow taps through it.
+
+An alternative was to shorten the animations in an E2E build. That needs a way
+to read launch arguments in JavaScript, which means a new native module in the
+app for test purposes only. Explicit waits cost less and change no product code.
 
 ## Data flow
 
@@ -111,6 +136,11 @@ The web helper `loginAsTestUser` does not port. It injects a refresh cookie into
 the browser context. `expo-secure-store` writes to the iOS keychain, which no
 outside process can write, so every mobile flow logs in through the UI.
 
+Each flow starts from a known signed-out state. `launchSignedOut()` runs
+`xcrun simctl keychain <device> reset`, then launches with `delete: true`. The
+data wipe alone is not enough: the keychain survives it, so the app would
+restore the previous session and start on the authenticated tab bar.
+
 ## Shared scripts
 
 `docker-compose.e2e.yml` moves from `e2e-tests-web/` to the repo root, next to
@@ -129,11 +159,19 @@ Playwright setup step still starts the stack.
 
 ## Production code changes
 
-One file. `src/navigators/UnauthenticatedNavigator/LoginScreen.tsx` gains
-`testID="login-screen-email-input"` and `testID="login-screen-password-input"`
-on its two `TextInput` components. Every other anchor already exists:
-`log-in-button`, `login-screen-submit-button`, `pins-board-scroll-view`,
-`tab-bar-icon-profile-picture`, and `log-out-button`.
+Two files.
+
+1. `src/navigators/UnauthenticatedNavigator/LoginScreen.tsx` gains
+   `testID="login-screen-email-input"` and `testID="login-screen-password-input"`
+   on its two `TextInput` components.
+2. `src/navigators/BrowseMainNavigator/BrowseMainNavigator.tsx` gains
+   `tabBarButtonTestID` for each of the four tabs. A tab bar icon renders nested
+   views that all carry the icon testID, so `by.id("tab-bar-icon-user-icon")`
+   matched several elements and Detox refused the tap. The button testID lands on
+   the touchable, which is the correct tap target anyway.
+
+Every other anchor already exists: `log-in-button`,
+`login-screen-submit-button`, `pins-board-scroll-view`, and `log-out-button`.
 
 ## Error handling
 
@@ -141,39 +179,52 @@ on its two `TextInput` components. Every other anchor already exists:
 |---|---|
 | The API does not answer | `e2e-backend-up.sh` polls for 60 seconds, then exits with an error and a clear message |
 | Port 8000 is taken | The script detects the conflict and tells the user to stop `docker-compose.local.yml` |
-| A stale session exists | `ensureLoggedOut()` logs out when the tab bar appears at start-up |
+| A stale session exists | `launchSignedOut()` resets the simulator keychain before each launch |
 | A build fails | `detox build` exits non-zero, and `make` stops |
 | A flow fails | Detox writes the artifacts, including a screenshot, under `mobile/artifacts/` |
 
 `mobile/artifacts/` is added to `mobile/.gitignore`.
 
-## Testing the tests
+## Results
 
-Verification order during implementation:
+Measured on a Mac with Xcode 26.6 and an iPhone 16 simulator:
 
-1. **Smoke test first.** Build the app, launch it, and assert that
-   `log-in-button` is visible. This one step proves that Detox 20.51 works with
-   React Native 0.86 and Expo 57. Write it as the first assertion of case 1, not
-   as a separate file. No throwaway test gets committed.
-2. Add the rest of the three authentication cases.
-3. Run `yarn jest` to confirm that the unit tests still pass and that they do
-   not pick up the `e2e/` folder.
-4. Run `yarn lint` and `yarn tsc` to confirm that the new folder passes both.
+| Check | Result |
+|---|---|
+| `expo prebuild -p ios` | 35 s |
+| First Release build | 169 s |
+| Rebuild after a JavaScript change | 26 s |
+| The three flows | 3 passed, 22.7 s |
+| A second consecutive run | 3 passed, 22.7 s |
+| `yarn jest` | 104 passed |
+| `yarn lint` and `yarn type-check` | clean |
+
+Detox 20.51.4 works with React Native 0.86 and Expo 57 on the iOS Simulator,
+with no native source change and without `@config-plugins/detox`.
 
 ## Risks
 
-- **Detox 20.51 with React Native 0.86 is unproven in this repo.** No version
-  pair here confirms the combination. Step 1 above is the gate. If the build or
-  the launch fails, Maestro is the fallback, and the shared scripts and the new
-  `testID` props still apply.
-- **`expo-secure-store` survives a reinstall.** It writes to the iOS keychain,
-  which an app delete on the simulator does not always clear. A case that
-  expects the landing screen can therefore start logged in.
-  `ensureLoggedOut()` covers this.
-- **Release builds are slow.** Expect several minutes for the first build. The
+- **Release builds are slow.** The first build takes about three minutes. The
   `ios.sim.debug` configuration keeps iteration fast.
 - **Port 8000 collides** with `docker-compose.local.yml`. The web suite has the
   same constraint today.
+- **The keychain reset is device-wide.** `simctl keychain reset` clears the
+  keychain of the whole simulator, not of one app. This is acceptable on a test
+  simulator, and it is the only reliable way to clear `expo-secure-store`.
+- **Synchronization stays off.** A new flow must wait for its target before it
+  taps. The `tap()` helper covers that, but a flow that calls the Detox API
+  directly can race. Prefer the helpers.
+- **Detox and the Expo SDK are coupled.** An Expo or React Native upgrade can
+  break the build. Delete `ios/` and rebuild after such an upgrade.
+
+## Resolved during implementation
+
+Two problems that the design did not predict, both fixed:
+
+1. The app never becomes idle, so Detox synchronization had to go off. See
+   "Detox synchronization is off" above.
+2. `by.id` on a tab bar icon matched several nested elements, so the tab needed
+   `tabBarButtonTestID`. See "Production code changes" above.
 
 ## Prerequisites for a developer
 
