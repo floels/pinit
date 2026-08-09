@@ -2,7 +2,6 @@ import { useMutation } from "@tanstack/react-query";
 import { API_URL_CREATE_PIN, API_URL_PIN_IMAGE_UPLOAD_URL } from "../constants";
 import { useFetchWithAuth } from "./useFetchWithAuth";
 import { throwIfKO } from "../utils/fetch";
-import { readImageDimensions } from "../utils/images";
 
 const MIME_TYPE_TO_EXTENSION: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -26,7 +25,13 @@ export const useCreatePin = () => {
     mutationFn: async ({ pinImageFile, pinDetails }: CreatePinVariables) => {
       const fileExtension = MIME_TYPE_TO_EXTENSION[pinImageFile.type];
 
-      const imageDimensions = await readImageDimensions(pinImageFile);
+      // The API requires the dimensions. They let every client lay out the pin
+      // before its image loads. 'createImageBitmap' rejects a file that the
+      // browser cannot decode, so no pin is created for such a file.
+      const bitmap = await createImageBitmap(pinImageFile);
+      const imageWidth = bitmap.width;
+      const imageHeight = bitmap.height;
+      bitmap.close();
 
       const presignedUrlResponse = await fetchWithAuth(
         `${API_URL_PIN_IMAGE_UPLOAD_URL}?file_extension=${fileExtension}`,
@@ -48,8 +53,8 @@ export const useCreatePin = () => {
           title: pinDetails.title,
           description: pinDetails.description,
           image_file_key,
-          image_width: imageDimensions.width,
-          image_height: imageDimensions.height,
+          image_width: imageWidth,
+          image_height: imageHeight,
         }),
       });
       throwIfKO(createPinResponse);
