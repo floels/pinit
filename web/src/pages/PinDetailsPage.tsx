@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { API_URL_PIN_DETAILS } from "@/lib/constants";
 import { throwIfKO } from "@/lib/utils/fetch";
+import { fetchPublic } from "@/lib/api/fetchers";
 import { serializePinWithFullDetails } from "@/lib/utils/serializers";
 import { Response404Error } from "@/lib/customErrors";
 import PinDetailsView from "@/components/PinDetailsView/PinDetailsView";
@@ -16,7 +17,7 @@ const PinDetailsPage = () => {
   const fetchPinDetails = async () => {
     const url = `${API_URL_PIN_DETAILS}/${id}/`;
 
-    const response = await fetch(url);
+    const response = await fetchPublic(url);
 
     if (response.status === 404) {
       throw new Response404Error();

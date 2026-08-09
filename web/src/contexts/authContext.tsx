@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   REFRESH_ACCESS_TOKEN_QUERY_KEY,
   fetchRefreshedAccessToken,
-} from "@/lib/utils/refreshAccessToken";
+} from "@/lib/api/refreshAccessToken";
 
 export type AuthContextType = {
   accessToken: string | null;

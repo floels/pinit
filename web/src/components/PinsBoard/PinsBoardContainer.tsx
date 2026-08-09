@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { appendQueryParam } from "@/lib/utils/strings";
 import { serializePinsWithAuthorDetails } from "@/lib/utils/serializers";
 import { throwIfKO } from "@/lib/utils/fetch";
+import { fetchPublic } from "@/lib/api/fetchers";
 import { PinWithAuthorDetails } from "@/lib/types/frontendTypes";
 import PinsBoard from "./PinsBoard";
 import SpinnerBelowHeader from "@/components/Spinners/SpinnerBelowHeader";
@@ -27,7 +28,7 @@ const PinsBoardContainer = ({
 }: PinsBoardContainerProps) => {
   const { t } = useTranslation();
 
-  const resolvedFetchFn: FetchFn = fetchFn ?? fetch;
+  const resolvedFetchFn: FetchFn = fetchFn ?? fetchPublic;
 
   const fetchPage = async ({ pageParam }: { pageParam: number }) => {
     const url =

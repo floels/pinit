@@ -5,15 +5,15 @@ import {
   USERNAME_LOCAL_STORAGE_KEY,
 } from "../constants";
 import { useAuthContext } from "@/contexts/authContext";
+import { fetchWithRefreshCookie } from "@/lib/api/fetchers";
 
 export const useLogOut = () => {
   const { setAccessToken } = useAuthContext();
 
   const { mutateAsync } = useMutation({
     mutationFn: async () => {
-      await fetch(API_URL_LOG_OUT, {
+      await fetchWithRefreshCookie(API_URL_LOG_OUT, {
         method: "DELETE",
-        credentials: "include",
       });
     },
     // Best-effort logout: complete it locally whether or not the server call

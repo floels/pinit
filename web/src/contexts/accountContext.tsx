@@ -6,7 +6,7 @@ import {
   USERNAME_LOCAL_STORAGE_KEY,
 } from "@/lib/constants";
 import { useAuthContext } from "@/contexts/authContext";
-import { useFetchWithAuth } from "@/lib/hooks/useFetchWithAuth";
+import { useAPI } from "@/lib/api/useAPI";
 import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";
 import { throwIfKO } from "@/lib/utils/fetch";
 import { serializeAccountWithPrivateDetails } from "@/lib/utils/serializers";
@@ -48,13 +48,13 @@ export const AccountContextProvider = ({
   children: React.ReactNode;
 }) => {
   const queryClient = useQueryClient();
-  const fetchWithAuth = useFetchWithAuth();
+  const { fetchAuthenticated } = useAPI();
   const { accessToken, isAuthInitialized } = useAuthContext();
 
   const queryKey = getQueryKey(accessToken);
 
   const fetchAccountDetails = async () => {
-    const response = await fetchWithAuth(API_URL_MY_ACCOUNT_DETAILS);
+    const response = await fetchAuthenticated(API_URL_MY_ACCOUNT_DETAILS);
 
     throwIfKO(response);
 
