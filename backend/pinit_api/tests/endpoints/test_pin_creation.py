@@ -11,9 +11,9 @@ from pinit_api.lib.constants import (
 )
 from pinit_api.views.pin_creation import MAX_IMAGE_DIMENSION
 
-S3_BUCKET_NAME = "pinit-staging"
+S3_BUCKET_NAME = "pinit-pins"
 S3_BUCKET_REGION = "eu-north-1"
-S3_CUSTOM_DOMAIN = "pinit-staging.s3.eu-west-3.amazonaws.com"
+S3_CUSTOM_DOMAIN = "pinit-pins.s3.eu-west-3.amazonaws.com"
 
 VALID_IMAGE_FILE_KEY = "pins/pin_image_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4.jpg"
 
