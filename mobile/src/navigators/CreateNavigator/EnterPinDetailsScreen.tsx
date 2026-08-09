@@ -8,7 +8,7 @@ import LoadingOverlay from "@/src/components/LoadingOverlay/LoadingOverlay";
 
 type EnterPinDetailsScreenProps = {
   selectedImageURI: string;
-  imageAspectRatio: number | null;
+  imageAspectRatio: number;
   pinTitle: string;
   pinDescription: string;
   isPosting: boolean;
@@ -41,11 +41,6 @@ const EnterPinDetailsScreen = ({
       <Text style={styles.title}>{t("CreatePin.CREATE_A_PIN")}</Text>
     </View>
   );
-
-  if (imageAspectRatio === null) {
-    // Display only the header while we are fetching the image's aspect ratio:
-    return header;
-  }
 
   const imageHeight = IMAGE_WIDTH / imageAspectRatio;
 

@@ -1,9 +1,8 @@
 import { NavigationProp, RouteProp } from "@react-navigation/native";
 import { File, UploadType } from "expo-file-system";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Image } from "react-native";
 import Toast from "react-native-toast-message";
 
 import { CreatePinNavigatorParamList } from "./CreateNavigator";
@@ -37,27 +36,12 @@ const EnterPinDetailsScreenContainer = ({
 }: EnterPinDetailsScreenContainerProps) => {
   const { t } = useTranslation();
 
-  const { selectedImageURI, providedImageAspectRatio } = route.params;
-
-  const [imageAspectRatio, setImageAspectRatio] = useState(
-    providedImageAspectRatio,
-  );
+  const { selectedImageURI, imageAspectRatio } = route.params;
 
   const [pinTitle, setPinTitle] = useState("");
   const [pinDescription, setPinDescription] = useState("");
 
   const [isPosting, setIsPosting] = useState(false);
-
-  // Fetch the image's aspect ratio in case it wasn't provided by the
-  // previous screen (can happen if user clicks 'Next' really quickly
-  // after selecting the image):
-  useEffect(() => {
-    if (providedImageAspectRatio === null) {
-      Image.getSize(selectedImageURI, (width, height) => {
-        setImageAspectRatio(width / height);
-      });
-    }
-  }, [providedImageAspectRatio]);
 
   const handleSubmit = () => {
     uploadImageAndCreatePin();

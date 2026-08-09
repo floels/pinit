@@ -11,7 +11,7 @@ export type CreatePinNavigatorParamList = {
   SelectImage: undefined;
   EnterPinDetails: {
     selectedImageURI: string;
-    providedImageAspectRatio: number | null;
+    imageAspectRatio: number;
   };
 };
 

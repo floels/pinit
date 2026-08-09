@@ -4,8 +4,8 @@ import { usePermissions } from "expo-media-library";
 import { useCameraRollPhotos } from "../../src/hooks/useCameraRollPhotos";
 
 const photosInCameraRoll = [
-  { uri: "file:///photo-1.jpg" },
-  { uri: "file:///photo-2.jpg" },
+  { uri: "file:///photo-1.jpg", width: 236, height: 354 },
+  { uri: "file:///photo-2.jpg", width: 474, height: 474 },
 ];
 
 jest.mock("expo-media-library", () => ({
@@ -13,16 +13,26 @@ jest.mock("expo-media-library", () => ({
   MediaType: { IMAGE: "image" },
   usePermissions: jest.fn(),
   // The `Query` builder is chainable, so each filtering method returns `this`.
-  // `exe` resolves to assets whose `getUri` yields an uploadable "file://" URI.
+  // `exe` resolves to assets whose `getUri` yields an uploadable "file://" URI
+  // and whose `getShape` yields the pixel dimensions.
   Query: jest.fn().mockImplementation(() => ({
     eq: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
-    exe: jest
-      .fn()
-      .mockResolvedValue([
-        { getUri: () => Promise.resolve("file:///photo-1.jpg") },
-        { getUri: () => Promise.resolve("file:///photo-2.jpg") },
-      ]),
+    exe: jest.fn().mockResolvedValue([
+      {
+        getUri: () => Promise.resolve("file:///photo-1.jpg"),
+        getShape: () => Promise.resolve({ width: 236, height: 354 }),
+      },
+      {
+        getUri: () => Promise.resolve("file:///photo-2.jpg"),
+        getShape: () => Promise.resolve({ width: 474, height: 474 }),
+      },
+      {
+        // A photo whose dimensions are unavailable:
+        getUri: () => Promise.resolve("file:///photo-3.jpg"),
+        getShape: () => Promise.resolve(null),
+      },
+    ]),
   })),
 }));
 
@@ -64,6 +74,8 @@ it("sets 'cameraRollPhotos' appropriately when camera roll access is granted", a
 
   const { result } = renderHook(() => useCameraRollPhotos());
 
+  // The third asset reports no dimensions, so it is left out: a photo of
+  // unknown shape cannot size its own preview.
   await waitFor(() => {
     expect(result.current.cameraRollPhotos).toEqual(photosInCameraRoll);
   });

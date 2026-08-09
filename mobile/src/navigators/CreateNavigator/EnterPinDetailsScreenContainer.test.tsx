@@ -5,7 +5,6 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import { File } from "expo-file-system";
-import { Image } from "react-native";
 import Toast from "react-native-toast-message";
 
 import EnterPinDetailsScreenContainer from "./EnterPinDetailsScreenContainer";
@@ -54,8 +53,6 @@ jest.mock("expo-image-manipulator", () => ({
   },
 }));
 
-Image.getSize = jest.fn();
-
 const MockFile = File as unknown as jest.Mock;
 
 const MOCK_JPEG_URI = "file:///converted/image.jpg";
@@ -80,7 +77,7 @@ const renderComponent = (
     route: {
       params: {
         selectedImageURI: "file:///my/image/path.jpeg",
-        providedImageAspectRatio: 1.5,
+        imageAspectRatio: 1.5,
       },
     },
   },
@@ -240,38 +237,4 @@ it("displays error response toast when the S3 upload fails", async () => {
   });
   // The pin must not be created if the image failed to upload.
   expect(fetch).not.toHaveBeenCalledWith(createPinEndpoint, expect.anything());
-});
-
-it("fetches image size itself if aspect ratio wasn't provided", async () => {
-  // The fetched ratio sizes the preview of the selected image. The ratio of the
-  // created pin comes from the API response instead, so it is not asserted here.
-  const fetchedAspectRatio = 1.2;
-
-  (Image.getSize as jest.Mock).mockImplementationOnce((_, success) => {
-    success(100, 100 / fetchedAspectRatio);
-  });
-
-  renderComponent({
-    route: {
-      params: {
-        selectedImageURI: "file:///my/image/path.jpeg",
-        providedImageAspectRatio: null,
-      },
-    },
-  });
-
-  await waitFor(() => {
-    expect(Image.getSize).toHaveBeenCalledWith(
-      "file:///my/image/path.jpeg",
-      expect.any(Function),
-    );
-  });
-});
-
-it("does not fetch image size if aspect ratio was provided", async () => {
-  (Image.getSize as jest.Mock).mockReset();
-
-  renderComponent();
-
-  expect(Image.getSize).not.toHaveBeenCalled();
 });

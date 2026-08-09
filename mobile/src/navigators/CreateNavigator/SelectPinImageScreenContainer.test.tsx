@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from "@testing-library/react-native";
-import { Image } from "react-native";
 
 import SelectPinImageScreenContainer from "./SelectPinImageScreenContainer";
 
@@ -16,16 +15,6 @@ jest.mock("@/src/hooks/useCameraRollPhotos", () => ({
   useCameraRollPhotos: jest.fn(),
 }));
 
-const selectedPhotoWidth = 100;
-const selectedPhotoAspectRatio = 1.5;
-
-// jest.mock("react-native/Libraries/Image/Image", () => ({
-//   ...jest.requireActual("react-native/Libraries/Image/Image"),
-//   getSize: (_: any, success: any) => {
-//     success(selectedPhotoWidth, selectedPhotoWidth / selectedPhotoAspectRatio);
-//   },
-// }));
-
 const mockUseCameraRollPhotos = useCameraRollPhotos as jest.Mock;
 
 mockUseCameraRollPhotos.mockImplementation(() => ({
@@ -39,7 +28,10 @@ const mockNavigation = {
 
 const mockHandlePressClose = jest.fn();
 
-const cameraRollPhotos = [{ uri: "test-uri-1" }, { uri: "test-uri-2" }];
+const cameraRollPhotos = [
+  { uri: "test-uri-1", width: 236, height: 354 },
+  { uri: "test-uri-2", width: 474, height: 474 },
+];
 
 const renderComponent = () => {
   render(
@@ -49,13 +41,6 @@ const renderComponent = () => {
     />,
   );
 };
-
-beforeEach(() => {
-  // Since RN 0.86, an unmocked `Image.getSize` reaches a native module that is
-  // unavailable under Jest and throws. Default it to a no-op; tests that rely on
-  // its success callback override it below.
-  Image.getSize = jest.fn();
-});
 
 it("calls 'handlePressClose' when user presses the close button", async () => {
   renderComponent();
@@ -70,10 +55,10 @@ it("displays camera roll photos if camera roll access is granted", async () => {
 
   await waitFor(() => {
     const image1 = screen.getByTestId("camera-roll-image-0");
-    expect(image1).toHaveProp("source", cameraRollPhotos[0]);
+    expect(image1).toHaveProp("source", { uri: cameraRollPhotos[0].uri });
 
     const image2 = screen.getByTestId("camera-roll-image-1");
-    expect(image2).toHaveProp("source", cameraRollPhotos[1]);
+    expect(image2).toHaveProp("source", { uri: cameraRollPhotos[1].uri });
   });
 });
 
@@ -108,10 +93,6 @@ it("only displays 'Next' button when an image is selected", async () => {
 
 it(`calls 'navigate' with proper arguments when user presses 'Next' button
 after selecting an image`, async () => {
-  Image.getSize = jest.fn().mockImplementationOnce((_: any, success: any) => {
-    success(selectedPhotoWidth, selectedPhotoWidth / selectedPhotoAspectRatio);
-  });
-
   renderComponent();
 
   pressButton({ testID: "camera-roll-image-0" });
@@ -120,8 +101,10 @@ after selecting an image`, async () => {
 
   pressButton({ testID: "select-pin-image-screen-next-button" });
 
+  const selectedPhoto = cameraRollPhotos[1];
+
   expect(mockNavigation.navigate).toHaveBeenLastCalledWith("EnterPinDetails", {
-    selectedImageURI: cameraRollPhotos[1].uri,
-    providedImageAspectRatio: selectedPhotoAspectRatio,
+    selectedImageURI: selectedPhoto.uri,
+    imageAspectRatio: selectedPhoto.width / selectedPhoto.height,
   });
 });

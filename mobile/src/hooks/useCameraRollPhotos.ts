@@ -13,6 +13,8 @@ export type CameraRollPhoto = {
   // the raw "ph://" asset URIs, so we resolve each to its on-disk file URI, which
   // also happens to be directly uploadable (no "ph://" upload workaround needed).
   uri: string;
+  width: number;
+  height: number;
 };
 
 export const useCameraRollPhotos = () => {
@@ -43,10 +45,24 @@ export const useCameraRollPhotos = () => {
       .exe();
 
     const photos = await Promise.all(
-      assets.map(async (asset) => ({ uri: await asset.getUri() })),
+      assets.map(async (asset) => {
+        const [uri, shape] = await Promise.all([
+          asset.getUri(),
+          asset.getShape(),
+        ]);
+
+        // 'getShape' resolves to null when a dimension is unavailable. Such a
+        // photo cannot size its own preview, so we leave it out rather than
+        // carry a photo of unknown shape.
+        if (shape === null) {
+          return null;
+        }
+
+        return { uri, width: shape.width, height: shape.height };
+      }),
     );
 
-    setCameraRollPhotos(photos);
+    setCameraRollPhotos(photos.filter((photo) => photo !== null));
   };
 
   useEffect(() => {
