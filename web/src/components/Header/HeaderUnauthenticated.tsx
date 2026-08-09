@@ -5,6 +5,7 @@ import SignupFormContainer from "../SignupForm/SignupFormContainer";
 import styles from "./HeaderUnauthenticated.module.css";
 import { useState } from "react";
 import { useLocation } from "react-router";
+import { useAuthContext } from "@/contexts/authContext";
 import HeaderSearchBarContainer from "./HeaderSearchBarContainer";
 
 const HeaderUnauthenticated = () => {
@@ -14,7 +15,12 @@ const HeaderUnauthenticated = () => {
 
   const { t } = useTranslation("HeaderUnauthenticated");
 
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { isPromptingLogin, stopPromptingLogin } = useAuthContext();
+
+  // This component mounts at the moment 'Layout' swaps to the unauthenticated
+  // shell, which is the moment a session ends. So the initial state is enough to
+  // show the prompt, and no Effect is needed.
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(isPromptingLogin);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
   const openLogInModal = () => {
@@ -25,13 +31,19 @@ const HeaderUnauthenticated = () => {
     setIsSignupModalOpen(true);
   };
 
+  // Leaving the login form is the user declining to log back in, whether they
+  // close it or move on to signup. Both therefore stop the prompt, which lets
+  // 'PinCreationToolPage' redirect home instead of holding a URL for a login
+  // that is not coming.
   const handleClickNoAccountYet = () => {
     setIsLoginModalOpen(false);
     setIsSignupModalOpen(true);
+    stopPromptingLogin();
   };
 
   const handleCloseLoginModal = () => {
     setIsLoginModalOpen(false);
+    stopPromptingLogin();
   };
 
   const handleClickAlreadyHaveAccount = () => {

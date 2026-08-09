@@ -39,7 +39,20 @@ is the single source of truth:
 ```
 accessToken: string | null   — null until obtained via startup refresh or login
 isAuthInitialized: boolean   — false until the startup refresh attempt settles
+isPromptingLogin: boolean    — true while the app asks the user to log back in
 ```
+
+Alongside `setAccessToken`, the context exposes the three ways a session ends.
+They differ in one thing: whether the app then asks the user to log back in.
+
+| Function | Ends the session | Asks for a login | Caller |
+|---|---|---|---|
+| `clearSession()` | yes | no | logout: the user asked to leave |
+| `endSession()` | yes | yes | a failed refresh: the user did not choose this |
+| `stopPromptingLogin()` | already ended | stops asking | the user closes the prompt |
+
+`isPromptingLogin` is named for the prompt it drives, not for the expiry that
+caused it. That is what the two readers below actually test.
 
 `isAuthInitialized` distinguishes "we haven't checked yet" from "we checked and
 the user is unauthenticated". Without it, the app would briefly render as logged
@@ -49,11 +62,11 @@ out on every page load, even for authenticated users.
   success or on error.
 - `accessToken` is the token from that query result, unless login, signup,
   logout or a reactive refresh has set an explicit value. An explicit value
-  always takes precedence, so `setAccessToken(null)` on logout keeps the app
-  unauthenticated.
+  always takes precedence, so the `null` written by `clearSession` keeps the app
+  unauthenticated even while the cached refresh result still holds a token.
 
-The provider therefore holds one piece of state: the explicit token, which is
-`undefined` until something sets it.
+The provider therefore holds two pieces of state: the explicit token, which is
+`undefined` until something sets it, and `isPromptingLogin`.
 
 ## Flows
 
@@ -131,8 +144,8 @@ noticing. All authenticated data fetches go through it
    - **Refresh succeeds** → `200 { access_token }` (rotated cookie re-set); it
      calls `setAccessToken(new)` and retries the original request with the new
      token.
-   - **Refresh fails** → `401`; it calls `logOut()` (clears the token, redirects
-     to `/`).
+   - **Refresh fails** → `401`; it calls `endSession()`. No request is sent, and
+     the current route is kept (§5).
 
 Refresh-token rotation is transparent here: each refresh re-sets the cookie
 server-side, and the browser stores it automatically.
@@ -146,34 +159,59 @@ the first would be rejected as already-rotated — logging the user out.
 
 ### 4. Logout
 
-`useLogOut` calls the logout endpoint, clears the in-memory access token and the
-cached display data, then reloads to `/`.
+`useLogOut` calls the logout endpoint, clears the session, drops the cached
+queries, and navigates to `/` with the router. No document reload happens.
 
 1. On logout, `useLogOut` sends `DELETE /token/web/` (browser attaches the cookie).
 2. The backend revokes the refresh token and clears the cookie (`200`).
-3. `useLogOut` calls `setAccessToken(null)`, removes the two `localStorage`
-   values, and navigates to `/`; the next startup refresh fails, leaving the app
-   unauthenticated.
+3. `useLogOut` calls `clearSession()`, removes every cached query except the
+   startup refresh, and calls `navigate("/")`.
 
 The backend **revokes the refresh token server-side** on logout, so it cannot be
-reused. The access token is stateless and only in memory, so it is gone as soon
-as the page unloads. The redirect is a full page load, so it also drops the
-query cache, and with it the account. Logout is **best-effort**: `useLogOut`
-clears the token and redirects even if the request fails, so a failed call never
+reused. The access token is stateless and only in memory. Logout is
+**best-effort**: step 3 runs even if the request fails, so a failed call never
 leaves the user stuck logged in.
 
-**Logout also removes the cached display data.** `useLogOut` removes `username`
-and `profilePictureURL` from `localStorage`. Neither one is a credential, so
-they never kept a session alive. But they belong to the account that logged out.
+**Why the cached queries go.** The next account to log in can be a different
+person. Only the account query carries the access token in its key; pin
+suggestions, boards and created pins do not, so a stale entry would surface under
+the new account. The startup refresh entry is the one exception: it is active in
+`AuthContextProvider`, and removing it starts a refetch that turns
+`isAuthInitialized` back to `false` and paints a spinner over the route.
+
+**`clearSession` also removes the cached display data.** It removes `username`
+and `profilePictureURL` from `localStorage`. Neither one is a credential, so they
+never kept a session alive. But they belong to the account that logged out.
 Without this step, the header of the next account to log in on the same browser
 shows the previous username and profile picture until `/accounts/me/` resolves.
-The removal runs on the best-effort path, so it happens even when the request to
-the logout endpoint fails.
 
-### 5. Auth state machine
+### 5. An expired session
 
-The app moves between three states — **Initializing** (on mount),
-**Unauthenticated**, and **Authenticated**:
+A reactive refresh fails only when the refresh token is gone, expired or revoked,
+so the session is over. `fetchAuthenticated` calls `endSession()`, and the app
+keeps the current URL.
+
+1. `Layout` swaps to the unauthenticated shell. The route does not change.
+2. `HeaderUnauthenticated` mounts, reads `isPromptingLogin`, and opens the login
+   modal with the reason in it.
+3. On a successful login, `setAccessToken` clears the flag, the authenticated
+   shell returns, and the queries refetch on the same route.
+
+The cached queries stay on this path: the person logging back in is the same
+person. If the user dismisses the modal, `stopPromptingLogin()` clears the flag
+and the app is plainly **Unauthenticated**.
+
+`PinCreationToolPage` redirects to `/` when no token exists, which would destroy
+the URL. It therefore holds the route while `isPromptingLogin` is true, and
+redirects once the flag clears.
+
+The request that hit the 401 is **not** replayed after the login. The user
+repeats the action.
+
+### 6. Auth state machine
+
+The app moves between four states — **Initializing** (on mount),
+**Unauthenticated**, **Authenticated**, and **Expired**:
 
 | From | To | Trigger |
 |---|---|---|
@@ -181,19 +219,27 @@ The app moves between three states — **Initializing** (on mount),
 | Initializing | Authenticated | startup refresh succeeds |
 | Unauthenticated | Authenticated | login / signup succeeds |
 | Authenticated | Unauthenticated | logout |
-| Authenticated | Unauthenticated | a request's reactive refresh fails |
+| Authenticated | Expired | a request's reactive refresh fails |
+| Expired | Authenticated | the user logs back in |
+| Expired | Unauthenticated | the user dismisses the prompt |
+
+**Initializing** is reachable only on the first render. No transition returns to
+it, because the app never reloads the document. **Expired** differs from
+**Unauthenticated** only in that the login modal opens by itself and an
+authenticated-only route holds its URL.
 
 ## Key files
 
 | File | Role |
 |---|---|
-| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` + provider; runs the startup refresh; exposes `accessToken` and `isAuthInitialized`, both derived from that query. |
+| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` + provider; runs the startup refresh; exposes `accessToken` and `isAuthInitialized`, both derived from that query, plus `isPromptingLogin` and the three session mutators. |
 | [`src/pages/Layout.tsx`](../src/pages/Layout.tsx) | Gates routed content on `isAuthInitialized`; renders the authenticated vs. unauthenticated shell from `accessToken`. |
-| [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | `fetchAuthenticated` — adds the Bearer header; reactive refresh + retry on 401; logs out on failed refresh. Also exposes `fetchPublic` and `fetchExternal`. |
+| [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | `fetchAuthenticated` — adds the Bearer header; reactive refresh + retry on 401; ends the session on failed refresh. Also exposes `fetchPublic` and `fetchExternal`. |
 | [`src/lib/api/fetchers.ts`](../src/lib/api/fetchers.ts) | The only module allowed to call the `fetch` global. Holds `fetchPublic`, `fetchWithRefreshCookie` and `fetchExternal`. |
 | [`src/lib/api/refreshAccessToken.ts`](../src/lib/api/refreshAccessToken.ts) | The shared refresh query key and fetcher. |
 | [`src/lib/hooks/useLogin.ts`](../src/lib/hooks/useLogin.ts) | Login — posts credentials, stores the access token. |
 | [`src/lib/hooks/useSignup.ts`](../src/lib/hooks/useSignup.ts) | Signup — same shape as login. |
-| [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout — calls the endpoint, clears the token and the cached display data, redirects. |
+| [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout — calls the endpoint, clears the session, drops the cached queries, navigates to `/`. |
+| [`src/components/Header/HeaderUnauthenticated.tsx`](../src/components/Header/HeaderUnauthenticated.tsx) | Holds the login and signup modals; opens the login modal by itself after an expiry. |
 | [`src/contexts/accountContext.tsx`](../src/contexts/accountContext.tsx) | `AccountContext` + provider; fetches `/accounts/me/` once authenticated and passes the query result through the context. |
 | [`src/lib/constants.ts`](../src/lib/constants.ts) | API URLs. |

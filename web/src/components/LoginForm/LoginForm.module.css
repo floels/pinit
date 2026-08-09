@@ -25,6 +25,14 @@
   margin-bottom: 8px;
 }
 
+.sessionExpiredMessage {
+  font-size: var(--font-size-200);
+  color: var(--color-text-subtle);
+  text-align: center;
+  margin-top: -12px;
+  margin-bottom: 16px;
+}
+
 .otherErrorMessage {
   font-size: var(--font-size-100);
   color: var(--color-text-error);

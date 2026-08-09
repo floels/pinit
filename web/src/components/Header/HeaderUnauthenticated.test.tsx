@@ -1,22 +1,48 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import en from "@/public/locales/en/LandingPageContent.json";
+import common from "@/public/locales/en/Common.json";
+import { AuthContext, AuthContextType } from "@/contexts/authContext";
 import HeaderUnauthenticated from "./HeaderUnauthenticated";
 import { MemoryRouter } from "react-router";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
-const renderComponent = (pathname = "/some-page") => {
+const mockStopPromptingLogin = vi.fn();
+
+const buildAuthContextValue = (
+  overrides: Partial<AuthContextType> = {},
+): AuthContextType => ({
+  accessToken: null,
+  setAccessToken: vi.fn(),
+  isAuthInitialized: true,
+  isPromptingLogin: false,
+  clearSession: vi.fn(),
+  endSession: vi.fn(),
+  stopPromptingLogin: mockStopPromptingLogin,
+  ...overrides,
+});
+
+const renderComponent = (
+  pathname = "/some-page",
+  authContextValue = buildAuthContextValue(),
+) => {
   render(
     withQueryClient(
-      <MemoryRouter initialEntries={[pathname]}>
-        <HeaderSearchBarContextProvider>
-          <HeaderUnauthenticated />
-        </HeaderSearchBarContextProvider>
-      </MemoryRouter>,
+      <AuthContext.Provider value={authContextValue}>
+        <MemoryRouter initialEntries={[pathname]}>
+          <HeaderSearchBarContextProvider>
+            <HeaderUnauthenticated />
+          </HeaderSearchBarContextProvider>
+        </MemoryRouter>
+      </AuthContext.Provider>,
     ),
   );
 };
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 it("renders without any modal open", () => {
   renderComponent();
@@ -114,4 +140,51 @@ it("closes signup modal when user clicks close button", async () => {
   await userEvent.click(closeButton);
 
   expect(screen.queryByTestId("overlay-modal")).toBeNull();
+});
+
+it(`opens the login modal with the reason when the session just expired,
+without any click`, () => {
+  renderComponent(
+    "/some-page",
+    buildAuthContextValue({ isPromptingLogin: true }),
+  );
+
+  const modal = screen.getByTestId("overlay-modal");
+
+  within(modal).getByText(en.LoginForm.WELCOME_TO_PINIT);
+  within(modal).getByText(common.SESSION_EXPIRED);
+});
+
+it("shows no reason in the login modal when the user opens it themselves", async () => {
+  renderComponent();
+
+  await userEvent.click(screen.getByTestId("header-log-in-button"));
+
+  const modal = screen.getByTestId("overlay-modal");
+
+  within(modal).getByText(en.LoginForm.WELCOME_TO_PINIT);
+  expect(within(modal).queryByText(common.SESSION_EXPIRED)).toBeNull();
+});
+
+it("stops prompting for a login when the user closes the modal", async () => {
+  renderComponent(
+    "/some-page",
+    buildAuthContextValue({ isPromptingLogin: true }),
+  );
+
+  await userEvent.click(screen.getByTestId("overlay-modal-close-button"));
+
+  expect(screen.queryByTestId("overlay-modal")).toBeNull();
+  expect(mockStopPromptingLogin).toHaveBeenCalledTimes(1);
+});
+
+it("stops prompting for a login when the user switches to signup", async () => {
+  renderComponent(
+    "/some-page",
+    buildAuthContextValue({ isPromptingLogin: true }),
+  );
+
+  await userEvent.click(screen.getByText(en.LoginForm.NO_ACCOUNT_YET_CTA));
+
+  expect(mockStopPromptingLogin).toHaveBeenCalledTimes(1);
 });
