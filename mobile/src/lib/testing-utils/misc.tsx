@@ -9,6 +9,12 @@ const createTestQueryClient = () =>
     defaultOptions: {
       queries: {
         retry: false,
+        // Collect a query as soon as its last observer goes away. The default is
+        // five minutes, and nothing clears this client, so every test that
+        // rendered a query left a five-minute timer alive in its Jest worker.
+        // The worker then could not exit, and Jest reported "A worker process
+        // has failed to exit gracefully" after an otherwise green run.
+        gcTime: 0,
       },
     },
   });
