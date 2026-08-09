@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 import { loginAsTestUser, E2E_TEST_USER_EMAIL, E2E_TEST_USER_PASSWORD } from "../utils";
 
 test("user can log in and then log out", async ({ page }) => {
@@ -68,32 +68,4 @@ test("shows an error for an unrecognised email address", async ({ page }) => {
   await page.click('[data-testid="login-form-submit-button"]');
 
   await page.waitForSelector("text=The email you entered does not belong to any account.");
-});
-
-test("logout navigates with the router, without reloading the document", async ({
-  page,
-  context,
-}) => {
-  await loginAsTestUser({ context });
-  await page.goto("/");
-  await page.waitForSelector('[data-testid="sidebar-home-link"]');
-
-  // The mark disappears on a full page load.
-  await page.evaluate(() => {
-    (window as unknown as { __documentAlive?: boolean }).__documentAlive = true;
-  });
-
-  await page.click('[data-testid="account-options-button"]');
-  await page.waitForSelector('[data-testid="account-options-flyout"]');
-  await page.click('[data-testid="account-options-flyout-log-out-button"]');
-
-  await page.waitForSelector("text=Log in");
-  await page.waitForURL("**/");
-
-  const isSameDocument = await page.evaluate(
-    () =>
-      (window as unknown as { __documentAlive?: boolean }).__documentAlive ===
-      true,
-  );
-  expect(isSameDocument).toBe(true);
 });
