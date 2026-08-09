@@ -1,16 +1,14 @@
 # Authentication (web)
 
 This document covers the web app's authentication flow: how it stores tokens, drives the
-auth lifecycle, and talks to the auth endpoints. For the token protocol itself
-(PASETO access tokens, opaque rotating refresh tokens, verification, and
-revocation) see the backend reference:
+auth lifecycle, and talks to the auth endpoints. You can learn more about the backend side of the authentication flow in
 [`backend/pinit_api/doc/authentication.md`](../../backend/pinit_api/doc/authentication.md).
-The mobile app uses a different delivery mechanism — see
+The mobile app has an authentication flow that differs from the web app, see
 [`mobile/doc/authentication.md`](../../mobile/doc/authentication.md).
 
 ## Overview
 
-The web frontend holds the two tokens as follows:
+The web frontend holds two tokens:
 
 | Token | Where stored | Accessible to JS | Sent as |
 |---|---|---|---|
@@ -47,9 +45,6 @@ isAuthInitialized: boolean   — false until the startup refresh attempt settles
 the user is unauthenticated". Without it, the app would briefly render as logged
 out on every page load, even for authenticated users.
 
-The provider derives both values during render instead of copying them into
-state from an Effect:
-
 - `isAuthInitialized` is `true` once the startup refresh query settles, on
   success or on error.
 - `accessToken` is the token from that query result, unless login, signup,
@@ -62,25 +57,21 @@ The provider therefore holds one piece of state: the explicit token, which is
 
 ## Flows
 
-**When is the access token refreshed?** At exactly two moments — there is no
-proactive or timer-based refresh, and the web app does not track the token's
-expiry at all:
+The access token gets refreshed at exactly two moments:
 
-1. **Once on app load** — the startup refresh (§1) bootstraps the in-memory
-   access token from the refresh cookie.
+1. **Once on app load** — the startup refresh (§1) bootstraps the access token from the refresh cookie.
 2. **Reactively, after a 401** — when an authenticated request is rejected
    because the access token has expired (or is otherwise invalid),
-   `useFetchWithAuth` refreshes once and retries it (§3).
+   `useFetchWithAuth` refreshes once and retries the original request (§3).
 
 Between those two events the access token simply sits in memory; the app only
 discovers it has expired when a request comes back `401`. With the 15-minute
-lifetime, that means a *lazy* refresh — at most roughly once per 15 minutes of
-activity, triggered by the first request that fails. (The mobile app differs: it
-also refreshes **proactively**, ~2 minutes before expiry.)
+lifetime, that means a lazy refresh — at most roughly once per 15 minutes of
+activity, triggered by the first request that fails.
 
 ### 1. App startup
 
-`AuthContextProvider` runs a one-shot TanStack Query
+`AuthContextProvider` runs a one-shot Query
 on mount that calls the refresh endpoint (the browser attaches the httpOnly
 cookie automatically). `Layout` withholds the routed content until the attempt
 settles, to avoid a flash of unauthenticated UI.
