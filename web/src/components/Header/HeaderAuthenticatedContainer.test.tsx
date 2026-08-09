@@ -38,7 +38,9 @@ const renderComponent = ({
   render(
     withQueryClient(
       <MemoryRouter>
-        <AccountContext.Provider value={{ account, setAccount: vi.fn() }}>
+        <AccountContext.Provider
+          value={{ account, setAccount: vi.fn(), isFetchError: false }}
+        >
           <HeaderSearchBarContextProvider>
             <HeaderAuthenticatedContainer />
           </HeaderSearchBarContextProvider>

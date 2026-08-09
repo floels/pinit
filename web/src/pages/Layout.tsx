@@ -3,7 +3,7 @@ import { Outlet } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { useAuthContext } from "@/contexts/authContext";
-import { useAccountDetails } from "@/lib/hooks/useAccountDetails";
+import { useAccountContext } from "@/contexts/accountContext";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
 import HeaderAuthenticatedContainer from "@/components/Header/HeaderAuthenticatedContainer";
 import HeaderUnauthenticated from "@/components/Header/HeaderUnauthenticated";
@@ -15,7 +15,7 @@ import styles from "./Layout.module.css";
 const Layout = () => {
   const { t } = useTranslation();
   const { accessToken, isAuthInitialized } = useAuthContext();
-  const { isError: isAccountDetailsFetchError } = useAccountDetails();
+  const { isFetchError: isAccountDetailsFetchError } = useAccountContext();
 
   useEffect(() => {
     if (isAccountDetailsFetchError) {

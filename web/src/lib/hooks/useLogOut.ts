@@ -1,5 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { API_URL_LOG_OUT } from "../constants";
+import {
+  API_URL_LOG_OUT,
+  PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
+  USERNAME_LOCAL_STORAGE_KEY,
+} from "../constants";
 import { useAuthContext } from "@/contexts/authContext";
 
 export const useLogOut = () => {
@@ -18,6 +22,13 @@ export const useLogOut = () => {
     // expires. The access token is in-memory only and is cleared here.
     onSettled: () => {
       setAccessToken(null);
+
+      // The cached display data belongs to the account that just logged out.
+      // Without this, the header of the next account to log in shows the
+      // previous username and profile picture until '/accounts/me/' resolves.
+      localStorage?.removeItem(USERNAME_LOCAL_STORAGE_KEY);
+      localStorage?.removeItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY);
+
       window.location.href = "/";
     },
   });

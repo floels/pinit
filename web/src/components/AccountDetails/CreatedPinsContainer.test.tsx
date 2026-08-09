@@ -23,6 +23,7 @@ const createdPins = MOCK_API_RESPONSES_SERIALIZED[CREATED_PINS_URL].results;
 const accountContext = {
   account,
   setAccount: () => {},
+  isFetchError: false,
 };
 
 const authContext = {
@@ -167,6 +168,7 @@ it("does not show edit button for other users' profiles", async () => {
   const otherAccountContext = {
     account: { ...account, username: "anotherusername" },
     setAccount: () => {},
+    isFetchError: false,
   };
 
   fetchMock.mockOnceIf(

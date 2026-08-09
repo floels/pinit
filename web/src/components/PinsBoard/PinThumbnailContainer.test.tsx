@@ -54,6 +54,7 @@ const renderComponent = () => {
   const accountContext = {
     account,
     setAccount: () => {},
+    isFetchError: false,
   };
 
   render(
@@ -74,7 +75,11 @@ const renderComponent = () => {
 
 const StatefulWrapper = () => {
   const [currentAccount, setCurrentAccount] = useState<AccountWithPrivateDetails | null>(account);
-  const accountContext: AccountContextType = { account: currentAccount, setAccount: setCurrentAccount };
+  const accountContext: AccountContextType = {
+    account: currentAccount,
+    setAccount: setCurrentAccount,
+    isFetchError: false,
+  };
 
   return (
     <MemoryRouter>

@@ -1,7 +1,11 @@
 import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useLogOut } from "./useLogOut";
-import { API_URL_LOG_OUT } from "@/lib/constants";
+import {
+  API_URL_LOG_OUT,
+  PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
+  USERNAME_LOCAL_STORAGE_KEY,
+} from "@/lib/constants";
 import { AuthContext } from "@/contexts/authContext";
 import { createTestQueryClient } from "@/lib/testing-utils/misc";
 
@@ -29,6 +33,12 @@ beforeEach(() => {
   testQueryClient = createTestQueryClient();
   delete (window as Window & { location?: Location }).location;
   (window as Window & { location: { href: string } }).location = { href: "" };
+
+  localStorage.setItem(USERNAME_LOCAL_STORAGE_KEY, "johndoe");
+  localStorage.setItem(
+    PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
+    "https://some.domain.com/profile-picture.jpg",
+  );
 });
 
 it("calls logout endpoint with DELETE and credentials include", async () => {
@@ -46,7 +56,8 @@ it("calls logout endpoint with DELETE and credentials include", async () => {
   );
 });
 
-it("clears the access token and redirects to / on success", async () => {
+it(`clears the access token, clears the cached account data,
+and redirects to / on success`, async () => {
   fetchMock.mockResponseOnce("{}");
 
   const { result } = renderHook(() => useLogOut(), { wrapper });
@@ -56,10 +67,15 @@ it("clears the access token and redirects to / on success", async () => {
   });
 
   expect(mockSetAccessToken).toHaveBeenCalledWith(null);
+  expect(localStorage.getItem(USERNAME_LOCAL_STORAGE_KEY)).toBeNull();
+  expect(
+    localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY),
+  ).toBeNull();
   expect(window.location.href).toBe("/");
 });
 
-it("still clears the access token and redirects to / when the fetch throws", async () => {
+it(`still clears the access token and the cached account data,
+and redirects to / when the fetch throws`, async () => {
   fetchMock.mockRejectOnce(new Error("network error"));
 
   const { result } = renderHook(() => useLogOut(), { wrapper });
@@ -71,5 +87,9 @@ it("still clears the access token and redirects to / when the fetch throws", asy
   // Logout is best-effort: even if the server call fails, the user must be
   // logged out locally rather than left stuck.
   expect(mockSetAccessToken).toHaveBeenCalledWith(null);
+  expect(localStorage.getItem(USERNAME_LOCAL_STORAGE_KEY)).toBeNull();
+  expect(
+    localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY),
+  ).toBeNull();
   expect(window.location.href).toBe("/");
 });
