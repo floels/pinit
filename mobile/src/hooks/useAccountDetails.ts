@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { throwIfKO } from "../lib/utils/fetch";
-
+import { fetchPublic } from "@/src/lib/api/fetchers";
 import {
   API_BASE_URL,
   API_ENDPOINT_ACCOUNT_DETAILS,
 } from "@/src/lib/constants";
+import { throwIfKO } from "@/src/lib/utils/fetch";
 import { serializeAccountWithPublicDetails } from "@/src/lib/utils/serializers";
 
 const fetchAccountDetails = async ({ username }: { username: string }) => {
-  const response = await fetch(
+  const response = await fetchPublic(
     `${API_BASE_URL}/${API_ENDPOINT_ACCOUNT_DETAILS}/${username}/`,
   );
 

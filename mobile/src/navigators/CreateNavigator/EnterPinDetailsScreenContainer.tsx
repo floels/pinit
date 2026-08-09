@@ -8,13 +8,14 @@ import Toast from "react-native-toast-message";
 import { CreatePinNavigatorParamList } from "./CreateNavigator";
 import EnterPinDetailsScreen from "./EnterPinDetailsScreen";
 
+import { useAPI } from "@/src/lib/api/useAPI";
 import {
   API_BASE_URL,
   API_ENDPOINT_CREATE_PIN,
   API_ENDPOINT_PIN_IMAGE_UPLOAD_URL,
 } from "@/src/lib/constants";
 import { Pin } from "@/src/lib/types";
-import { fetchWithAuthentication, throwIfKO } from "@/src/lib/utils/fetch";
+import { throwIfKO } from "@/src/lib/utils/fetch";
 import { serializePin } from "@/src/lib/utils/serializers";
 
 type EnterPinDetailsScreenContainerProps = {
@@ -35,6 +36,8 @@ const EnterPinDetailsScreenContainer = ({
   handleCreateSuccess,
 }: EnterPinDetailsScreenContainerProps) => {
   const { t } = useTranslation();
+
+  const { fetchAuthenticated } = useAPI();
 
   const { selectedImageURI, imageAspectRatio } = route.params;
 
@@ -80,7 +83,7 @@ const EnterPinDetailsScreenContainer = ({
     // formats upload as something the backend accepts (it only allows jpg/png).
     const jpegImage = await convertToJpeg(selectedImageURI);
 
-    const uploadURLResponse = await fetchWithAuthentication(
+    const uploadURLResponse = await fetchAuthenticated(
       `${API_BASE_URL}/${API_ENDPOINT_PIN_IMAGE_UPLOAD_URL}?file_extension=.jpg`,
     );
     throwIfKO(uploadURLResponse);
@@ -123,7 +126,7 @@ const EnterPinDetailsScreenContainer = ({
     width: number;
     height: number;
   }) => {
-    const response = await fetchWithAuthentication(
+    const response = await fetchAuthenticated(
       `${API_BASE_URL}/${API_ENDPOINT_CREATE_PIN}`,
       {
         method: "POST",

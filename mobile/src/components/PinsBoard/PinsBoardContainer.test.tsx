@@ -215,14 +215,24 @@ it("stops fetching further pages once a page comes back empty", async () => {
   expect(fetch).not.toHaveBeenCalled();
 });
 
-it("fetches first page with authentication if relevant", async () => {
-  renderComponent({ shouldAuthenticate: true });
+it("fetches through the fetcher it is given", async () => {
+  // A board of an authenticated endpoint receives 'fetchAuthenticated' from
+  // 'useAPI'. The board itself carries no notion of a token.
+  const mockFetchFn = jest.fn().mockResolvedValue(
+    new Response(MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS], {
+      status: 200,
+    }),
+  );
+
+  renderComponent({ fetchFn: mockFetchFn });
 
   await waitFor(() => {
-    expect(fetch).toHaveBeenCalledWith(`${pinSuggestionsEndpoint}?page=1`, {
-      headers: { Authorization: "Bearer access_token" },
-    });
+    expect(mockFetchFn).toHaveBeenCalledWith(
+      `${pinSuggestionsEndpoint}?page=1`,
+    );
   });
+
+  expect(fetch).not.toHaveBeenCalled();
 });
 
 it("displays relevant message if search results are empty", async () => {
@@ -247,18 +257,6 @@ it("displays spinner while fetching initial pins", async () => {
   renderComponent();
 
   screen.getByTestId("mocked-spinner");
-});
-
-it("dispatches relevant action upon 401 response when fetching initial pins", async () => {
-  fetchMock.mockOnceIf(`${pinSuggestionsEndpoint}?page=1`, "{}", {
-    status: 401,
-  });
-
-  renderComponent();
-
-  await waitFor(() => {
-    expect(mockDispatch).toHaveBeenCalledWith({ type: "GOT_401_RESPONSE" });
-  });
 });
 
 it("displays error message upon 400 response when fetching initial pins", async () => {
@@ -354,31 +352,6 @@ again if user pulls again after debounce time`, async () => {
 
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledWith(`${pinSuggestionsEndpoint}?page=1`);
-  });
-});
-
-it("dispatches relevant action upon 401 response on refresh", async () => {
-  jest.useFakeTimers();
-
-  fetchMock.mockOnceIf(
-    `${pinSuggestionsEndpoint}?page=1`,
-    MOCK_API_RESPONSES[API_ENDPOINT_PIN_SUGGESTIONS],
-  );
-
-  renderComponent();
-
-  await waitFor(() => {
-    screen.getByTestId("mocked-pin-thumbnail-000000000000000000");
-  });
-
-  fetchMock.mockOnceIf(`${pinSuggestionsEndpoint}?page=1`, "{}", {
-    status: 401,
-  });
-
-  pullToRefresh();
-
-  await waitFor(() => {
-    expect(mockDispatch).toHaveBeenCalledWith({ type: "GOT_401_RESPONSE" });
   });
 });
 

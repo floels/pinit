@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import LoginScreen from "./LoginScreen";
 
 import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
+import { fetchPublic } from "@/src/lib/api/fetchers";
 import {
   API_BASE_URL,
   API_ENDPOINT_OBTAIN_TOKEN,
@@ -30,16 +31,19 @@ const computeCanSubmit = (values: Credentials) => {
 };
 
 const fetchTokens = async ({ email, password }: Credentials) => {
-  const response = await fetch(`${API_BASE_URL}/${API_ENDPOINT_OBTAIN_TOKEN}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetchPublic(
+    `${API_BASE_URL}/${API_ENDPOINT_OBTAIN_TOKEN}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
     },
-    body: JSON.stringify({
-      email,
-      password,
-    }),
-  });
+  );
 
   if (response.status === 401) {
     const responseData = await response.json();

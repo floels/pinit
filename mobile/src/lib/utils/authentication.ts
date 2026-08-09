@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 
+import { fetchPublic } from "@/src/lib/api/fetchers";
 import {
   ACCESS_TOKEN_EXPIRATION_DATE_STORAGE_KEY,
   ACCESS_TOKEN_STORAGE_KEY,
@@ -67,7 +68,7 @@ export const logOut = async () => {
     );
 
     if (refreshToken) {
-      await fetch(`${API_BASE_URL}/${API_ENDPOINT_LOGOUT}`, {
+      await fetchPublic(`${API_BASE_URL}/${API_ENDPOINT_LOGOUT}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token: refreshToken }),
@@ -169,7 +170,7 @@ const fetchRefreshedAccessToken = async ({
 }: {
   refreshToken: string;
 }) => {
-  const response = await fetch(
+  const response = await fetchPublic(
     `${API_BASE_URL}/${API_ENDPOINT_REFRESH_TOKEN}`,
     {
       method: "POST",

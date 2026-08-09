@@ -4,6 +4,7 @@ import { TextInput } from "react-native";
 
 import PinsSearchInput from "./PinsSearchInput";
 
+import { fetchPublic } from "@/src/lib/api/fetchers";
 import {
   API_BASE_URL,
   API_ENDPOINT_SEARCH_SUGGESTIONS,
@@ -78,7 +79,7 @@ const PinsSearchInputContainer = forwardRef(
       let response;
 
       try {
-        response = await fetch(
+        response = await fetchPublic(
           `${API_BASE_URL}/${API_ENDPOINT_SEARCH_SUGGESTIONS}?search=${inputValue.toLowerCase()}`,
         );
       } catch {
