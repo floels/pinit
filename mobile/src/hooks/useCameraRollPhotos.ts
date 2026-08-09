@@ -13,8 +13,6 @@ export type CameraRollPhoto = {
   // the raw "ph://" asset URIs, so we resolve each to its on-disk file URI, which
   // also happens to be directly uploadable (no "ph://" upload workaround needed).
   uri: string;
-  // Pixel dimensions read from the asset. The create flow sizes its preview from
-  // them, so no screen measures the image with 'Image.getSize'.
   width: number;
   height: number;
 };
