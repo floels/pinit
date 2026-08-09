@@ -83,7 +83,7 @@ It also exposes the four ways to change that state:
 | Function | What it does | Called by |
 |---|---|---|
 | `setAccessToken(value)` | Stores a token, or stores `null`. A token also stops the login prompt. | a login, a signup, a refresh after a 401 |
-| `clearSession()` | Drops the token and the two `localStorage` values. Asks the user for nothing. | logout |
+| `clearSession()` | Drops the token, and the cached `username` and `profilePictureURL` in `localStorage`. Asks the user for nothing. | logout |
 | `endSession()` | Runs `clearSession()`, and then asks for a new login. | a failed refresh |
 | `stopPromptingLogin()` | Stops the prompt, because the user declined. | the login modal, when the user closes it or moves to signup |
 
@@ -131,7 +131,6 @@ sequenceDiagram
     autonumber
     participant P as AuthContextProvider
     participant L as Layout
-    participant A as AccountContextProvider
     participant B as Backend
 
     Note over L: isAuthInitialized is false, so Layout shows a spinner
@@ -139,15 +138,11 @@ sequenceDiagram
     alt the refresh cookie is valid
         B-->>P: 200, a new access token, and a rotated cookie
         Note over P: accessToken reads that token
-        Note over L: isAuthInitialized is true, so Layout renders the route
-        A->>B: GET /accounts/me/ with the Bearer token
-        B-->>A: 200 and the account
     else there is no cookie, or the cookie expired
         B-->>P: 401
         Note over P: accessToken stays null
-        Note over L: isAuthInitialized is true, so Layout renders the route
-        Note over A: the account query stays disabled
     end
+    Note over L: isAuthInitialized is true, so Layout renders the route
 ```
 
 The refresh query does not retry, and it does not run again when the window
@@ -197,8 +192,7 @@ leave the browser default in place.
 `fetchAuthenticated` ([`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts))
 attaches the access token and recovers from an expired one. This is the
 mechanism that keeps a session alive without the user noticing. Every
-authenticated fetch goes through it: `AccountContextProvider`, `useCreatePin`,
-`useUpdatePin`, `useDeletePin`, `useCreateBoard`, `useSavePin`, and `HomePage`.
+authenticated fetch in the app goes through it.
 
 ```mermaid
 sequenceDiagram
@@ -283,10 +277,9 @@ request must never leave the user stuck in a logged-in UI. On that path the
 refresh token stays valid on the server until it expires.
 
 **Which cached queries the app drops.** Every query except the startup refresh.
-The next account to log in can belong to a different person, and only the
-account query carries the access token in its key. Pin suggestions, boards and
-created pins do not carry it, so a stale entry would appear under the new
-account.
+The next person to log in on the same browser can be somebody else. Only one
+query key carries the access token. The others do not, so a cached entry would
+survive the change and appear as the new user's data.
 
 The startup refresh entry stays, for two reasons. `AuthContextProvider` watches
 that entry, so a removal starts a new fetch, which turns `isAuthInitialized`
