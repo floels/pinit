@@ -355,7 +355,8 @@ again if user pulls again after debounce time`, async () => {
   });
 });
 
-it("displays error message upon 400 response on refresh", async () => {
+it(`displays error message upon 400 response on refresh,
+and keeps the pins that were on screen`, async () => {
   jest.useFakeTimers();
 
   fetchMock.mockOnceIf(
@@ -378,4 +379,10 @@ it("displays error message upon 400 response on refresh", async () => {
   await waitFor(() => {
     screen.getByText(enTranslations.Common.ERROR_REFRESH_PINS);
   });
+
+  // A failed refresh must not empty the board: the pins the user was reading
+  // stay on screen, and only the message reports the failure.
+  expect(screen.queryAllByTestId(/^mocked-pin-thumbnail-/).length).toEqual(
+    mockPinSuggestions.length,
+  );
 });

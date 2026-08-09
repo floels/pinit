@@ -1,4 +1,8 @@
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
@@ -101,32 +105,39 @@ const PinsBoardContainer = ({
 
   const pins = data?.pages.flat() ?? [];
 
-  // A failed refresh reports its own message, so we suppress the general one
-  // while it shows.
-  const shouldReportFetchMorePinsError = !!error && !refreshError;
+  const fetchMorePinsError = error ? t("Common.ERROR_FETCH_MORE_PINS") : "";
 
-  const fetchMorePinsError = shouldReportFetchMorePinsError
-    ? t("Common.ERROR_FETCH_MORE_PINS")
-    : "";
-
-  // Pull to refresh drops every loaded page and fetches the first one again, so
-  // the board returns to the top. 'resetQueries' also cancels a fetch that is
-  // still running, which stops it from overwriting the refreshed pins.
+  // Pull to refresh fetches the first page and writes it as the only page, so
+  // the board returns to the top. We fetch it here rather than resetting the
+  // query, because resetting drops the loaded pages before the new ones arrive:
+  // a refresh that then fails would leave the board empty.
   const onRefresh = async () => {
     setIsRefreshing(true);
     setRefreshError("");
 
-    await queryClient.resetQueries({ queryKey });
+    let firstPins;
 
-    if (queryClient.getQueryState(queryKey)?.error) {
+    try {
+      // Cancel first. A fetch that is still running must not land after us and
+      // overwrite the refreshed pins.
+      await queryClient.cancelQueries({ queryKey });
+
+      firstPins = await fetchPins(1);
+    } catch {
       setRefreshError(t("Common.ERROR_REFRESH_PINS"));
+      return;
+    } finally {
+      setIsRefreshing(false);
+      setHasJustRefreshed(true);
+      setTimeout(() => {
+        setHasJustRefreshed(false);
+      }, DEBOUNCE_TIME_REFRESH_MS);
     }
 
-    setIsRefreshing(false);
-    setHasJustRefreshed(true);
-    setTimeout(() => {
-      setHasJustRefreshed(false);
-    }, DEBOUNCE_TIME_REFRESH_MS);
+    queryClient.setQueryData<InfiniteData<PinWithAuthorDetails[], number>>(
+      queryKey,
+      { pages: [firstPins], pageParams: [1] },
+    );
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
