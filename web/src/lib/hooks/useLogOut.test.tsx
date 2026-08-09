@@ -1,15 +1,19 @@
 import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useLogOut } from "./useLogOut";
-import {
-  API_URL_LOG_OUT,
-  PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
-  USERNAME_LOCAL_STORAGE_KEY,
-} from "@/lib/constants";
+import { API_URL_LOG_OUT } from "@/lib/constants";
 import { AuthContext } from "@/contexts/authContext";
+import { REFRESH_ACCESS_TOKEN_QUERY_KEY } from "@/lib/api/refreshAccessToken";
 import { createTestQueryClient } from "@/lib/testing-utils/misc";
 
-const mockSetAccessToken = vi.fn();
+const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }));
+
+vi.mock("react-router", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("react-router")>()),
+  useNavigate: () => mockNavigate,
+}));
+
+const mockClearSession = vi.fn();
 
 let testQueryClient = createTestQueryClient();
 
@@ -18,8 +22,12 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
     <AuthContext.Provider
       value={{
         accessToken: "mock.token",
-        setAccessToken: mockSetAccessToken,
+        setAccessToken: vi.fn(),
         isAuthInitialized: true,
+        sessionExpired: false,
+        clearSession: mockClearSession,
+        endSession: vi.fn(),
+        dismissSessionExpiry: vi.fn(),
       }}
     >
       {children}
@@ -29,16 +37,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 beforeEach(() => {
   fetchMock.resetMocks();
-  mockSetAccessToken.mockReset();
+  vi.clearAllMocks();
   testQueryClient = createTestQueryClient();
-  delete (window as Window & { location?: Location }).location;
-  (window as Window & { location: { href: string } }).location = { href: "" };
-
-  localStorage.setItem(USERNAME_LOCAL_STORAGE_KEY, "johndoe");
-  localStorage.setItem(
-    PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
-    "https://some.domain.com/profile-picture.jpg",
-  );
 });
 
 it("calls logout endpoint with DELETE and credentials include", async () => {
@@ -56,8 +56,7 @@ it("calls logout endpoint with DELETE and credentials include", async () => {
   );
 });
 
-it(`clears the access token, clears the cached account data,
-and redirects to / on success`, async () => {
+it("clears the session and navigates to / on success", async () => {
   fetchMock.mockResponseOnce("{}");
 
   const { result } = renderHook(() => useLogOut(), { wrapper });
@@ -66,16 +65,11 @@ and redirects to / on success`, async () => {
     await result.current();
   });
 
-  expect(mockSetAccessToken).toHaveBeenCalledWith(null);
-  expect(localStorage.getItem(USERNAME_LOCAL_STORAGE_KEY)).toBeNull();
-  expect(
-    localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY),
-  ).toBeNull();
-  expect(window.location.href).toBe("/");
+  expect(mockClearSession).toHaveBeenCalledTimes(1);
+  expect(mockNavigate).toHaveBeenCalledWith("/");
 });
 
-it(`still clears the access token and the cached account data,
-and redirects to / when the fetch throws`, async () => {
+it("still clears the session and navigates to / when the fetch throws", async () => {
   fetchMock.mockRejectOnce(new Error("network error"));
 
   const { result } = renderHook(() => useLogOut(), { wrapper });
@@ -86,10 +80,43 @@ and redirects to / when the fetch throws`, async () => {
 
   // Logout is best-effort: even if the server call fails, the user must be
   // logged out locally rather than left stuck.
-  expect(mockSetAccessToken).toHaveBeenCalledWith(null);
-  expect(localStorage.getItem(USERNAME_LOCAL_STORAGE_KEY)).toBeNull();
-  expect(
-    localStorage.getItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY),
-  ).toBeNull();
-  expect(window.location.href).toBe("/");
+  expect(mockClearSession).toHaveBeenCalledTimes(1);
+  expect(mockNavigate).toHaveBeenCalledWith("/");
+});
+
+it("navigates with the router, so the document is not reloaded", async () => {
+  fetchMock.mockResponseOnce("{}");
+
+  const { result } = renderHook(() => useLogOut(), { wrapper });
+
+  await act(async () => {
+    await result.current();
+  });
+
+  expect(window.location.href).not.toBe("/");
+});
+
+it(`drops the cached queries of the account that logged out,
+but keeps the startup refresh entry`, async () => {
+  fetchMock.mockResponseOnce("{}");
+
+  // Not keyed by the access token, so a stale entry would surface under the
+  // next account.
+  testQueryClient.setQueryData(["pin-suggestions"], ["a pin"]);
+  // Active in AuthContextProvider: removing it would restart the refresh and
+  // flash a spinner over the route.
+  testQueryClient.setQueryData(REFRESH_ACCESS_TOKEN_QUERY_KEY, {
+    access_token: "mock.token",
+  });
+
+  const { result } = renderHook(() => useLogOut(), { wrapper });
+
+  await act(async () => {
+    await result.current();
+  });
+
+  expect(testQueryClient.getQueryData(["pin-suggestions"])).toBeUndefined();
+  expect(testQueryClient.getQueryData(REFRESH_ACCESS_TOKEN_QUERY_KEY)).toEqual({
+    access_token: "mock.token",
+  });
 });

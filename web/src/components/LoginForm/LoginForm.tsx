@@ -23,6 +23,7 @@ type LoginFormProps = {
   handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   handleClickNoAccountYet: () => void;
+  showSessionExpiredMessage: boolean;
 };
 
 const LoginForm = ({
@@ -33,6 +34,7 @@ const LoginForm = ({
   handleInputChange,
   handleSubmit,
   handleClickNoAccountYet,
+  showSessionExpiredMessage,
 }: LoginFormProps) => {
   const { t } = useTranslation(["LandingPageContent", "Common"]);
 
@@ -61,6 +63,14 @@ const LoginForm = ({
       <h1 className={styles.title}>
         {t("LoginForm.WELCOME_TO_PINIT")}
       </h1>
+      {showSessionExpiredMessage && (
+        <div
+          className={styles.sessionExpiredMessage}
+          data-testid="login-form-session-expired-message"
+        >
+          {t("Common:SESSION_EXPIRED")}
+        </div>
+      )}
       <form noValidate onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.emailInputContainer}>
           <LabelledTextInput

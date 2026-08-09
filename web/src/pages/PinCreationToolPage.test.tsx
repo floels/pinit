@@ -12,7 +12,10 @@ vi.mock("@/components/PinCreationView/PinCreationViewContainer", () => {
   return { default: MockedPinCreationViewContainer };
 });
 
-const renderComponent = ({ accessToken = null }: { accessToken?: string | null } = {}) => {
+const renderComponent = ({
+  accessToken = null,
+  sessionExpired = false,
+}: { accessToken?: string | null; sessionExpired?: boolean } = {}) => {
   const router = createMemoryRouter(
     [
       { path: "/", element: <div>Home</div> },
@@ -22,7 +25,17 @@ const renderComponent = ({ accessToken = null }: { accessToken?: string | null }
   );
 
   render(
-    <AuthContext.Provider value={{ accessToken, setAccessToken: vi.fn() }}>
+    <AuthContext.Provider
+      value={{
+        accessToken,
+        setAccessToken: vi.fn(),
+        isAuthInitialized: true,
+        sessionExpired,
+        clearSession: vi.fn(),
+        endSession: vi.fn(),
+        dismissSessionExpiry: vi.fn(),
+      }}
+    >
       <RouterProvider router={router} />
     </AuthContext.Provider>,
   );
@@ -38,4 +51,19 @@ it("renders pin creation view when authenticated", () => {
   renderComponent({ accessToken: "mock-access-token" });
 
   screen.getByTestId("pin-creation-view-container");
+});
+
+it("holds the route without redirecting when the session just expired", () => {
+  // The login modal comes from the header shell, and a successful login must
+  // land the user back on this page. So the URL must survive.
+  renderComponent({ sessionExpired: true });
+
+  expect(screen.queryByText("Home")).toBeNull();
+  expect(screen.queryByTestId("pin-creation-view-container")).toBeNull();
+});
+
+it("redirects home once the user dismisses the expiry prompt", () => {
+  renderComponent({ sessionExpired: false });
+
+  screen.getByText("Home");
 });

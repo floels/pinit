@@ -17,11 +17,7 @@ import {
   MOCK_API_RESPONSES_SERIALIZED,
 } from "@/lib/testing-utils/mockAPIResponses";
 
-const { mockLogOut } = vi.hoisted(() => ({ mockLogOut: vi.fn() }));
-
-vi.mock("@/lib/hooks/useLogOut", () => ({
-  useLogOut: () => mockLogOut,
-}));
+const mockEndSession = vi.fn();
 
 localStorage = new MockLocalStorage();
 
@@ -33,7 +29,7 @@ const ACCOUNT_SERIALIZED = MOCK_API_RESPONSES_SERIALIZED[
 
 beforeEach(() => {
   fetchMock.resetMocks();
-  mockLogOut.mockClear();
+  mockEndSession.mockClear();
   localStorage.clear();
 });
 
@@ -50,7 +46,15 @@ const renderAccountContext = ({
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <AuthContext.Provider
-      value={{ accessToken, setAccessToken: vi.fn(), isAuthInitialized }}
+      value={{
+        accessToken,
+        setAccessToken: vi.fn(),
+        isAuthInitialized,
+        sessionExpired: false,
+        clearSession: vi.fn(),
+        endSession: mockEndSession,
+        dismissSessionExpiry: vi.fn(),
+      }}
     >
       <QueryClientProvider client={testQueryClient}>
         <AccountContextProvider>{children}</AccountContextProvider>
@@ -103,7 +107,7 @@ it("sends the access token as Authorization header", async () => {
   });
 });
 
-it("triggers logout upon 401 response when refresh also fails", async () => {
+it("expires the session upon 401 response when refresh also fails", async () => {
   fetchMock
     .mockResponseOnce("{}", { status: 401 }) // fetch account details → 401
     .mockResponseOnce("{}", { status: 401 }); // refresh attempt → 401
@@ -111,7 +115,7 @@ it("triggers logout upon 401 response when refresh also fails", async () => {
   renderAccountContext();
 
   await waitFor(() => {
-    expect(mockLogOut).toHaveBeenCalledTimes(1);
+    expect(mockEndSession).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -128,7 +132,7 @@ it("retries and exposes the account upon 401 response when refresh succeeds", as
   await waitFor(() => {
     expect(result.current.account).toEqual(ACCOUNT_SERIALIZED);
   });
-  expect(mockLogOut).not.toHaveBeenCalled();
+  expect(mockEndSession).not.toHaveBeenCalled();
 });
 
 it("does not fetch account details when not authenticated", async () => {

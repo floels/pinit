@@ -1,6 +1,10 @@
 import { createContext, useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
+  PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
+  USERNAME_LOCAL_STORAGE_KEY,
+} from "@/lib/constants";
+import {
   REFRESH_ACCESS_TOKEN_QUERY_KEY,
   fetchRefreshedAccessToken,
 } from "@/lib/api/refreshAccessToken";
@@ -9,12 +13,27 @@ export type AuthContextType = {
   accessToken: string | null;
   setAccessToken: (accessToken: string | null) => void;
   isAuthInitialized: boolean;
+  // True from the moment a reactive refresh fails until the user logs back in
+  // or dismisses the prompt. It is what makes the login modal open itself, and
+  // what tells an authenticated-only route to hold its URL instead of
+  // redirecting home.
+  sessionExpired: boolean;
+  // Ends the session locally: no request, and no navigation. Logout calls this
+  // one, because a logout is not an expiry.
+  clearSession: () => void;
+  // 'clearSession' plus the 'sessionExpired' flag. A failed refresh calls this.
+  endSession: () => void;
+  dismissSessionExpiry: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
   accessToken: null,
   setAccessToken: () => {},
   isAuthInitialized: false,
+  sessionExpired: false,
+  clearSession: () => {},
+  endSession: () => {},
+  dismissSessionExpiry: () => {},
 });
 
 export const AuthContextProvider = ({
@@ -28,6 +47,8 @@ export const AuthContextProvider = ({
   const [explicitAccessToken, setExplicitAccessToken] = useState<
     string | null | undefined
   >(undefined);
+
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const { data, status } = useQuery({
     queryKey: REFRESH_ACCESS_TOKEN_QUERY_KEY,
@@ -43,10 +64,42 @@ export const AuthContextProvider = ({
 
   const isAuthInitialized = status === "success" || status === "error";
 
+  const setAccessToken = (newAccessToken: string | null) => {
+    setExplicitAccessToken(newAccessToken);
+
+    // A token means that somebody logged in, so the expiry prompt is done.
+    if (newAccessToken !== null) {
+      setSessionExpired(false);
+    }
+  };
+
+  const clearSession = () => {
+    setExplicitAccessToken(null);
+
+    // The cached display data belongs to the account that is leaving. Without
+    // this, the header of the next account to log in shows the previous
+    // username and profile picture until '/accounts/me/' resolves.
+    localStorage?.removeItem(USERNAME_LOCAL_STORAGE_KEY);
+    localStorage?.removeItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY);
+  };
+
+  const endSession = () => {
+    clearSession();
+    setSessionExpired(true);
+  };
+
+  const dismissSessionExpiry = () => {
+    setSessionExpired(false);
+  };
+
   const contextValue = {
     accessToken,
-    setAccessToken: setExplicitAccessToken,
+    setAccessToken,
     isAuthInitialized,
+    sessionExpired,
+    clearSession,
+    endSession,
+    dismissSessionExpiry,
   };
 
   return (

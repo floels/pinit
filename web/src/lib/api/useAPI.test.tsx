@@ -7,11 +7,7 @@ import { AuthContext } from "@/contexts/authContext";
 import { createTestQueryClient } from "@/lib/testing-utils/misc";
 
 const mockSetAccessToken = vi.fn();
-const { mockLogOut } = vi.hoisted(() => ({ mockLogOut: vi.fn() }));
-
-vi.mock("@/lib/hooks/useLogOut", () => ({
-  useLogOut: () => mockLogOut,
-}));
+const mockEndSession = vi.fn();
 
 const MOCK_ACCESS_TOKEN = "mock.access.token";
 const MOCK_NEW_ACCESS_TOKEN = "mock.new.access.token";
@@ -26,6 +22,10 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
         accessToken: MOCK_ACCESS_TOKEN,
         setAccessToken: mockSetAccessToken,
         isAuthInitialized: true,
+        sessionExpired: false,
+        clearSession: vi.fn(),
+        endSession: mockEndSession,
+        dismissSessionExpiry: vi.fn(),
       }}
     >
       {children}
@@ -51,7 +51,7 @@ it("returns the response directly when status is not 401", async () => {
 
   expect(response!.status).toBe(200);
   expect(fetch).toHaveBeenCalledTimes(1);
-  expect(mockLogOut).not.toHaveBeenCalled();
+  expect(mockEndSession).not.toHaveBeenCalled();
 });
 
 it("sets Authorization header with the current access token", async () => {
@@ -105,10 +105,10 @@ it("retries with new token upon 401 and successful refresh", async () => {
     }),
   );
   expect(mockSetAccessToken).toHaveBeenCalledWith(MOCK_NEW_ACCESS_TOKEN);
-  expect(mockLogOut).not.toHaveBeenCalled();
+  expect(mockEndSession).not.toHaveBeenCalled();
 });
 
-it("calls logout upon 401 and failed refresh", async () => {
+it("expires the session upon 401 and failed refresh", async () => {
   fetchMock
     .mockResponseOnce("{}", { status: 401 })
     .mockResponseOnce("{}", { status: 401 });
@@ -119,7 +119,9 @@ it("calls logout upon 401 and failed refresh", async () => {
     await result.current.fetchAuthenticated(TARGET_URL);
   });
 
-  expect(mockLogOut).toHaveBeenCalledTimes(1);
+  // Not a logout: the refresh cookie is already invalid, so there is nothing
+  // for the logout endpoint to revoke, and the route must survive.
+  expect(mockEndSession).toHaveBeenCalledTimes(1);
   expect(mockSetAccessToken).not.toHaveBeenCalled();
 });
 

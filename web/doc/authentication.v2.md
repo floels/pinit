@@ -42,19 +42,26 @@ stateDiagram-v2
     Initializing --> Authenticated : the startup refresh returns a token
     Initializing --> Unauthenticated : the startup refresh returns no token
     Unauthenticated --> Authenticated : login or signup succeeds
-    Authenticated --> Initializing : logout reloads the page
-    Authenticated --> Initializing : a reactive refresh fails and logs out
+    Authenticated --> Unauthenticated : logout
+    Authenticated --> Expired : a reactive refresh fails
+    Expired --> Authenticated : the user logs back in
+    Expired --> Unauthenticated : the user dismisses the prompt
 ```
 
-Both exits from **Authenticated** pass through **Initializing**, because both
-run a full page load. The startup refresh then fails, because no valid refresh
-cookie remains. So the app lands in **Unauthenticated**.
+**Initializing** is reachable only once, on the first render. No transition
+returns to it, because the app never reloads the document. Every later
+transition is a state change in React.
 
-| State | `accessToken` | `isAuthInitialized` | What renders |
-|---|---|---|---|
-| Initializing | `null` | `false` | the unauthenticated shell, with a spinner in place of the route |
-| Unauthenticated | `null` | `true` | the unauthenticated shell and the route |
-| Authenticated | a token | `true` | the authenticated shell and the route |
+| State | `accessToken` | `isAuthInitialized` | `sessionExpired` | What renders |
+|---|---|---|---|---|
+| Initializing | `null` | `false` | `false` | the unauthenticated shell, with a spinner in place of the route |
+| Unauthenticated | `null` | `true` | `false` | the unauthenticated shell and the route |
+| Authenticated | a token | `true` | `false` | the authenticated shell and the route |
+| Expired | `null` | `true` | `true` | the unauthenticated shell, the route, and the login modal |
+
+**Expired** differs from **Unauthenticated** in two ways only: the login modal
+opens by itself, and an authenticated-only route holds its URL instead of
+redirecting home. Both read `sessionExpired`.
 
 ## 3. When the access token is refreshed
 
@@ -64,7 +71,7 @@ not track the expiry of the access token.
 1. **Once on app load.** The startup refresh reads the refresh cookie (§5).
 2. **After a 401.** `useAPI().fetchAuthenticated` attempts one refresh (§7). If
    the refresh returns a token, it retries the request. If the refresh fails, it
-   logs the user out.
+   ends the session (§8).
 
 Between those moments the access token sits in memory. The app discovers an
 expired token only when a request returns 401. The access token lasts 15
@@ -73,20 +80,28 @@ minutes, so a refresh happens at most about once per 15 minutes of activity.
 ## 4. Auth state in React
 
 `AuthContext` ([`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx))
-exposes three things:
+exposes the state and the four ways to change it.
 
 ```
 accessToken: string | null   — null until the startup refresh or a login supplies one
 isAuthInitialized: boolean   — false until the startup refresh settles
-setAccessToken(value)        — sets an explicit token, or null
+sessionExpired: boolean      — true from a failed refresh until a login or a dismissal
+setAccessToken(value)        — sets an explicit token, or null. A token clears sessionExpired
+clearSession()               — drops the token and the two localStorage values
+endSession()                 — clearSession(), plus sessionExpired = true
+dismissSessionExpiry()       — sessionExpired = false
 ```
 
 `isAuthInitialized` separates "not checked yet" from "checked, and the user is
 unauthenticated". Without it, every page load would render as logged out for a
 moment, even for an authenticated user.
 
-The provider stores **one** value, `explicitAccessToken`. It computes the other
-two on every render.
+**Why `clearSession` and `endSession` both exist.** A logout is not an expiry.
+Logout calls `clearSession`, so no login prompt appears: the user asked to
+leave. A failed refresh calls `endSession`, so the prompt does appear.
+
+The provider stores **two** values, `explicitAccessToken` and `sessionExpired`.
+It computes `accessToken` and `isAuthInitialized` on every render.
 
 ```mermaid
 flowchart TD
@@ -102,13 +117,14 @@ flowchart TD
 | Value | Meaning | Written by |
 |---|---|---|
 | `undefined` | Nobody set a token. `accessToken` follows the startup refresh. | the initial value |
-| `null` | A token is explicitly absent, and this beats the refresh result. | logout, and a failed reactive refresh |
+| `null` | A token is explicitly absent, and this beats the refresh result. | `clearSession`, and therefore logout and a failed reactive refresh |
 | a string | A token arrived outside the startup refresh. | login, signup, a reactive refresh |
 
 **Why `null` and `undefined` must differ.** The result of the startup refresh
-stays in the query cache. `undefined` means "follow that result". After a logout
-that cached result can still hold a valid token. So logout writes `null`, which
-keeps the app unauthenticated for the moments before the page reloads.
+stays in the query cache, and `undefined` means "follow that result". After a
+logout that cached result still holds a valid token, because the app no longer
+reloads. So `clearSession` writes `null`, and `null` wins. This is also why
+logout can leave the refresh entry in the cache (§8).
 
 ## 5. Flow: app startup
 
@@ -226,7 +242,7 @@ sequenceDiagram
             F-->>C: the response of the retry
         else the refresh fails
             B-->>F: 401
-            F->>F: log the user out
+            F->>F: endSession, so the route survives (§8)
             F-->>C: the original 401
         end
     end
@@ -263,35 +279,76 @@ already rotated, which would log the user out.
 
 The startup refresh of §5 uses that same key, so it shares the deduplication.
 
-## 8. Flow: logout
+## 8. Flow: the two ways a session ends
+
+Neither path reloads the document. The app is a single-page app, and a reload
+throws away the router, the query cache and every component state to achieve
+something React already does.
+
+### Logout
 
 `useLogOut` ([`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts)) ends
 the session on the server and in the browser.
 
 1. `useLogOut` sends `DELETE /token/web/`. The browser attaches the cookie.
 2. The backend revokes the refresh token and clears the cookie.
-3. `useLogOut` calls `setAccessToken(null)`, removes the two `localStorage`
-   values of §1, and sets `window.location.href` to `/`.
-4. The page reloads. The startup refresh finds no valid cookie, so the app lands
-   in **Unauthenticated**.
+3. `useLogOut` calls `clearSession()`, drops the cached queries, and navigates to
+   `/` with the router.
 
-Steps 3 and 4 run whether or not step 1 succeeded. **Logout is best-effort:** a
-failed request must never leave the user stuck in a logged-in UI. On that path
-the refresh token stays valid on the server until it expires.
+Step 3 runs whether or not step 1 succeeded. **Logout is best-effort:** a failed
+request must never leave the user stuck in a logged-in UI. On that path the
+refresh token stays valid on the server until it expires.
 
-The reload also drops the query cache, and with it the account.
+**Which cached queries are dropped.** Every one except the startup refresh. The
+next account to log in can be a different person, and only the account query
+carries the access token in its key. Pin suggestions, boards and created pins do
+not, so a stale entry would surface under the new account.
+
+The startup refresh entry stays, for two reasons. `AuthContextProvider` observes
+it, so removing it starts a refetch, which turns `isAuthInitialized` back to
+`false` and paints a spinner over the route. And its cached token is harmless,
+because `clearSession` writes an explicit `null`, which wins (§4).
+
+### An expired session
+
+A refresh fails only when the refresh token is gone, expired or revoked. So the
+session is over, and no request can save it.
+
+1. `fetchAuthenticated` calls `endSession()` (§7). It sends no request: the
+   cookie that the backend just rejected has nothing left to revoke.
+2. `Layout` swaps to the unauthenticated shell. **The URL does not change.**
+3. `HeaderUnauthenticated` mounts, reads `sessionExpired`, and opens the login
+   modal with the reason in it.
+4. The user logs in. `setAccessToken` stores the token and clears the flag, the
+   authenticated shell returns, and the queries refetch on the same route.
+
+The cached queries stay on this path. The person logging back in is the same
+person, so the data is theirs.
+
+If the user dismisses the modal instead, `dismissSessionExpiry()` clears the
+flag, and the app is plainly **Unauthenticated**.
+
+**Authenticated-only routes.** `PinCreationToolPage` redirects to `/` when no
+token exists, which would destroy the URL before the user can act. It therefore
+holds the route while `sessionExpired` is true, and redirects once the flag
+clears.
+
+**The failed request is not replayed.** A save that hit the 401 stays failed, and
+the user repeats it. An automatic replay after re-login is a good way to submit
+something twice.
 
 ## 9. Key files
 
 | File | Role |
 |---|---|
-| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` and its provider. Runs the startup refresh. Exposes `accessToken` and `isAuthInitialized`, both derived. |
+| [`src/contexts/authContext.tsx`](../src/contexts/authContext.tsx) | `AuthContext` and its provider. Runs the startup refresh. Exposes `accessToken` and `isAuthInitialized`, both derived, plus `sessionExpired` and the three session mutators. |
 | [`src/contexts/accountContext.tsx`](../src/contexts/accountContext.tsx) | `AccountContext` and its provider. Fetches `/accounts/me/` once authenticated, and passes the query result through the context. |
 | [`src/pages/Layout.tsx`](../src/pages/Layout.tsx) | Gates the route on `isAuthInitialized`. Picks the authenticated or unauthenticated shell from `accessToken`. |
-| [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | The one hook for API traffic. `fetchAuthenticated` adds the Bearer header, refreshes and retries once on a 401, and logs out when the refresh fails. |
+| [`src/components/Header/HeaderUnauthenticated.tsx`](../src/components/Header/HeaderUnauthenticated.tsx) | Holds the login and signup modals. Opens the login modal by itself after an expiry. |
+| [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | The one hook for API traffic. `fetchAuthenticated` adds the Bearer header, refreshes and retries once on a 401, and ends the session when the refresh fails. |
 | [`src/lib/api/fetchers.ts`](../src/lib/api/fetchers.ts) | The only module allowed to call the `fetch` global. Holds `fetchPublic`, `fetchWithRefreshCookie` and `fetchExternal`. |
 | [`src/lib/api/refreshAccessToken.ts`](../src/lib/api/refreshAccessToken.ts) | The shared refresh key and fetcher, used by §5 and §7. |
 | [`src/lib/hooks/useLogin.ts`](../src/lib/hooks/useLogin.ts) | Login. Posts the credentials, stores the access token. |
 | [`src/lib/hooks/useSignup.ts`](../src/lib/hooks/useSignup.ts) | Signup. Same shape as login. |
-| [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout. Calls the endpoint, clears the token and the two `localStorage` values, reloads. |
+| [`src/lib/hooks/useLogOut.ts`](../src/lib/hooks/useLogOut.ts) | Logout. Calls the endpoint, clears the session, drops the cached queries, navigates to `/`. |
 | [`src/lib/constants.ts`](../src/lib/constants.ts) | The API URLs and the `localStorage` keys. |

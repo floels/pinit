@@ -5,6 +5,7 @@ import SignupFormContainer from "../SignupForm/SignupFormContainer";
 import styles from "./HeaderUnauthenticated.module.css";
 import { useState } from "react";
 import { useLocation } from "react-router";
+import { useAuthContext } from "@/contexts/authContext";
 import HeaderSearchBarContainer from "./HeaderSearchBarContainer";
 
 const HeaderUnauthenticated = () => {
@@ -14,7 +15,12 @@ const HeaderUnauthenticated = () => {
 
   const { t } = useTranslation("HeaderUnauthenticated");
 
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { sessionExpired, dismissSessionExpiry } = useAuthContext();
+
+  // This component mounts at the moment 'Layout' swaps to the unauthenticated
+  // shell, which is the moment the session ends. So an expired session opens
+  // the modal through the initial state, with no Effect.
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(sessionExpired);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
   const openLogInModal = () => {
@@ -25,13 +31,18 @@ const HeaderUnauthenticated = () => {
     setIsSignupModalOpen(true);
   };
 
+  // Leaving the login form ends the expiry prompt, whether the user moves on to
+  // signup or closes the modal. An authenticated-only route then stops holding
+  // its URL and redirects home.
   const handleClickNoAccountYet = () => {
     setIsLoginModalOpen(false);
     setIsSignupModalOpen(true);
+    dismissSessionExpiry();
   };
 
   const handleCloseLoginModal = () => {
     setIsLoginModalOpen(false);
+    dismissSessionExpiry();
   };
 
   const handleClickAlreadyHaveAccount = () => {
