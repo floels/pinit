@@ -67,15 +67,18 @@ export const tapNth = async (testID: string, index: number) => {
 //
 // Both cases recover from a retry. The expected element states what the tap is
 // supposed to achieve, which reads better than an arbitrary pause.
-export const tapUntilVisible = async (
-  testID: string,
+const tapWithRetry = async (
+  performTap: () => Promise<void>,
   expectedTestID: string,
-  attempts = 3,
+  attempts: number,
 ) => {
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      await tap(testID);
-      await waitForVisible(expectedTestID, TAP_RETRY_TIMEOUT_MS);
+      await performTap();
+      // `atIndex(0)` asks for at least one match, not exactly one. A tap that
+      // lands on a list gets several, and a bare `by.id` would then stay
+      // ambiguous until it times out, which reads like the tap did nothing.
+      await waitForNthVisible(expectedTestID, 0, TAP_RETRY_TIMEOUT_MS);
       return;
     } catch (error) {
       if (attempt === attempts) {
@@ -85,6 +88,30 @@ export const tapUntilVisible = async (
       await new Promise((resolve) => setTimeout(resolve, RETRY_PAUSE_MS));
     }
   }
+};
+
+export const tapUntilVisible = async (
+  testID: string,
+  expectedTestID: string,
+  attempts = 3,
+) => {
+  await tapWithRetry(() => tap(testID), expectedTestID, attempts);
+};
+
+export const tapText = async (text: string) => {
+  await waitForText(text);
+  await element(by.text(text)).tap();
+};
+
+// Same retry as `tapUntilVisible`, for a target that carries no testID. A search
+// suggestion is one: the list renders every item with the same testID, so the
+// text is what tells them apart.
+export const tapTextUntilVisible = async (
+  text: string,
+  expectedTestID: string,
+  attempts = 3,
+) => {
+  await tapWithRetry(() => tapText(text), expectedTestID, attempts);
 };
 
 export const typeInto = async (testID: string, text: string) => {
@@ -118,6 +145,16 @@ export const launchSignedOut = async ({
   });
 };
 
+// Relaunches without clearing anything, so the app has to restore its session
+// from `expo-secure-store` and refresh the access token at start-up. Use this to
+// assert what survives a restart. `launchSignedOut` is the opposite.
+export const relaunchKeepingSession = async () => {
+  await device.launchApp({
+    newInstance: true,
+    launchArgs: { detoxEnableSynchronization: 0 },
+  });
+};
+
 // Adds an image to the simulator photo library. The library belongs to the
 // device, not to the app, so a single call covers every launch that follows.
 export const addPhotoToSimulator = (imagePath: string) => {
@@ -140,4 +177,13 @@ export const logIn = async ({
 export const logInAndWaitForBoard = async () => {
   await logIn();
   await waitForVisible("pins-board-scroll-view");
+};
+
+// For a flow that needs a signed-out app but does not test the log-out UI
+// itself. `authentication.test.ts` spells these taps out, because there the
+// steps are the subject of the test.
+export const logOut = async () => {
+  await tap("tab-bar-button-profile");
+  await tap("log-out-button");
+  await waitForVisible("log-in-button");
 };
