@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   AuthenticationContextProvider,
@@ -146,6 +146,51 @@ it("keeps a token that a login supplied while the startup refresh was open", asy
   expect(screen.getByTestId("access-token")).toHaveTextContent(
     "new.access.token",
   );
+});
+
+it("keeps an expired session when the startup refresh answers late", async () => {
+  let resolveRefresh: (body: string) => void;
+
+  const refreshBody = new Promise<string>((resolve) => {
+    resolveRefresh = resolve;
+  });
+
+  fetchMock.mockResponseOnce(() => refreshBody);
+
+  renderProvider();
+
+  // The session dies before the startup refresh answers.
+  await userEvent.click(screen.getByTestId("end-session"));
+
+  expect(screen.getByTestId("is-prompting-login")).toHaveTextContent("true");
+  // The expiry also ends the initializing state: the app knows where it stands.
+  expect(screen.getByTestId("is-auth-initialized")).toHaveTextContent("true");
+
+  await act(async () => {
+    resolveRefresh!(MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN]);
+  });
+
+  // The late token must not revive a session that already ended.
+  expect(screen.getByTestId("access-token")).toHaveTextContent("null");
+  expect(screen.getByTestId("is-prompting-login")).toHaveTextContent("true");
+});
+
+it("keeps an authenticated session when a decline arrives out of turn", async () => {
+  fetchMock.mockResponseOnce(MOCK_API_RESPONSES[API_URL_REFRESH_TOKEN]);
+
+  renderProvider();
+
+  await waitForAuthInitialized();
+
+  // Nothing is prompting a login, so a decline must change nothing. The state
+  // that a decline produces is the same one that a logout produces, so without
+  // a guard this call would end a healthy session.
+  await userEvent.click(screen.getByTestId("dismiss"));
+
+  expect(screen.getByTestId("access-token")).toHaveTextContent(
+    "mock.access.token.refresh",
+  );
+  expect(screen.getByTestId("is-prompting-login")).toHaveTextContent("false");
 });
 
 it("clears the token and the account data, and asks for nothing", async () => {
