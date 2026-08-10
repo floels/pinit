@@ -1,12 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { API_URL_OBTAIN_TOKEN, ERROR_CODE_FETCH_FAILED } from "../constants";
-import { useAuthContext } from "@/contexts/authContext";
+import { useAuthenticationContext } from "@/contexts/authenticationContext";
 import { fetchWithRefreshCookie } from "@/lib/api/fetchers";
 
 type LoginCredentials = { email: string; password: string };
 
 export const useLogin = () => {
-  const { setAccessToken } = useAuthContext();
+  const { setAccessToken } = useAuthenticationContext();
 
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {

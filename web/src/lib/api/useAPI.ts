@@ -1,9 +1,5 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useAuthContext } from "@/contexts/authContext";
-import {
-  REFRESH_ACCESS_TOKEN_QUERY_KEY,
-  fetchRefreshedAccessToken,
-} from "./refreshAccessToken";
+import { useAuthenticationContext } from "@/contexts/authenticationContext";
+import { refreshAccessToken } from "./refreshAccessToken";
 import { fetchExternal, fetchPublic } from "./fetchers";
 
 // The single entry point for API traffic from a component or a hook. It returns
@@ -12,8 +8,8 @@ import { fetchExternal, fetchPublic } from "./fetchers";
 // './fetchers': they need no auth state, and they are passed through here only
 // so that a call site has one import to reach for.
 export const useAPI = () => {
-  const { accessToken, setAccessToken, endSession } = useAuthContext();
-  const queryClient = useQueryClient();
+  const { accessToken, setAccessToken, endSession } =
+    useAuthenticationContext();
 
   const fetchAuthenticated = async (url: string, options: RequestInit = {}) => {
     const { headers: existingHeaders, ...restOptions } = options;
@@ -27,20 +23,12 @@ export const useAPI = () => {
       return response;
     }
 
-    // Route the refresh through the query cache so concurrent 401s share a
-    // single in-flight refresh (TanStack Query dedupes fetchQuery calls on the
-    // same key). Without this, simultaneous requests would each refresh and,
-    // because refresh tokens rotate, revoke one another — logging the user out.
-    const refreshData = await queryClient
-      .fetchQuery({
-        queryKey: REFRESH_ACCESS_TOKEN_QUERY_KEY,
-        queryFn: fetchRefreshedAccessToken,
-        staleTime: 0,
-        retry: false,
-      })
-      .catch(() => null);
+    // The access token expired, so refresh once and retry. 'refreshAccessToken'
+    // is single-flight, so concurrent 401s share one request rather than
+    // presenting the rotating refresh cookie several times over.
+    const refreshedData = await refreshAccessToken();
 
-    const newAccessToken = refreshData?.access_token;
+    const newAccessToken = refreshedData?.access_token;
 
     if (!newAccessToken) {
       // Not a logout: the refresh cookie is already invalid, so calling the

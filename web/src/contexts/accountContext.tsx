@@ -5,7 +5,7 @@ import {
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
   USERNAME_LOCAL_STORAGE_KEY,
 } from "@/lib/constants";
-import { useAuthContext } from "@/contexts/authContext";
+import { useAuthenticationContext } from "@/contexts/authenticationContext";
 import { useAPI } from "@/lib/api/useAPI";
 import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";
 import { throwIfKO } from "@/lib/utils/fetch";
@@ -49,7 +49,7 @@ export const AccountContextProvider = ({
 }) => {
   const queryClient = useQueryClient();
   const { fetchAuthenticated } = useAPI();
-  const { accessToken, isAuthInitialized } = useAuthContext();
+  const { accessToken, isAuthInitialized } = useAuthenticationContext();
 
   const queryKey = getQueryKey(accessToken);
 

@@ -1,15 +1,11 @@
-import { createContext, useContext, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import {
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
   USERNAME_LOCAL_STORAGE_KEY,
 } from "@/lib/constants";
-import {
-  REFRESH_ACCESS_TOKEN_QUERY_KEY,
-  fetchRefreshedAccessToken,
-} from "@/lib/api/refreshAccessToken";
+import { refreshAccessToken } from "@/lib/api/refreshAccessToken";
 
-export type AuthContextType = {
+export type AuthenticationContextType = {
   accessToken: string | null;
   setAccessToken: (accessToken: string | null) => void;
   isAuthInitialized: boolean;
@@ -29,7 +25,7 @@ export type AuthContextType = {
   stopPromptingLogin: () => void;
 };
 
-export const AuthContext = createContext<AuthContextType>({
+export const AuthenticationContext = createContext<AuthenticationContextType>({
   accessToken: null,
   setAccessToken: () => {},
   isAuthInitialized: false,
@@ -39,36 +35,23 @@ export const AuthContext = createContext<AuthContextType>({
   stopPromptingLogin: () => {},
 });
 
-export const AuthContextProvider = ({
+export const AuthenticationContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  // `undefined` means that no token was set explicitly yet. The token then comes
-  // from the refresh query below. Login, logout and token refresh all set an
-  // explicit value, which takes precedence over the query result.
-  const [explicitAccessToken, setExplicitAccessToken] = useState<
-    string | null | undefined
-  >(undefined);
-
+  const [accessToken, setAccessTokenState] = useState<string | null>(null);
+  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
   const [isPromptingLogin, setIsPromptingLogin] = useState(false);
 
-  const { data, status } = useQuery({
-    queryKey: REFRESH_ACCESS_TOKEN_QUERY_KEY,
-    queryFn: fetchRefreshedAccessToken,
-    retry: false,
-    refetchOnWindowFocus: false,
-  });
-
-  const accessToken =
-    explicitAccessToken !== undefined
-      ? explicitAccessToken
-      : (data?.access_token ?? null);
-
-  const isAuthInitialized = status === "success" || status === "error";
+  // True once a login, a logout or an on-401 refresh has set the token. The
+  // startup refresh below then leaves the token alone: a user who logged in
+  // while that request was still open must stay logged in.
+  const hasExplicitToken = useRef(false);
 
   const setAccessToken = (newAccessToken: string | null) => {
-    setExplicitAccessToken(newAccessToken);
+    hasExplicitToken.current = true;
+    setAccessTokenState(newAccessToken);
 
     // A token means that somebody logged in, so there is nothing left to ask.
     if (newAccessToken !== null) {
@@ -76,11 +59,29 @@ export const AuthContextProvider = ({
     }
   };
 
+  // The access token lives in memory only, so a reload takes it with it. The app
+  // therefore asks the backend once, on mount, who the user is. The browser
+  // attaches the httpOnly refresh cookie. This is the only place that starts a
+  // session without the user acting.
+  useEffect(() => {
+    const runStartupRefresh = async () => {
+      const refreshedData = await refreshAccessToken();
+
+      if (!hasExplicitToken.current) {
+        setAccessTokenState(refreshedData?.access_token ?? null);
+      }
+
+      setIsAuthInitialized(true);
+    };
+
+    runStartupRefresh();
+  }, []);
+
   // The three functions below are the only ways a session ends. They differ in
   // one thing: whether the app then asks the user to log back in.
 
   const clearSession = () => {
-    setExplicitAccessToken(null);
+    setAccessToken(null);
 
     // The cached display data belongs to the account that is leaving. Without
     // this, the header of the next account to log in shows the previous
@@ -112,8 +113,10 @@ export const AuthContextProvider = ({
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <AuthenticationContext.Provider value={contextValue}>
+      {children}
+    </AuthenticationContext.Provider>
   );
 };
 
-export const useAuthContext = () => useContext(AuthContext);
+export const useAuthenticationContext = () => useContext(AuthenticationContext);

@@ -2,8 +2,7 @@ import { renderHook, act } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useLogOut } from "./useLogOut";
 import { API_URL_LOG_OUT } from "@/lib/constants";
-import { AuthContext } from "@/contexts/authContext";
-import { REFRESH_ACCESS_TOKEN_QUERY_KEY } from "@/lib/api/refreshAccessToken";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 import { createTestQueryClient } from "@/lib/testing-utils/misc";
 
 const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }));
@@ -19,7 +18,7 @@ let testQueryClient = createTestQueryClient();
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={testQueryClient}>
-    <AuthContext.Provider
+    <AuthenticationContext.Provider
       value={{
         accessToken: "mock.token",
         setAccessToken: vi.fn(),
@@ -31,7 +30,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
       }}
     >
       {children}
-    </AuthContext.Provider>
+    </AuthenticationContext.Provider>
   </QueryClientProvider>
 );
 
@@ -96,17 +95,14 @@ it("navigates with the router, so the document is not reloaded", async () => {
   expect(window.location.href).not.toBe("/");
 });
 
-it(`drops the cached queries of the account that logged out,
-but keeps the startup refresh entry`, async () => {
+it("drops every cached query of the account that logged out", async () => {
   fetchMock.mockResponseOnce("{}");
 
   // Not keyed by the access token, so a stale entry would surface under the
   // next account.
   testQueryClient.setQueryData(["pin-suggestions"], ["a pin"]);
-  // Active in AuthContextProvider: removing it would restart the refresh and
-  // flash a spinner over the route.
-  testQueryClient.setQueryData(REFRESH_ACCESS_TOKEN_QUERY_KEY, {
-    access_token: "mock.token",
+  testQueryClient.setQueryData(["myAccountDetails", "mock.token"], {
+    username: "johndoe",
   });
 
   const { result } = renderHook(() => useLogOut(), { wrapper });
@@ -116,7 +112,7 @@ but keeps the startup refresh entry`, async () => {
   });
 
   expect(testQueryClient.getQueryData(["pin-suggestions"])).toBeUndefined();
-  expect(testQueryClient.getQueryData(REFRESH_ACCESS_TOKEN_QUERY_KEY)).toEqual({
-    access_token: "mock.token",
-  });
+  expect(
+    testQueryClient.getQueryData(["myAccountDetails", "mock.token"]),
+  ).toBeUndefined();
 });

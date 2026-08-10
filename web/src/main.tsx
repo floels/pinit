@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 config.autoAddCss = false;
-import { AuthContextProvider } from "@/contexts/authContext";
+import { AuthenticationContextProvider } from "@/contexts/authenticationContext";
 import { AccountContextProvider } from "@/contexts/accountContext";
 import QueryClientProvider from "@/components/QueryClientProvider/QueryClientProvider";
 import ErrorBoundary from "@/components/ErrorBoundary/ErrorBoundary";
@@ -17,11 +17,11 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary>
       <QueryClientProvider>
-        <AuthContextProvider>
+        <AuthenticationContextProvider>
           <AccountContextProvider>
             <RouterProvider router={router} />
           </AccountContextProvider>
-        </AuthContextProvider>
+        </AuthenticationContextProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>,

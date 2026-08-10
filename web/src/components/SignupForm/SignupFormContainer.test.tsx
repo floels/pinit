@@ -5,7 +5,7 @@ import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
 import { API_URL_SIGN_UP } from "@/lib/constants";
 import { MOCK_API_RESPONSES, MOCK_API_RESPONSES_JSON } from "@/lib/testing-utils/mockAPIResponses";
-import { AuthContext } from "@/contexts/authContext";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const handleClickAlreadyHaveAccount = () => {}; // NB: this behavior will be tested in <HeaderUnauthenticatedClient />
@@ -15,13 +15,13 @@ const mockSetAccessToken = vi.fn();
 const renderComponent = () => {
   render(
     withQueryClient(
-      <AuthContext.Provider
+      <AuthenticationContext.Provider
         value={{ accessToken: null, setAccessToken: mockSetAccessToken, isAuthInitialized: false }}
       >
         <SignupFormContainer
           handleClickAlreadyHaveAccount={handleClickAlreadyHaveAccount}
         />
-      </AuthContext.Provider>,
+      </AuthenticationContext.Provider>,
     ),
   );
 };

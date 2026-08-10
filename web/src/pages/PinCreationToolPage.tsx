@@ -1,9 +1,9 @@
 import { Navigate } from "react-router";
-import { useAuthContext } from "@/contexts/authContext";
+import { useAuthenticationContext } from "@/contexts/authenticationContext";
 import PinCreationViewContainer from "@/components/PinCreationView/PinCreationViewContainer";
 
 const PinCreationToolPage = () => {
-  const { accessToken, isPromptingLogin } = useAuthContext();
+  const { accessToken, isPromptingLogin } = useAuthenticationContext();
 
   if (!accessToken) {
     // The app is asking for a login, so hold this URL. The modal covers the page

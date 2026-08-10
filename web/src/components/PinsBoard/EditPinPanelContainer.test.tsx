@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import EditPinPanelContainer from "./EditPinPanelContainer";
-import { AuthContext } from "@/contexts/authContext";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 import { AccountContext } from "@/contexts/accountContext";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 import { API_URL_UPDATE_PIN, API_URL_MY_ACCOUNT_DETAILS } from "@/lib/constants";
@@ -11,7 +11,7 @@ import { MOCK_API_RESPONSES_SERIALIZED } from "@/lib/testing-utils/mockAPIRespon
 
 const account = MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];
 
-const authContext = {
+const authenticationContext = {
   accessToken: "mock.access.token",
   setAccessToken: vi.fn(),
   isAuthInitialized: true,
@@ -44,7 +44,7 @@ const renderComponent = (pin = testPin) => {
   render(
     withQueryClient(
       <MemoryRouter>
-        <AuthContext.Provider value={authContext}>
+        <AuthenticationContext.Provider value={authenticationContext}>
           <AccountContext.Provider value={accountContext}>
             <EditPinPanelContainer
               pin={pin}
@@ -53,7 +53,7 @@ const renderComponent = (pin = testPin) => {
               onDelete={mockOnDelete}
             />
           </AccountContext.Provider>
-        </AuthContext.Provider>
+        </AuthenticationContext.Provider>
       </MemoryRouter>,
     ),
   );
@@ -173,7 +173,7 @@ it("sends PATCH request with auth token", async () => {
       expect.objectContaining({
         method: "PATCH",
         headers: expect.objectContaining({
-          Authorization: `Bearer ${authContext.accessToken}`,
+          Authorization: `Bearer ${authenticationContext.accessToken}`,
         }),
       }),
     );

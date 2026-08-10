@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { createMemoryRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import PinCreationToolPage from "./PinCreationToolPage";
-import { AuthContext } from "@/contexts/authContext";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 
 vi.mock("@/components/PinCreationView/PinCreationViewContainer", () => {
   const MockedPinCreationViewContainer = () => (
@@ -25,7 +25,7 @@ const renderComponent = ({
   );
 
   render(
-    <AuthContext.Provider
+    <AuthenticationContext.Provider
       value={{
         accessToken,
         setAccessToken: vi.fn(),
@@ -37,7 +37,7 @@ const renderComponent = ({
       }}
     >
       <RouterProvider router={router} />
-    </AuthContext.Provider>,
+    </AuthenticationContext.Provider>,
   );
 };
 
