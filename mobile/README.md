@@ -142,10 +142,20 @@ the same way the Playwright suite does. Three rules follow:
 - Start each test with `launchSignedOut()`. It resets the simulator keychain,
   which is the only reliable way to clear `expo-secure-store`. To assert what
   survives a restart instead, use `relaunchKeepingSession()`.
-- Wait on a list with `waitForNthVisible(testID, 0)`, not `waitForVisible`. A
-  pins board gives every thumbnail the same testID, and a bare `by.id` match
-  stays ambiguous until it times out. The timeout then reads as "the element
-  never appeared", which sends you looking for the wrong bug.
+- Target one item in a list by its own testID. A pin thumbnail carries
+  `pin-thumbnail-<pin id>`, so a flow can open a known seeded pin. Do not try to
+  match the title or the author name inside it: the thumbnail's touchable is
+  accessible, so it collapses its texts into a single accessibility element and
+  `by.text` finds nothing.
+- Reach for `waitForNthVisible(testID, index)` only when any item will do, for
+  example to assert that a board rendered at all. A bare `by.id` that matches
+  several elements stays ambiguous until it times out, and the timeout then
+  reads as "the element never appeared".
+- Scroll before you tap something further down a board, with
+  `scrollUntilVisible(testID, "pins-board-scroll-view")`. Detox needs 75% of an
+  element to be visible, and a partially visible pin does not qualify.
+- Do not count list items by existence. A tab that the user has visited stays
+  mounted, so its thumbnails still exist while another tab is on screen.
 
 Detox writes screenshots and logs for a failed flow under `artifacts/`. To
 capture them on demand, add `--take-screenshots failing` or `--loglevel verbose`,

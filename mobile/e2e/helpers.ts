@@ -43,6 +43,18 @@ export const waitForNthVisible = async (
     .withTimeout(timeout);
 };
 
+// Scrolls a board until the target is on screen. Detox needs 75% of an element
+// to be visible, and a pin further down a board falls short of that.
+export const scrollUntilVisible = async (
+  testID: string,
+  scrollViewTestID: string,
+) => {
+  await waitFor(element(by.id(testID)))
+    .toBeVisible()
+    .whileElement(by.id(scrollViewTestID))
+    .scroll(300, "down");
+};
+
 // Detox synchronization is off (see `launchSignedOut`), so a tap must wait for
 // its target. Every flow taps through this helper.
 export const tap = async (testID: string) => {

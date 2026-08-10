@@ -33,9 +33,10 @@ describe("Search", () => {
   it("shows results for a matching query", async () => {
     await searchFor(SEARCH_TERM);
 
-    // The seed creates exactly NUMBER_OF_SEARCH_PINS matching pins. Detox has
-    // no count matcher, so the last expected index standing in for the count.
-    await waitForNthVisible("pin-thumbnail-pin-image", 0);
+    // The seed creates NUMBER_OF_SEARCH_PINS matching pins, so this asserts that
+    // every one of them rendered. There is no upper bound to assert: the Home
+    // tab stays mounted behind the Search tab and its thumbnails carry the same
+    // testID, so counting by existence would count those too.
     await waitForNthVisible(
       "pin-thumbnail-pin-image",
       NUMBER_OF_SEARCH_PINS - 1,
