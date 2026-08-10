@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import CreatedPinsContainer from "./CreatedPinsContainer";
 import { AccountContext } from "@/contexts/accountContext";
-import { AuthContext } from "@/contexts/authContext";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 import { ToastContainer } from "react-toastify";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 import {
@@ -26,7 +26,7 @@ const accountContext = {
   isFetchError: false,
 };
 
-const authContext = {
+const authenticationContext = {
   accessToken: "mock.access.token",
   setAccessToken: () => {},
   isAuthInitialized: true,
@@ -37,12 +37,12 @@ const renderComponent = (username = "johndoe") => {
   render(
     withQueryClient(
       <MemoryRouter>
-        <AuthContext.Provider value={authContext}>
+        <AuthenticationContext.Provider value={authenticationContext}>
           <AccountContext.Provider value={accountContext}>
             <ToastContainer />
             <CreatedPinsContainer username={username} />
           </AccountContext.Provider>
-        </AuthContext.Provider>
+        </AuthenticationContext.Provider>
       </MemoryRouter>,
     ),
   );
@@ -179,12 +179,12 @@ it("does not show edit button for other users' profiles", async () => {
   render(
     withQueryClient(
       <MemoryRouter>
-        <AuthContext.Provider value={authContext}>
+        <AuthenticationContext.Provider value={authenticationContext}>
           <AccountContext.Provider value={otherAccountContext}>
             <ToastContainer />
             <CreatedPinsContainer username="johndoe" />
           </AccountContext.Provider>
-        </AuthContext.Provider>
+        </AuthenticationContext.Provider>
       </MemoryRouter>,
     ),
   );

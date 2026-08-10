@@ -5,7 +5,7 @@ import {
 } from "../../lib/constants";
 import { isValidEmail, isValidPassword } from "../../lib/utils/validation";
 import { useLogin } from "@/lib/hooks/useLogin";
-import { useAuthContext } from "@/contexts/authContext";
+import { useAuthenticationContext } from "@/contexts/authenticationContext";
 import LoginForm, { FormErrors } from "./LoginForm";
 
 type LoginFormContainerProps = {
@@ -33,7 +33,7 @@ const LoginFormContainer = ({
 }: LoginFormContainerProps) => {
   const loginMutation = useLogin();
 
-  const { isPromptingLogin } = useAuthContext();
+  const { isPromptingLogin } = useAuthenticationContext();
 
   const [credentials, setCredentials] = useState({
     email: "",

@@ -1,10 +1,8 @@
 import React from "react";
 import { renderHook, act } from "@testing-library/react";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { useAPI } from "./useAPI";
 import { API_URL_REFRESH_TOKEN } from "@/lib/constants";
-import { AuthContext } from "@/contexts/authContext";
-import { createTestQueryClient } from "@/lib/testing-utils/misc";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 
 const mockSetAccessToken = vi.fn();
 const mockEndSession = vi.fn();
@@ -13,30 +11,27 @@ const MOCK_ACCESS_TOKEN = "mock.access.token";
 const MOCK_NEW_ACCESS_TOKEN = "mock.new.access.token";
 const TARGET_URL = "http://example.com/api/resource/";
 
-let testQueryClient = createTestQueryClient();
-
+// No query client here: the refresh is a plain single-flight promise, so
+// 'useAPI' needs the auth context and nothing else.
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={testQueryClient}>
-    <AuthContext.Provider
-      value={{
-        accessToken: MOCK_ACCESS_TOKEN,
-        setAccessToken: mockSetAccessToken,
-        isAuthInitialized: true,
-        isPromptingLogin: false,
-        clearSession: vi.fn(),
-        endSession: mockEndSession,
-        stopPromptingLogin: vi.fn(),
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  </QueryClientProvider>
+  <AuthenticationContext.Provider
+    value={{
+      accessToken: MOCK_ACCESS_TOKEN,
+      setAccessToken: mockSetAccessToken,
+      isAuthInitialized: true,
+      isPromptingLogin: false,
+      clearSession: vi.fn(),
+      endSession: mockEndSession,
+      stopPromptingLogin: vi.fn(),
+    }}
+  >
+    {children}
+  </AuthenticationContext.Provider>
 );
 
 beforeEach(() => {
   fetchMock.resetMocks();
   vi.clearAllMocks();
-  testQueryClient = createTestQueryClient();
 });
 
 it("returns the response directly when status is not 401", async () => {

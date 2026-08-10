@@ -2,7 +2,10 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import en from "@/public/locales/en/LandingPageContent.json";
 import common from "@/public/locales/en/Common.json";
-import { AuthContext, AuthContextType } from "@/contexts/authContext";
+import {
+  AuthenticationContext,
+  AuthenticationContextType,
+} from "@/contexts/authenticationContext";
 import HeaderUnauthenticated from "./HeaderUnauthenticated";
 import { MemoryRouter } from "react-router";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
@@ -10,9 +13,9 @@ import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const mockStopPromptingLogin = vi.fn();
 
-const buildAuthContextValue = (
-  overrides: Partial<AuthContextType> = {},
-): AuthContextType => ({
+const buildAuthenticationContextValue = (
+  overrides: Partial<AuthenticationContextType> = {},
+): AuthenticationContextType => ({
   accessToken: null,
   setAccessToken: vi.fn(),
   isAuthInitialized: true,
@@ -25,17 +28,17 @@ const buildAuthContextValue = (
 
 const renderComponent = (
   pathname = "/some-page",
-  authContextValue = buildAuthContextValue(),
+  authenticationContextValue = buildAuthenticationContextValue(),
 ) => {
   render(
     withQueryClient(
-      <AuthContext.Provider value={authContextValue}>
+      <AuthenticationContext.Provider value={authenticationContextValue}>
         <MemoryRouter initialEntries={[pathname]}>
           <HeaderSearchBarContextProvider>
             <HeaderUnauthenticated />
           </HeaderSearchBarContextProvider>
         </MemoryRouter>
-      </AuthContext.Provider>,
+      </AuthenticationContext.Provider>,
     ),
   );
 };
@@ -146,7 +149,7 @@ it(`opens the login modal with the reason when the session just expired,
 without any click`, () => {
   renderComponent(
     "/some-page",
-    buildAuthContextValue({ isPromptingLogin: true }),
+    buildAuthenticationContextValue({ isPromptingLogin: true }),
   );
 
   const modal = screen.getByTestId("overlay-modal");
@@ -169,7 +172,7 @@ it("shows no reason in the login modal when the user opens it themselves", async
 it("stops prompting for a login when the user closes the modal", async () => {
   renderComponent(
     "/some-page",
-    buildAuthContextValue({ isPromptingLogin: true }),
+    buildAuthenticationContextValue({ isPromptingLogin: true }),
   );
 
   await userEvent.click(screen.getByTestId("overlay-modal-close-button"));
@@ -181,7 +184,7 @@ it("stops prompting for a login when the user closes the modal", async () => {
 it("stops prompting for a login when the user switches to signup", async () => {
   renderComponent(
     "/some-page",
-    buildAuthContextValue({ isPromptingLogin: true }),
+    buildAuthenticationContextValue({ isPromptingLogin: true }),
   );
 
   await userEvent.click(screen.getByText(en.LoginForm.NO_ACCOUNT_YET_CTA));

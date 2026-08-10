@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 import { useTranslation } from "react-i18next";
-import { useAuthContext } from "@/contexts/authContext";
+import { useAuthenticationContext } from "@/contexts/authenticationContext";
 import { useAccountContext } from "@/contexts/accountContext";
 import { HeaderSearchBarContextProvider } from "@/contexts/headerSearchBarContext";
 import HeaderAuthenticatedContainer from "@/components/Header/HeaderAuthenticatedContainer";
@@ -15,7 +15,7 @@ import styles from "./Layout.module.css";
 
 const Layout = () => {
   const { t } = useTranslation();
-  const { accessToken, isAuthInitialized } = useAuthContext();
+  const { accessToken, isAuthInitialized } = useAuthenticationContext();
   const { isFetchError: isAccountDetailsFetchError } = useAccountContext();
 
   // A reload destroys the in-memory access token, so the first render happens

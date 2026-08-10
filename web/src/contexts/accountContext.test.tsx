@@ -10,7 +10,7 @@ import {
   MockLocalStorage,
   createTestQueryClient,
 } from "@/lib/testing-utils/misc";
-import { AuthContext } from "@/contexts/authContext";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 import { AccountWithPrivateDetails } from "@/lib/types/frontendTypes";
 import {
   MOCK_API_RESPONSES,
@@ -45,7 +45,7 @@ const renderAccountContext = ({
   const testQueryClient = createTestQueryClient();
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <AuthContext.Provider
+    <AuthenticationContext.Provider
       value={{
         accessToken,
         setAccessToken: vi.fn(),
@@ -59,7 +59,7 @@ const renderAccountContext = ({
       <QueryClientProvider client={testQueryClient}>
         <AccountContextProvider>{children}</AccountContextProvider>
       </QueryClientProvider>
-    </AuthContext.Provider>
+    </AuthenticationContext.Provider>
   );
 
   return renderHook(() => useAccountContext(), { wrapper });
@@ -163,13 +163,13 @@ and reads null in between`, async () => {
   let accessToken = "token.one";
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <AuthContext.Provider
+    <AuthenticationContext.Provider
       value={{ accessToken, setAccessToken: vi.fn(), isAuthInitialized: true }}
     >
       <QueryClientProvider client={testQueryClient}>
         <AccountContextProvider>{children}</AccountContextProvider>
       </QueryClientProvider>
-    </AuthContext.Provider>
+    </AuthenticationContext.Provider>
   );
 
   const { result, rerender } = renderHook(() => useAccountContext(), {

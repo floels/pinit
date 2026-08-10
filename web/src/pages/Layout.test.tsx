@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { createMemoryRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import Layout from "./Layout";
-import { AuthContext } from "@/contexts/authContext";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 import { USERNAME_LOCAL_STORAGE_KEY } from "@/lib/constants";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
@@ -22,7 +22,7 @@ const renderComponent = ({
 
   render(
     withQueryClient(
-      <AuthContext.Provider
+      <AuthenticationContext.Provider
         value={{
           accessToken,
           setAccessToken: vi.fn(),
@@ -34,7 +34,7 @@ const renderComponent = ({
         }}
       >
         <RouterProvider router={router} />
-      </AuthContext.Provider>,
+      </AuthenticationContext.Provider>,
     ),
   );
 };

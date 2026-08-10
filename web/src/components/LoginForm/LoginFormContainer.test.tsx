@@ -5,7 +5,7 @@ import en from "@/public/locales/en/LandingPageContent.json";
 import enCommon from "@/public/locales/en/Common.json";
 import { API_URL_OBTAIN_TOKEN } from "@/lib/constants";
 import { MOCK_API_RESPONSES, MOCK_API_RESPONSES_JSON } from "@/lib/testing-utils/mockAPIResponses";
-import { AuthContext } from "@/contexts/authContext";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 
 const typeInEmailInput = async (text: string) => {
@@ -39,11 +39,11 @@ const mockSetAccessToken = vi.fn();
 const renderComponent = () => {
   render(
     withQueryClient(
-      <AuthContext.Provider
+      <AuthenticationContext.Provider
         value={{ accessToken: null, setAccessToken: mockSetAccessToken, isAuthInitialized: false }}
       >
         <LoginFormContainer handleClickNoAccountYet={handleClickNoAccountYet} />
-      </AuthContext.Provider>,
+      </AuthenticationContext.Provider>,
     ),
   );
 };

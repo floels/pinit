@@ -1,11 +1,11 @@
-import { useAuthContext } from "@/contexts/authContext";
+import { useAuthenticationContext } from "@/contexts/authenticationContext";
 import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
 import { useAPI } from "@/lib/api/useAPI";
 import LandingPageContent from "@/components/LandingPageContent/LandingPageContent";
 import PinsBoardContainer from "@/components/PinsBoard/PinsBoardContainer";
 
 const HomePage = () => {
-  const { accessToken } = useAuthContext();
+  const { accessToken } = useAuthenticationContext();
   const { fetchAuthenticated } = useAPI();
 
   if (!accessToken) {

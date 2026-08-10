@@ -5,7 +5,7 @@ import HomePage from "./HomePage";
 import { withQueryClient, mockIntersectionObserver } from "@/lib/testing-utils/misc";
 import { MOCK_API_RESPONSES } from "@/lib/testing-utils/mockAPIResponses";
 import { API_URL_PIN_SUGGESTIONS } from "@/lib/constants";
-import { AuthContext } from "@/contexts/authContext";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 import en from "@/public/locales/en/HomePageContent.json";
 
 vi.mock("@/components/LandingPageContent/LandingPageContent", () => {
@@ -26,9 +26,11 @@ const renderComponent = ({ accessToken = null }: { accessToken?: string | null }
 
   render(
     withQueryClient(
-      <AuthContext.Provider value={{ accessToken, setAccessToken: vi.fn() }}>
+      <AuthenticationContext.Provider
+        value={{ accessToken, setAccessToken: vi.fn() }}
+      >
         <RouterProvider router={router} />
-      </AuthContext.Provider>,
+      </AuthenticationContext.Provider>,
     ),
   );
 };

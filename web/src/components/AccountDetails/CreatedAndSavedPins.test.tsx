@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import CreatedAndSavedPins from "./CreatedAndSavedPins";
 import { AccountContext } from "@/contexts/accountContext";
-import { AuthContext } from "@/contexts/authContext";
+import { AuthenticationContext } from "@/contexts/authenticationContext";
 import { withQueryClient } from "@/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
@@ -25,7 +25,7 @@ const accountContext = {
   isFetchError: false,
 };
 
-const authContext = {
+const authenticationContext = {
   accessToken: "mock.access.token",
   setAccessToken: () => {},
   isAuthInitialized: true,
@@ -35,11 +35,11 @@ const renderComponent = () => {
   render(
     withQueryClient(
       <MemoryRouter>
-        <AuthContext.Provider value={authContext}>
+        <AuthenticationContext.Provider value={authenticationContext}>
           <AccountContext.Provider value={accountContext}>
             <CreatedAndSavedPins account={account} />
           </AccountContext.Provider>
-        </AuthContext.Provider>
+        </AuthenticationContext.Provider>
       </MemoryRouter>,
     ),
   );

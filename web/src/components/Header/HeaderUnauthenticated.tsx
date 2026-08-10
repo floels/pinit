@@ -5,7 +5,7 @@ import SignupFormContainer from "../SignupForm/SignupFormContainer";
 import styles from "./HeaderUnauthenticated.module.css";
 import { useState } from "react";
 import { useLocation } from "react-router";
-import { useAuthContext } from "@/contexts/authContext";
+import { useAuthenticationContext } from "@/contexts/authenticationContext";
 import HeaderSearchBarContainer from "./HeaderSearchBarContainer";
 
 const HeaderUnauthenticated = () => {
@@ -15,7 +15,7 @@ const HeaderUnauthenticated = () => {
 
   const { t } = useTranslation("HeaderUnauthenticated");
 
-  const { isPromptingLogin, stopPromptingLogin } = useAuthContext();
+  const { isPromptingLogin, stopPromptingLogin } = useAuthenticationContext();
 
   // This component mounts at the moment 'Layout' swaps to the unauthenticated
   // shell, which is the moment a session ends. So the initial state is enough to
