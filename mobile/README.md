@@ -78,6 +78,16 @@ make test-mobile   # installs deps (Yarn Classic via Corepack) and runs Jest
 [Detox](https://wix.github.io/Detox/) drives the real app on the iOS Simulator
 against the real API. The flows live in [`e2e/`](e2e).
 
+Two decisions behind that setup:
+
+- **Detox over [Maestro](https://maestro.mobile.dev/).** Maestro needs no native
+  build, but its flows are YAML. Detox is TypeScript on Jest, which matches the
+  Playwright suite in [`../e2e-tests-web`](../e2e-tests-web). The cost is a
+  native build, so the app is no longer purely managed at test time.
+- **No `@config-plugins/detox`.** It declares `expo: ^53` as a peer, and it only
+  matters for Android. On the iOS Simulator, Detox injects its native library at
+  launch, so the `expo prebuild` output needs no source change.
+
 Prerequisites:
 
 - Xcode with an iOS Simulator runtime.
