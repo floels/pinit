@@ -56,8 +56,13 @@ const PinThumbnailsGrid = ({
 
             if (pinBelongsInThisColumn) {
               return (
+                // The testID carries the pin's ID, so a test can open one known
+                // pin. The thumbnail's own texts are not addressable: this
+                // touchable is accessible, so it collapses them into a single
+                // accessibility element.
                 <TouchableOpacity
                   key={`pin-thumbnail-${pinIndex + 1}`}
+                  testID={`pin-thumbnail-${pin.id}`}
                   onPress={getTapHandlerForPin({ pin, pinImageAspectRatio })}
                 >
                   <PinThumbnail

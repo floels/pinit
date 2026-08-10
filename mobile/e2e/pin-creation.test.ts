@@ -28,7 +28,7 @@ describe("Pin creation", () => {
     await logInAndWaitForBoard();
   });
 
-  it("creates a pin from a photo in the library", async () => {
+  const createPinFromLibrary = async () => {
     await tap("tab-bar-button-create");
     await tapUntilVisible("create-pin-button", "camera-roll-image-0");
 
@@ -51,9 +51,29 @@ describe("Pin creation", () => {
     await element(by.id("pin-description-input")).tapReturnKey();
 
     await tap("create-pin-submit-button");
+  };
+
+  it("creates a pin from a photo in the library", async () => {
+    await createPinFromLibrary();
 
     // CreatePin.CREATION_SUCCESS_MESSAGE in translations/en.json
     await waitForText("Your Pin is published!");
+  });
+
+  it("opens the created pin from the success toast", async () => {
+    await createPinFromLibrary();
+
+    await waitForText("Your Pin is published!");
+
+    // The toast hides itself after a few seconds, so this taps without delay.
+    // The View action needs the account context, because the create response
+    // carries no author. See BrowseMainNavigatorContainer.
+    await tapUntilVisible(
+      "pin-creation-success-toast-view-button",
+      "pin-details-pin-image",
+    );
+
+    await waitForText(PIN_TITLE);
   });
 
   it("keeps the next button hidden until an image is selected", async () => {
