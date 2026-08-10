@@ -232,3 +232,60 @@ Two problems that the design did not predict, both fixed:
 - `applesimutils`: `brew tap wix/brew && brew install applesimutils`.
 - Docker running on the host.
 - Node 22.16.0 and Yarn Classic 1.22.22, as the mobile README describes.
+
+## Second iteration
+
+The first iteration deferred every flow except authentication. The second
+iteration adds three, which brings the suite to nine cases in four files.
+
+| File | Cases |
+|---|---|
+| `search.test.ts` | Results for the seeded term. The no-results message. |
+| `pin-details.test.ts` | Open a pin from the board and go back. Open the author. |
+| `pin-creation.test.ts` | Create a pin from a photo. The hidden Next button. |
+
+Pin creation was the flow the first design called too expensive, because it
+needs a photo and a permission. Both turned out cheap:
+
+- `xcrun simctl addmedia` puts a photo in the simulator library. The library
+  belongs to the device, so one call in `beforeAll` covers every launch.
+- Detox grants the permission at launch with `permissions: { photos: "YES" }`,
+  so no system dialog appears.
+
+### New helper: tapUntilVisible
+
+Three failures during this iteration shared one cause. Synchronization is off,
+so Detox acts on a view that can still move:
+
+1. The create modal slides in. Detox called the button visible while it was
+   off-screen, and the press was lost.
+2. The camera roll grid re-laid out as thumbnails loaded. The tap point moved
+   between runs, and Detox reported "View is not hittable at its visible point".
+3. The keyboard covered the submit button, which sits at the bottom of the
+   screen under `flex: 1` and `justifyContent: "flex-end"`.
+
+Cases 1 and 2 are the same problem, and `tapUntilVisible(target, expected)`
+solves both. It taps, waits for the element that proves the tap worked, and
+retries. It reads better than a pause, because it names the intent. The Next
+button on the image picker is a good example: it renders only once a selection
+exists, so it is exactly the proof that the selection registered.
+
+Case 3 is ordinary keyboard handling. Both inputs are single line, so
+`tapReturnKey()` on the description closes the keyboard.
+
+### Results
+
+Measured from a freshly seeded database:
+
+| Check | Result |
+|---|---|
+| The nine flows | 9 passed, 106 s |
+| A second consecutive run, no re-seed | 9 passed, 106 s |
+| `yarn jest` | 103 passed |
+| `yarn lint` and `yarn type-check` | clean |
+
+The suite is repeatable without a re-seed, which matters because pin creation
+writes a row on every run.
+
+No production code changed in this iteration. Every anchor the new flows need
+already existed.

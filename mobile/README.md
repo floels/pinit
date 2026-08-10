@@ -120,14 +120,35 @@ absent. Delete `ios/` after a change to `app.json` or to the Expo dependencies.
 without end: `Spinner` runs `Animated.loop`, and the landing gallery scrolls for
 two minutes. Detox treats a running animation as work in progress, so it would
 never consider the app idle. The flows therefore wait on explicit conditions,
-the same way the Playwright suite does. Two rules follow:
+the same way the Playwright suite does. Three rules follow:
 
 - Tap through the `tap()` helper in [`e2e/helpers.ts`](e2e/helpers.ts). It waits
   for the target first.
+- Tap a target that animates through `tapUntilVisible(target, expected)`. Detox
+  reports an element as visible while it still slides in or re-lays out, so a
+  plain tap either loses the press or reports "View is not hittable at its
+  visible point". The helper retries and confirms the effect. The create modal
+  and the camera roll grid both need it.
 - Start each test with `launchSignedOut()`. It resets the simulator keychain,
   which is the only reliable way to clear `expo-secure-store`.
 
-Detox writes screenshots and logs for a failed flow under `artifacts/`.
+Detox writes screenshots and logs for a failed flow under `artifacts/`. To
+capture them on demand, add `--take-screenshots failing` or `--loglevel verbose`,
+which also dumps the view hierarchy on a failed match.
+
+The suite covers these flows:
+
+| File | Covers |
+|---|---|
+| `authentication.test.ts` | Log in, wrong password, log out |
+| `search.test.ts` | Search results for the seeded term, and the no-results message |
+| `pin-details.test.ts` | Open a pin from the board, go back, open the author |
+| `pin-creation.test.ts` | Create a pin from a photo, and the hidden Next button |
+
+`pin-creation.test.ts` needs a photo in the simulator library, so it adds
+[`e2e/fixtures/pin-image.png`](e2e/fixtures) with `xcrun simctl addmedia`. Each
+run adds one more copy, which is harmless on a test simulator. Detox grants the
+photo permission at launch, so no system dialog appears.
 
 CI does not run these tests. They need macOS and a simulator, so the
 `mobile-checks` job only lints and type-checks them.
