@@ -9,24 +9,15 @@ The web authentication logic is different than mobile's and is documented in
 
 | Value | Where it lives | How it is sent |
 |---|---|---|
-| **Access token** | `expo-secure-store` | in an `Authorization: Bearer …` header |
-| **Refresh token** | `expo-secure-store` | in the JSON body of a token request |
+| Access token | `expo-secure-store` | in an `Authorization: Bearer …` header |
+| Refresh token | `expo-secure-store` | in the JSON body of a token request |
 | Expiry date of the access token | `AsyncStorage` | never sent |
-| Profile picture URL | `AsyncStorage` | never sent |
 
 An access token lasts 15 minutes. A refresh token lasts 30 days.
 
-There is no httpOnly cookie here, and no browser to attach one. The app holds
-the refresh token itself, and it sends that token in the request body. This is
-the only difference between the mobile and the web token endpoints. The backend
-issues the same pair for both.
-
 Both tokens sit in the keychain, so both survive a cold start. The app therefore
 starts with a token that is either usable or stale, and the launch gate decides
-which. Web starts with an empty memory instead, and it must always refresh.
-
-The storage keys live in [`src/lib/constants.ts`](../src/lib/constants.ts).
-`clearStoredAuthData()` removes all four values together.
+which.
 
 ## The three auth states
 
@@ -291,19 +282,6 @@ keeps the pins that it already holds.
 failed, and the user repeats it after a new login. An automatic replay is a good
 way to submit something twice.
 
-## The helpers
-
-Every helper below lives in
-[`src/lib/utils/authentication.ts`](../src/lib/utils/authentication.ts).
-
-| Helper | Role |
-|---|---|
-| `ensureFreshAccessToken()` | Refresh only if the stored expiry is missing, unreadable, or inside the 2-minute buffer. Returns whether the session is usable. Used by the launch gate. |
-| `refreshAccessToken()` | Refresh whatever the stored expiry says, and share one request between concurrent callers. Used after a 401. |
-| `persistTokensData()` | Write the access token, the refresh token and the expiry date to their stores. |
-| `logOut()` | Revoke the refresh token on the server (best-effort), then run `clearStoredAuthData()`. |
-| `clearStoredAuthData()` | Remove all four persisted values. |
-
 ## Key files
 
 | File | Role |
@@ -311,8 +289,5 @@ Every helper below lives in
 | [`src/components/NavigationContainer/NavigationContainer.tsx`](../src/components/NavigationContainer/NavigationContainer.tsx) | The launch gate. Refreshes a near-expired token, and then chooses the navigator. |
 | [`src/contexts/authenticationContext.tsx`](../src/contexts/authenticationContext.tsx) | The auth reducer, its two booleans, and its five actions. |
 | [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | The one hook for API traffic. `fetchAuthenticated` adds the Bearer header, refreshes and retries once on a 401, and ends the session when the refresh fails. |
-| [`src/lib/api/fetchers.ts`](../src/lib/api/fetchers.ts) | `fetchPublic`, and the only call to the `fetch` global outside `useAPI`. |
-| [`src/lib/utils/authentication.ts`](../src/lib/utils/authentication.ts) | Token storage, the two refresh helpers, logout, and the refresh buffer. |
 | [`src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx`](../src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx) | Login: validation, the token request, and the field-level errors. |
 | [`src/navigators/BrowseMainNavigator/ProfileScreen.tsx`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) | The logout button. |
-| [`src/lib/constants.ts`](../src/lib/constants.ts) | The endpoints and the storage keys. |
