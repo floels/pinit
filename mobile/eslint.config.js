@@ -34,6 +34,24 @@ module.exports = [
     },
   },
   {
+    // 'src/lib/api/' owns every network call. Elsewhere, a bare 'fetch' is how a
+    // request loses its access token without anybody noticing, so ban the global
+    // and let the call site name what it needs instead. Tests are exempt: they
+    // assert on the 'fetch' mock. Mirrors the rule in 'web/eslint.config.mjs'.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/lib/api/**", "src/**/*.test.{ts,tsx}"],
+    rules: {
+      "no-restricted-globals": [
+        "error",
+        {
+          name: "fetch",
+          message:
+            "Do not call fetch directly. Use useAPI() for an authenticated call, or fetchPublic from '@/src/lib/api/fetchers'.",
+        },
+      ],
+    },
+  },
+  {
     rules: {
       // A component declared inside another component is a new type on every
       // render, so React destroys and rebuilds that subtree, losing its state.

@@ -5,7 +5,7 @@ up:
 
 # Recompile the pinned, hashed lockfiles from requirements/*.in.
 # Runs inside python:3.12-slim so the resolved versions and hashes match the
-# deployment target regardless of the host OS. Edit the *.in files, then run this.
+# container image regardless of the host OS. Edit the *.in files, then run this.
 compile-deps:
 	docker run --rm -v "$(CURDIR)/requirements:/reqs" -w /reqs \
 		-e CUSTOM_COMPILE_COMMAND="make compile-deps" python:3.12-slim bash -c '\

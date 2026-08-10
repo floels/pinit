@@ -236,10 +236,6 @@ elasticsearch==8.13.0 \
     --hash=sha256:4aaf49253e974eb500f01136a487bdd0f09d3cafd37a0456eff6acfff0c9199b \
     --hash=sha256:e4ebebb22d09f0ef839c26b6aa98e19ccd636bcb77f08c12b562b02cacd5e744
     # via -r base.in
-gunicorn==23.0.0 \
-    --hash=sha256:ec400d38950de4dfd418cff8328b2c8faed0edb0d517d3394e457c317908ca4d \
-    --hash=sha256:f014447a0101dc57e294f6c18ca6b40227a4c90e9bdb586042628030cba004ec
-    # via -r base.in
 iso8601==2.1.0 \
     --hash=sha256:6b1d3829ee8921c4301998c909f7829fa9ed3cbdac0d3b16af2d743aed1ba8df \
     --hash=sha256:aac4145c4dcb66ad8b648a02830f5e2ff6c24af20f4f482689be402db2429242
@@ -250,10 +246,6 @@ jmespath==1.1.0 \
     # via
     #   boto3
     #   botocore
-packaging==26.2 \
-    --hash=sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e \
-    --hash=sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661
-    # via gunicorn
 psycopg2-binary==2.9.12 \
     --hash=sha256:00814e40fa23c2b37ef0a1e3c749d89982c73a9cb5046137f0752a22d432e82f \
     --hash=sha256:049366c6d884bdcd65d66e6ca1fdbebe670b56c6c9ba46f164e6667e90881964 \

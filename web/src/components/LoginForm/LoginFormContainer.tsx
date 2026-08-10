@@ -5,6 +5,7 @@ import {
 } from "../../lib/constants";
 import { isValidEmail, isValidPassword } from "../../lib/utils/validation";
 import { useLogin } from "@/lib/hooks/useLogin";
+import { useAuthContext } from "@/contexts/authContext";
 import LoginForm, { FormErrors } from "./LoginForm";
 
 type LoginFormContainerProps = {
@@ -31,6 +32,8 @@ const LoginFormContainer = ({
   handleClickNoAccountYet,
 }: LoginFormContainerProps) => {
   const loginMutation = useLogin();
+
+  const { isPromptingLogin } = useAuthContext();
 
   const [credentials, setCredentials] = useState({
     email: "",
@@ -91,6 +94,7 @@ const LoginFormContainer = ({
       handleInputChange={handleInputChange}
       handleSubmit={handleSubmit}
       handleClickNoAccountYet={handleClickNoAccountYet}
+      showSessionExpiredMessage={isPromptingLogin}
     />
   );
 };

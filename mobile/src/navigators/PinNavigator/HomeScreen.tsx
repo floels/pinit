@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PinNavigatorParamList } from "./PinNavigator";
 
 import PinDetailsView from "@/src/components/PinDetailsView/PinDetailsView";
+import { fetchPublic } from "@/src/lib/api/fetchers";
 import { API_BASE_URL, API_ENDPOINT_PIN_DETAILS } from "@/src/lib/constants";
 import { PinWithAuthorDetails } from "@/src/lib/types";
 import { throwIfKO } from "@/src/lib/utils/fetch";
@@ -25,7 +26,7 @@ const HomeScreen = ({
   const fetchPinDetails = async () => {
     const url = `${API_BASE_URL}/${API_ENDPOINT_PIN_DETAILS}/${id}/`;
 
-    const response = await fetch(url);
+    const response = await fetchPublic(url);
 
     throwIfKO(response);
 

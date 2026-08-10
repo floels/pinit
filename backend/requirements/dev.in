@@ -1,8 +1,8 @@
 # Direct dev/test-only dependencies, layered on top of the runtime deps.
 # Edit this file, then run `make compile-deps` to regenerate the lockfiles.
 #
-# The compiled dev.txt is a superset of base.txt (runtime + dev), installed
-# in the local/CI test image. The staging image installs base.txt only.
+# The compiled dev.txt is a superset of base.txt (runtime + dev). The
+# local/CI test image installs dev.txt.
 
 -r base.in
 

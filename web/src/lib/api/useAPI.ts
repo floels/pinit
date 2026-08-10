@@ -1,6 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "@/contexts/authContext";
-import { useLogOut } from "@/lib/hooks/useLogOut";
 import {
   REFRESH_ACCESS_TOKEN_QUERY_KEY,
   fetchRefreshedAccessToken,
@@ -13,9 +12,8 @@ import { fetchExternal, fetchPublic } from "./fetchers";
 // './fetchers': they need no auth state, and they are passed through here only
 // so that a call site has one import to reach for.
 export const useAPI = () => {
-  const { accessToken, setAccessToken } = useAuthContext();
+  const { accessToken, setAccessToken, endSession } = useAuthContext();
   const queryClient = useQueryClient();
-  const logOut = useLogOut();
 
   const fetchAuthenticated = async (url: string, options: RequestInit = {}) => {
     const { headers: existingHeaders, ...restOptions } = options;
@@ -45,7 +43,11 @@ export const useAPI = () => {
     const newAccessToken = refreshData?.access_token;
 
     if (!newAccessToken) {
-      logOut();
+      // Not a logout: the refresh cookie is already invalid, so calling the
+      // logout endpoint with it achieves nothing. 'endSession' drops the
+      // session locally and keeps the current route, so the user can log back
+      // in from the modal and carry on where they were.
+      endSession();
       return response;
     }
 

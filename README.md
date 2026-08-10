@@ -40,7 +40,6 @@ pinit/
 ├── mobile/          # Mobile frontend — Expo (React Native) iOS/Android app
 ├── e2e-tests-web/   # Playwright end-to-end tests (web)
 ├── scripts/         # Shared E2E backend startup script
-├── infra/           # Terraform + Kubernetes manifests for AWS deployment
 └── nginx/           # CORS proxy for the local S3 mock (see below)
 ```
 
@@ -64,7 +63,7 @@ make seed
 
 ### Local S3 mock and nginx
 
-In production, pin images are uploaded directly from the browser to AWS S3 via pre-signed URLs. Locally, S3 is replaced by [Moto](https://docs.getmoto.org/), but Moto does not add CORS headers to pre-signed URLs, which causes the browser to block uploads. A thin nginx reverse proxy sits in front of Moto and injects the necessary headers:
+The browser uploads pin images directly to AWS S3 with pre-signed URLs. Locally, Moto replaces S3 (see [the Moto documentation](https://docs.getmoto.org/)). Moto does not add CORS headers to pre-signed URLs, so the browser blocks the uploads. A thin nginx reverse proxy sits in front of Moto and adds the necessary headers:
 
 ```
 ┌─────────┐  ① request pre-signed URL  ┌──────────────┐
