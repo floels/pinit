@@ -37,7 +37,7 @@ The authentication context (`src/contexts/authContext.tsx`) exposes three state 
 
 | State | `accessToken` | `isAuthInitialized` | `isPromptingLogin` | What renders |
 |---|---|---|---|---|
-| Initializing | `null` | `false` | `false` | the unauthenticated shell, with a spinner in place of the route |
+| Initializing | `null` | `false` | `false` | the shell that the cached username suggests, with a spinner in place of the route |
 | Unauthenticated | `null` | `true` | `false` | the unauthenticated shell and the route |
 | Authenticated | a token | `true` | `false` | the authenticated shell and the route |
 | Expired | `null` | `true` | `true` | the unauthenticated shell, the route, and the login modal |
@@ -123,8 +123,18 @@ logout can leave the refresh entry in the cache. See
 
 `AuthContextProvider` runs one query on mount against
 `POST /token/web/refresh/`. The browser attaches the httpOnly cookie. `Layout`
-holds the route back until that attempt finishes, to avoid a flash of
-unauthenticated UI.
+puts a spinner in place of the routed page until that attempt finishes.
+
+A reload destroys the access token, so the first render happens before the
+answer arrives. `Layout` therefore guesses the shell from `localStorage`. A
+cached `username` means that this browser held a session, so `Layout` renders
+the authenticated header at once. A returning user never sees a **Log in**
+button that the app takes back a moment later.
+
+The guess covers the shell only. The routed page waits for a real access token.
+The guess also ends when the refresh settles, and the token decides from then
+on. Only logout clears the cached username, so a refresh cookie that expired on
+its own leaves that value behind.
 
 ```mermaid
 sequenceDiagram
