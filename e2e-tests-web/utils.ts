@@ -49,3 +49,23 @@ export const loginAsTestUser = async ({
     },
   ]);
 };
+
+// Replaces the refresh cookie with a value that the backend rejects, so the next
+// refresh fails. A test uses this to end a session without waiting for the real
+// 15-minute lifetime of an access token.
+export const invalidateRefreshCookie = async ({
+  context,
+}: {
+  context: BrowserContext;
+}): Promise<void> => {
+  await context.addCookies([
+    {
+      name: "refreshToken",
+      value: "this.refresh.token.is.revoked",
+      domain: "localhost",
+      path: "/",
+      httpOnly: true,
+      secure: false,
+    },
+  ]);
+};
