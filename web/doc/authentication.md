@@ -12,35 +12,37 @@ The mobile authentication logic is different than web's and is documented in
 | **Access token** | React context, in memory | Yes | in an `Authorization: Bearer …` header |
 | **Refresh token** | httpOnly cookie, named `refreshToken` | No | the browser attaches it |
 
-An access token lasts 15
-minutes, and it exists only in memory, so a closed tab takes it with it.
+An access token lasts 15 minutes, and it exists only in memory, so a closed tab takes it with it.
 
-A refresh token lasts 30 days. It sits in an httpOnly cookie, so no script can
-read it. The backend sets, rotates and clears that cookie. The web code never
-sees its value.
+A refresh token lasts 30 days. It sits in an httpOnly cookie, so no script can read it. The backend sets, rotates and clears that cookie. The web code never sees its value.
 
 ## The four auth states
 
 ```mermaid
 stateDiagram-v2
     [*] --> Initializing
-    Initializing --> Authenticated : the startup refresh returns a token
-    Initializing --> Unauthenticated : the startup refresh returns no token
-    Unauthenticated --> Authenticated : a login or a signup succeeds
-    Authenticated --> Unauthenticated : the user logs out
-    Authenticated --> Expired : a refresh after a 401 fails
-    Expired --> Authenticated : the user logs back in
-    Expired --> Unauthenticated : the user dismisses the prompt
+    Initializing --> Authenticated : STARTUP_REFRESH_SETTLED, with a token
+    Initializing --> Unauthenticated : STARTUP_REFRESH_SETTLED, without a token
+    Unauthenticated --> Authenticated : TOKEN_OBTAINED
+    Authenticated --> Unauthenticated : SESSION_CLEARED
+    Authenticated --> Expired : SESSION_EXPIRED
+    Expired --> Authenticated : TOKEN_OBTAINED
+    Expired --> Unauthenticated : LOGIN_PROMPT_DECLINED
 ```
 
-The authentication context (`src/contexts/authenticationContext.tsx`) exposes three state variables: `accessToken`, `isAuthInitialized` and `isPromptingLogin`. Here is their respective value in the four auth states:
+The authentication context (`src/contexts/authenticationContext.tsx`) is a reducer over one value, `status`, and the five actions above are the only way to change it. A token belongs to the `authenticated` state and exists nowhere else, so no combination outside this table can occur:
 
-| State | `accessToken` | `isAuthInitialized` | `isPromptingLogin` | What renders |
+| State (`status`) | `accessToken` | `isAuthInitialized` | `isPromptingLogin` | What renders |
 |---|---|---|---|---|
-| Initializing | `null` | `false` | `false` | the shell that the cached username suggests, with a spinner in place of the route |
-| Unauthenticated | `null` | `true` | `false` | the unauthenticated shell and the route |
-| Authenticated | a token | `true` | `false` | the authenticated shell and the route |
-| Expired | `null` | `true` | `true` | the unauthenticated shell, the route, and the login modal |
+| `initializing` | `null` | `false` | `false` | the shell that the cached username suggests, with a spinner in place of the route |
+| `unauthenticated` | `null` | `true` | `false` | the unauthenticated shell and the route |
+| `authenticated` | a token | `true` | `false` | the authenticated shell and the route |
+| `expired` | `null` | `true` | `true` | the unauthenticated shell, the route, and the login modal |
+
+The three columns after the state are derived, not stored. `accessToken` reads the
+token of the `authenticated` state, `isAuthInitialized` is any state other than
+`initializing`, and `isPromptingLogin` is the `expired` state. Consumers read
+those three names and never see `status` itself.
 
 The app reaches **Initializing** once, on the first render. No transition goes
 back to it, because the app never reloads the document. Every later transition
@@ -71,22 +73,27 @@ so a refresh happens at most about once per 15 minutes of use.
 
 `AuthenticationContext`
 ([`src/contexts/authenticationContext.tsx`](../src/contexts/authenticationContext.tsx))
-holds the auth state:
+exposes three values, all derived from `status`:
 
 | Value | Type | Meaning |
 |---|---|---|
-| `accessToken` | `string` or `null` | `null` until the startup refresh or a login supplies a token |
+| `accessToken` | `string` or `null` | the token of the `authenticated` state, and `null` in the three others |
 | `isAuthInitialized` | `boolean` | `false` until the startup refresh finishes |
 | `isPromptingLogin` | `boolean` | `true` while the app asks the user to log back in |
 
-It also exposes the four ways to change that state:
+It also exposes the four ways to change the state. Each one dispatches one
+action, so a caller states an intent and never touches `status`:
 
-| Function | What it does | Called by |
+| Function | Action | Called by |
 |---|---|---|
-| `setAccessToken(value)` | Stores a token, or stores `null`. A token also stops the login prompt. | a login, a signup, a refresh after a 401 |
-| `clearSession()` | Drops the token, and the cached `username` and `profilePictureURL` in `localStorage`. Asks the user for nothing. | logout |
-| `endSession()` | Runs `clearSession()`, and then asks for a new login. | a failed refresh |
-| `stopPromptingLogin()` | Stops the prompt, because the user declined. | the login modal, when the user closes it or moves to signup |
+| `setAccessToken(token)` | `TOKEN_OBTAINED` | a login, a signup, a refresh after a 401 |
+| `clearSession()` | `SESSION_CLEARED` | logout |
+| `endSession()` | `SESSION_EXPIRED` | a failed refresh |
+| `stopPromptingLogin()` | `LOGIN_PROMPT_DECLINED` | the login modal, when the user closes it or moves to signup |
+
+`clearSession` and `endSession` both clear the cached `username` and
+`profilePictureURL` in `localStorage`. The reducer stays pure, so those two
+removals happen in the functions rather than in the reducer.
 
 `isAuthInitialized` separates "the app has not checked yet" from "the app
 checked, and the user is not logged in". Without that flag, every page load
@@ -97,19 +104,23 @@ failed refresh calls `endSession`, so the prompt does appear.
 
 ### Where the token comes from
 
-The provider owns all three values in `useState`. Nothing is derived, and no
-cache holds a copy. Two sources write the token, and they can arrive in either
-order:
+Two sources supply a token, and they can arrive in either order:
 
-| Source | Writes through |
+| Source | Dispatches |
 |---|---|
-| The startup refresh | the effect that runs once on mount |
-| A login, a signup, or a refresh after a 401 | `setAccessToken` |
+| The startup refresh | `STARTUP_REFRESH_SETTLED`, from the effect that runs once on mount |
+| A login, a signup, or a refresh after a 401 | `TOKEN_OBTAINED`, through `setAccessToken` |
 
-**A late startup refresh must not undo a login.** The user can log in while the
-startup request is still open, on a slow network. `setAccessToken` therefore
-raises a flag, and the startup refresh writes the token only if that flag is
-down. Whoever acted explicitly wins, whatever the network does afterwards.
+**A late startup refresh must not undo a session that already ended, or one that
+already started.** The user can log in while the startup request is still open,
+on a slow network, and a request can fail with a 401 in that window too. The
+reducer therefore ignores `STARTUP_REFRESH_SETTLED` unless the state is still
+`initializing`. Whoever acted explicitly wins, whatever the network does
+afterwards.
+
+**A decline outside the `expired` state changes nothing.** A decline and a logout
+produce the same state, so the reducer ignores `LOGIN_PROMPT_DECLINED` unless the
+app is prompting. Without that guard, a stray call would end a healthy session.
 
 ## Startup
 
@@ -322,7 +333,7 @@ way to submit something twice.
 
 | File | Role |
 |---|---|
-| [`src/contexts/authenticationContext.tsx`](../src/contexts/authenticationContext.tsx) | `AuthenticationContext` and its provider. Runs the startup refresh. Owns `accessToken`, `isAuthInitialized` and `isPromptingLogin`, plus the three session functions. |
+| [`src/contexts/authenticationContext.tsx`](../src/contexts/authenticationContext.tsx) | `AuthenticationContext` and its provider. The reducer over `status`, the startup refresh, the three derived values, and the four functions that dispatch. |
 | [`src/components/Header/HeaderUnauthenticated.tsx`](../src/components/Header/HeaderUnauthenticated.tsx) | Holds the login and signup modals. Opens the login modal by itself after an expiry. |
 | [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | The one hook for API traffic. `fetchAuthenticated` adds the Bearer header, refreshes and retries once on a 401, and ends the session when the refresh fails. |
 | [`src/lib/api/refreshAccessToken.ts`](../src/lib/api/refreshAccessToken.ts) | The single-flight refresh, used by the startup refresh and by the refresh after a 401. |

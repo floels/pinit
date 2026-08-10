@@ -1,13 +1,32 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useReducer } from "react";
 import {
   PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY,
   USERNAME_LOCAL_STORAGE_KEY,
 } from "@/lib/constants";
 import { refreshAccessToken } from "@/lib/api/refreshAccessToken";
 
+// The four auth states, as one value. Three independent variables would allow
+// eight combinations, and only these four are legal: a token cannot coexist with
+// a login prompt, and no token can exist before the startup refresh settles.
+// See 'doc/authentication.md'.
+type State =
+  | { status: "initializing" }
+  | { status: "unauthenticated" }
+  | { status: "authenticated"; accessToken: string }
+  | { status: "expired" };
+
+type Action =
+  | { type: "STARTUP_REFRESH_SETTLED"; accessToken: string | null }
+  | { type: "TOKEN_OBTAINED"; accessToken: string }
+  | { type: "SESSION_CLEARED" }
+  | { type: "SESSION_EXPIRED" }
+  | { type: "LOGIN_PROMPT_DECLINED" };
+
 export type AuthenticationContextType = {
   accessToken: string | null;
-  setAccessToken: (accessToken: string | null) => void;
+  // A login, a signup, or a refresh after a 401 supplies a token. Nobody passes
+  // null: 'clearSession' and 'endSession' end a session instead.
+  setAccessToken: (accessToken: string) => void;
   isAuthInitialized: boolean;
   // True while the app is asking the user to log back in, which happens when a
   // session ends without the user asking for it. Two components read it:
@@ -18,7 +37,7 @@ export type AuthenticationContextType = {
   // Ends the session locally and asks the user for nothing. No request, and no
   // navigation. Logout calls this one: the user asked to leave, so no prompt.
   clearSession: () => void;
-  // 'clearSession', and then ask for a new login. A failed refresh calls this.
+  // Ends the session, and then asks for a new login. A failed refresh calls this.
   endSession: () => void;
   // The user declined to log back in. Stopping the prompt releases the route
   // guards, so an authenticated-only route redirects home again.
@@ -35,29 +54,50 @@ export const AuthenticationContext = createContext<AuthenticationContextType>({
   stopPromptingLogin: () => {},
 });
 
+const initialState: State = { status: "initializing" };
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "STARTUP_REFRESH_SETTLED":
+      // A login can land while the startup request is still open, on a slow
+      // network. Whoever acted explicitly wins, so a late answer is stale.
+      if (state.status !== "initializing") {
+        return state;
+      }
+
+      return action.accessToken
+        ? { status: "authenticated", accessToken: action.accessToken }
+        : { status: "unauthenticated" };
+
+    case "TOKEN_OBTAINED":
+      return { status: "authenticated", accessToken: action.accessToken };
+
+    // 'SESSION_CLEARED' and 'LOGIN_PROMPT_DECLINED' produce the same state. They
+    // stay separate because they say why the session ended, which a reader of a
+    // call site needs to know.
+    case "SESSION_CLEARED":
+      return { status: "unauthenticated" };
+
+    case "SESSION_EXPIRED":
+      return { status: "expired" };
+
+    case "LOGIN_PROMPT_DECLINED":
+      // Only an expired session prompts a login. Without this guard, a stray
+      // call would end a healthy session.
+      if (state.status !== "expired") {
+        return state;
+      }
+
+      return { status: "unauthenticated" };
+  }
+};
+
 export const AuthenticationContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [accessToken, setAccessTokenState] = useState<string | null>(null);
-  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
-  const [isPromptingLogin, setIsPromptingLogin] = useState(false);
-
-  // True once a login, a logout or an on-401 refresh has set the token. The
-  // startup refresh below then leaves the token alone: a user who logged in
-  // while that request was still open must stay logged in.
-  const hasExplicitToken = useRef(false);
-
-  const setAccessToken = (newAccessToken: string | null) => {
-    hasExplicitToken.current = true;
-    setAccessTokenState(newAccessToken);
-
-    // A token means that somebody logged in, so there is nothing left to ask.
-    if (newAccessToken !== null) {
-      setIsPromptingLogin(false);
-    }
-  };
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   // The access token lives in memory only, so a reload takes it with it. The app
   // therefore asks the backend once, on mount, who the user is. The browser
@@ -67,46 +107,53 @@ export const AuthenticationContextProvider = ({
     const runStartupRefresh = async () => {
       const refreshedData = await refreshAccessToken();
 
-      if (!hasExplicitToken.current) {
-        setAccessTokenState(refreshedData?.access_token ?? null);
-      }
-
-      setIsAuthInitialized(true);
+      dispatch({
+        type: "STARTUP_REFRESH_SETTLED",
+        accessToken: refreshedData?.access_token ?? null,
+      });
     };
 
     runStartupRefresh();
   }, []);
 
-  // The three functions below are the only ways a session ends. They differ in
-  // one thing: whether the app then asks the user to log back in.
+  const setAccessToken = (accessToken: string) => {
+    dispatch({ type: "TOKEN_OBTAINED", accessToken });
+  };
 
-  const clearSession = () => {
-    setAccessToken(null);
-
-    // The cached display data belongs to the account that is leaving. Without
-    // this, the header of the next account to log in shows the previous
-    // username and profile picture until '/accounts/me/' resolves.
+  // The cached display data belongs to the account that is leaving. Without
+  // this, the header of the next account to log in shows the previous username
+  // and profile picture until '/accounts/me/' resolves.
+  const clearCachedAccountData = () => {
     localStorage?.removeItem(USERNAME_LOCAL_STORAGE_KEY);
     localStorage?.removeItem(PROFILE_PICTURE_URL_LOCAL_STORAGE_KEY);
+  };
+
+  // The two functions below are the only ways a session ends. They differ in one
+  // thing: whether the app then asks the user to log back in. The reducer stays
+  // pure, so both clear the cached data here.
+
+  const clearSession = () => {
+    dispatch({ type: "SESSION_CLEARED" });
+    clearCachedAccountData();
   };
 
   // A refresh fails only when the refresh token is gone, expired or revoked. So
   // the session is over through no choice of the user, and the app asks them to
   // log back in rather than moving them elsewhere.
   const endSession = () => {
-    clearSession();
-    setIsPromptingLogin(true);
+    dispatch({ type: "SESSION_EXPIRED" });
+    clearCachedAccountData();
   };
 
   const stopPromptingLogin = () => {
-    setIsPromptingLogin(false);
+    dispatch({ type: "LOGIN_PROMPT_DECLINED" });
   };
 
   const contextValue = {
-    accessToken,
+    accessToken: state.status === "authenticated" ? state.accessToken : null,
     setAccessToken,
-    isAuthInitialized,
-    isPromptingLogin,
+    isAuthInitialized: state.status !== "initializing",
+    isPromptingLogin: state.status === "expired",
     clearSession,
     endSession,
     stopPromptingLogin,
