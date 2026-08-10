@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    // `detox` declares the globals that the flows use: device, element, by, waitFor.
+    // It also replaces the Jest `expect` with the Detox one.
+    "types": ["detox", "jest", "node"]
+  },
+  // The parent excludes `e2e`. Reset the list, or this config finds no inputs.
+  "exclude": [],
+  "include": ["./**/*.ts"]
+}

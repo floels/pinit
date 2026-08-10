@@ -64,7 +64,7 @@ module.exports = [
   },
   {
     // Node-based config files run in CommonJS and use Node globals (`__dirname`, etc.).
-    files: ["*.js"],
+    files: ["*.js", "e2e/*.js"],
     languageOptions: {
       globals: { ...globals.node },
     },

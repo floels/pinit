@@ -39,6 +39,7 @@ pinit/
 ├── web/             # Web frontend — Vite + React SPA
 ├── mobile/          # Mobile frontend — Expo (React Native) iOS/Android app
 ├── e2e-tests-web/   # Playwright end-to-end tests (web)
+├── scripts/         # Shared E2E backend startup script
 └── nginx/           # CORS proxy for the local S3 mock (see below)
 ```
 
@@ -135,6 +136,15 @@ To run the Playwright end-to-end tests against the web app:
 make test-e2e
 ```
 
+To run the Detox end-to-end tests against the mobile app on the iOS Simulator:
+
+```bash
+make test-e2e-mobile
+```
+
+Both E2E suites share one backend stack. `scripts/e2e-backend-up.sh` starts the
+services from `docker-compose.e2e.yml`, then migrates and seeds the database.
+
 See each folder's `README` for details.
 
 ## Continuous integration
@@ -160,7 +170,12 @@ and vice versa. Changing the workflow file itself triggers every job.
 > make test-e2e
 > ```
 >
-> This spins up a dedicated backend via `e2e-tests-web/docker-compose.e2e.yml`, seeds it,
+> This spins up a dedicated backend via `docker-compose.e2e.yml`, seeds it,
 > starts the web dev server, and runs the Playwright specs against Chromium. Docker must be
 > running, and ports `8000` and `5555` must be free (stop the local `make up` stack first if it's
 > running). See [`e2e-tests-web/README.md`](e2e-tests-web/README.md) for details.
+>
+> The **Detox mobile tests do not run in CI either.** The `mobile-checks` job lints and
+> type-checks the flows in `mobile/e2e/`, because the tests need macOS and an iOS Simulator.
+> Run them locally with `make test-e2e-mobile`. See
+> [`mobile/README.md`](mobile/README.md) for the prerequisites.

@@ -1,4 +1,4 @@
-.PHONY: up up-detached up-backend launch-backend launch-web launch-ios seed test-backend test-web test-e2e test-mobile mobile-ios
+.PHONY: up up-detached up-backend launch-backend launch-web launch-ios seed test-backend test-web test-e2e test-mobile test-e2e-mobile mobile-ios
 
 up:
 	docker compose -f docker-compose.local.yml up --build
@@ -35,6 +35,15 @@ test-e2e:
 # works regardless of the Yarn version on the developer's PATH.
 test-mobile:
 	corepack yarn@1.22.22 --cwd mobile install && corepack yarn@1.22.22 --cwd mobile jest
+
+# Detox E2E tests for the mobile app, on the iOS Simulator.
+# Requires Xcode and applesimutils (brew tap wix/brew && brew install applesimutils).
+# The first build takes several minutes.
+test-e2e-mobile:
+	./scripts/e2e-backend-up.sh
+	corepack yarn@1.22.22 --cwd mobile install
+	corepack yarn@1.22.22 --cwd mobile test:e2e:build
+	corepack yarn@1.22.22 --cwd mobile test:e2e
 
 # Runs the Expo dev server and launches the app in the iOS simulator.
 # Start the backend first (e.g. `make up`) so the app can reach the API.

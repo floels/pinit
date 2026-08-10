@@ -8,6 +8,13 @@ const config: Config = {
     "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)",
   ],
   setupFilesAfterEnv: ["<rootDir>/jest-setup.ts"],
+  // The Detox E2E flows in `e2e/` need a simulator and their own runner.
+  // They use `e2e/jest.config.js` instead.
+  testPathIgnorePatterns: [
+    "<rootDir>/e2e/",
+    "<rootDir>/ios/",
+    "<rootDir>/android/",
+  ],
   coveragePathIgnorePatterns: [
     "<rootDir>/src/lib/constants.ts",
     "<rootDir>/src/lib/customErrors.ts",
