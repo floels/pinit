@@ -5,7 +5,7 @@
     // It also replaces the Jest `expect` with the Detox one.
     "types": ["detox", "jest", "node"]
   },
-  // The parent excludes `e2e`. Reset the list, or this config finds no inputs.
+  // The parent excludes `e2e-tests`. Reset the list, or this config finds no inputs.
   "exclude": [],
   "include": ["./**/*.ts"]
 }
