@@ -15,8 +15,6 @@ import {
 const SUGGESTION_PREFIX = "playwrightunique";
 const EXPECTED_SUGGESTION = "playwrightuniquesearch";
 
-// The seeded search pins are all authored by johndoe_account. See
-// seed_database_e2e.py.
 const SEARCH_PINS_AUTHOR = "John Doe";
 
 describe("Search suggestions", () => {

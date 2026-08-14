@@ -149,7 +149,7 @@ jobs:
       - name: Lint
         run: yarn lint
 
-      # Covers the app and the Detox flows in e2e/, which have their own tsconfig.
+      # Covers the app and the Detox flows in e2e-tests/, which have their own tsconfig.
       - name: Type-check
         run: yarn type-check
 

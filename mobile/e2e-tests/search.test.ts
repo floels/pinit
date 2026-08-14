@@ -16,8 +16,6 @@ import {
 const SEARCH_TERM = "playwrightuniquesearch";
 const NUMBER_OF_SEARCH_PINS = 3;
 
-// The seeded search pins are all authored by johndoe_account. See
-// seed_database_e2e.py.
 const SEARCH_PINS_AUTHOR = "John Doe";
 
 // A term that cannot match any seeded pin.
