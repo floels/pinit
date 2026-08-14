@@ -4,14 +4,14 @@ A Pinterest-like platform for discovering and organizing pins on boards.
 
 ## Stack
 
-| Layer           | Tech                                                  |
-|-----------------|-------------------------------------------------------|
-| Web app    | Vite 8, React 19, React Router 8, PNPM    |
+| Layer      | Tech                                                          |
+|------------|---------------------------------------------------------------|
+| Web app    | Vite 8, React 19, React Router 8, PNPM                        |
 | Mobile app | Expo 57 (React Native 0.86), React Navigation 7, Yarn Classic |
-| Backend         | Django 6, Django REST Framework          |
-| Database        | PostgreSQL 17                                         |
-| Storage         | AWS S3 (pin images); Moto (local S3 mock)             |
-| Search          | Elasticsearch 8                                       |
+| Backend    | Django 6, Django REST Framework                               |
+| Database   | PostgreSQL 17                                                 |
+| Storage    | AWS S3 (pin images); Moto (local S3 mock)                     |
+| Search     | Elasticsearch 8                                               |
 
 ## Top-level structure
 
@@ -72,7 +72,7 @@ No configuration is required — `make launch-backend` starts both Moto and the 
 To start the backend stack (Django, PostgreSQL, Elasticsearch, Moto, and the nginx CORS proxy) in detached mode, run:
 
 ```bash
-make launch-backend
+> make launch-backend
 ```
 
 The API will be available at http://localhost:8000/api and the Django admin at http://localhost:8000/admin.
@@ -82,7 +82,7 @@ The API will be available at http://localhost:8000/api and the Django admin at h
 To start the web app and the API in detached mode, run:
 
 ```bash
-make launch-web
+> make launch-web
 ```
 
 The web app will be available at http://localhost:3000.
@@ -92,7 +92,7 @@ The web app will be available at http://localhost:3000.
 To start the backend stack in detached mode and launch the app in the iOS Simulator, run:
 
 ```bash
-make launch-ios
+> make launch-ios
 ```
 
 The Expo process runs in the foreground — keep the terminal open while developing.
@@ -111,31 +111,31 @@ End-to-end (E2E) tests drive the full stack — backend included — through rea
 To run the Django unit tests for the backend:
 
 ```bash
-make test-backend
+> make test-backend
 ```
 
 To run the Vitest unit tests for the web app:
 
 ```bash
-make test-web
+> make test-web
 ```
 
 To run the Jest unit tests for the mobile app:
 
 ```bash
-make test-mobile
+> make test-mobile
 ```
 
 To run the Playwright end-to-end tests against the web app:
 
 ```bash
-make test-e2e
+> make test-e2e
 ```
 
 To run the Detox end-to-end tests against the mobile app on the iOS Simulator:
 
 ```bash
-make test-e2e-mobile
+> make test-e2e-mobile
 ```
 
 Both E2E suites share one backend stack. `scripts/e2e-backend-up.sh` starts the
