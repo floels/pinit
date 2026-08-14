@@ -13,7 +13,6 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       web: ${{ steps.filter.outputs.web }}
-      e2e: ${{ steps.filter.outputs.e2e }}
       mobile: ${{ steps.filter.outputs.mobile }}
     steps:
       - name: Check out repository
@@ -29,9 +28,6 @@ jobs:
               - '.github/workflows/check-pull-request.yml'
             web:
               - 'web/**'
-              - '.github/workflows/check-pull-request.yml'
-            e2e:
-              - 'e2e-tests-web/**'
               - '.github/workflows/check-pull-request.yml'
             mobile:
               - 'mobile/**'
@@ -56,7 +52,7 @@ jobs:
       - name: Run migrations
         run: docker compose -f docker-compose.test.yml exec -T web python manage.py migrate
 
-      - name: Run tests
+      - name: Run unit tests
         run: docker compose -f docker-compose.test.yml exec -T web python manage.py test
 
       - name: Shut down Docker container
@@ -95,7 +91,7 @@ jobs:
       - name: Type-check
         run: pnpm type-check
 
-      - name: Run component tests
+      - name: Run unit tests
         run: pnpm test
 
   mobile-checks:
@@ -123,5 +119,5 @@ jobs:
       - name: Type-check
         run: yarn type-check
 
-      - name: Run component tests
+      - name: Run unit tests
         run: yarn jest --runInBand
