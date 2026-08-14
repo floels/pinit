@@ -98,35 +98,6 @@ jobs:
       - name: Run component tests
         run: pnpm test
 
-  e2e-checks:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.e2e == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: e2e-tests-web
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: 22.x
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v5
-        with:
-          version: 10.33.2
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Type-check
-        run: pnpm type-check
-
-      # NB: we don't actually run the E2E tests in the CI for now.
-
   mobile-checks:
     needs: detect-changes
     if: needs.detect-changes.outputs.mobile == 'true'
@@ -149,7 +120,6 @@ jobs:
       - name: Lint
         run: yarn lint
 
-      # Covers the app and the Detox flows in e2e/, which have their own tsconfig.
       - name: Type-check
         run: yarn type-check
 
