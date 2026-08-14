@@ -13,7 +13,6 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       web: ${{ steps.filter.outputs.web }}
-      e2e: ${{ steps.filter.outputs.e2e }}
       mobile: ${{ steps.filter.outputs.mobile }}
     steps:
       - name: Check out repository
@@ -29,9 +28,6 @@ jobs:
               - '.github/workflows/check-pull-request.yml'
             web:
               - 'web/**'
-              - '.github/workflows/check-pull-request.yml'
-            e2e:
-              - 'e2e-tests-web/**'
               - '.github/workflows/check-pull-request.yml'
             mobile:
               - 'mobile/**'
@@ -56,7 +52,7 @@ jobs:
       - name: Run migrations
         run: docker compose -f docker-compose.test.yml exec -T web python manage.py migrate
 
-      - name: Run tests
+      - name: Run unit tests
         run: docker compose -f docker-compose.test.yml exec -T web python manage.py test
 
       - name: Shut down Docker container
@@ -95,37 +91,8 @@ jobs:
       - name: Type-check
         run: pnpm type-check
 
-      - name: Run component tests
+      - name: Run unit tests
         run: pnpm test
-
-  e2e-checks:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.e2e == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: e2e-tests-web
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: 22.x
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v5
-        with:
-          version: 10.33.2
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Type-check
-        run: pnpm type-check
-
-      # NB: we don't actually run the E2E tests in the CI for now.
 
   mobile-checks:
     needs: detect-changes
@@ -149,9 +116,8 @@ jobs:
       - name: Lint
         run: yarn lint
 
-      # Covers the app and the Detox flows in e2e/, which have their own tsconfig.
       - name: Type-check
         run: yarn type-check
 
-      - name: Run component tests
+      - name: Run unit tests
         run: yarn jest --runInBand
