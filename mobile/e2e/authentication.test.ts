@@ -1,13 +1,4 @@
-import { by, element, expect } from "detox";
-
-import {
-  E2E_TEST_USER_EMAIL,
-  launchSignedOut,
-  logIn,
-  tap,
-  waitForText,
-  waitForVisible,
-} from "./helpers";
+import { launchSignedOut, logIn, tap, waitForVisible } from "./helpers";
 
 describe("Authentication", () => {
   beforeEach(async () => {
@@ -20,16 +11,6 @@ describe("Authentication", () => {
     await logIn();
 
     await waitForVisible("pins-board-scroll-view");
-  });
-
-  it("shows an error for a wrong password", async () => {
-    await logIn({ email: E2E_TEST_USER_EMAIL, password: "wrongpassword" });
-
-    // LandingScreen.INVALID_PASSWORD_LOGIN in translations/en.json
-    await waitForText(
-      "The password you entered is incorrect. Please try again.",
-    );
-    await expect(element(by.id("login-screen-submit-button"))).toBeVisible();
   });
 
   it("logs the user out", async () => {

@@ -4,15 +4,21 @@ import {
   launchSignedOut,
   logInAndWaitForBoard,
   tap,
+  tapNth,
   typeInto,
   waitForNthVisible,
   waitForText,
+  waitForVisible,
 } from "./helpers";
 
 // Must match SEARCH_SEED_TERM and NUMBER_OF_SEARCH_PINS in
 // backend/pinit_api/management/commands/seed_database_e2e.py
 const SEARCH_TERM = "playwrightuniquesearch";
 const NUMBER_OF_SEARCH_PINS = 3;
+
+// The seeded search pins are all authored by johndoe_account. See
+// seed_database_e2e.py.
+const SEARCH_PINS_AUTHOR = "John Doe";
 
 // A term that cannot match any seeded pin.
 const NO_RESULTS_TERM = "00000000-0000-0000-0000-000000000000";
@@ -30,7 +36,7 @@ describe("Search", () => {
     await logInAndWaitForBoard();
   });
 
-  it("shows results for a matching query", async () => {
+  it("shows results for a matching query, then opens one", async () => {
     await searchFor(SEARCH_TERM);
 
     // The seed creates NUMBER_OF_SEARCH_PINS matching pins, so this asserts that
@@ -41,6 +47,11 @@ describe("Search", () => {
       "pin-thumbnail-pin-image",
       NUMBER_OF_SEARCH_PINS - 1,
     );
+
+    await tapNth("pin-thumbnail-pin-image", 0);
+
+    await waitForVisible("pin-details-pin-image");
+    await waitForText(SEARCH_PINS_AUTHOR);
   });
 
   it("shows a message when the query matches nothing", async () => {
