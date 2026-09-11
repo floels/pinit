@@ -11,7 +11,7 @@ A Pinterest-like platform for discovering and organizing pins on boards.
 | Backend    | Django 6, Django REST Framework                               |
 | Database   | PostgreSQL 17                                                 |
 | Storage    | AWS S3 (pin images); Moto (local S3 mock)                     |
-| Search     | Elasticsearch 8                                               |
+| Search     | Elasticsearch 9                                               |
 
 ## Top-level structure
 

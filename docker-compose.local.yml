@@ -23,7 +23,7 @@ services:
       - moto
 
   elasticsearch:
-    image: elasticsearch:8.13.0
+    image: elasticsearch:9.5.1
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
