@@ -45,4 +45,3 @@ test("shows unauthenticated state when the refresh token is invalid", async ({
 
   await page.waitForSelector("text=Log in");
 });
-
