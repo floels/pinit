@@ -4,14 +4,14 @@
 # Everything not listed here (certifi, urllib3, cryptography, requests, ...)
 # is a transitive dependency and is resolved + pinned automatically.
 
-Django==6.0.7
-djangorestframework==3.17.1
+Django==6.1.1
+djangorestframework==3.18.1
 pyseto==1.10.0
 django-cors-headers==4.9.0
 django-storages==1.14.6
-whitenoise==6.9.0
-boto3==1.42.96
-elasticsearch==8.13.0
-psycopg2-binary==2.9.12
+whitenoise==6.12.0
+boto3==1.43.92
+elasticsearch==9.5.1
+psycopg2-binary==2.9.13
 python-decouple==3.8
-pytz==2023.3.post1
+pytz==2026.3.post1
