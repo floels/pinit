@@ -32,7 +32,7 @@ export const mockIntersectionObserver = () => {
   // A regular function (not an arrow) so it can be used as a constructor:
   // Vitest invokes the mock implementation with `new`, and arrow functions
   // are not constructable.
-  global.IntersectionObserver = vi.fn(function () {
+  globalThis.IntersectionObserver = vi.fn(function () {
     return {
       observe: vi.fn(),
       unobserve: vi.fn(),

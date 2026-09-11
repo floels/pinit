@@ -19,7 +19,10 @@ import {
 
 const mockEndSession = vi.fn();
 
-localStorage = new MockLocalStorage();
+Object.defineProperty(window, "localStorage", {
+  value: new MockLocalStorage(),
+  writable: true,
+});
 
 const MOCK_ACCESS_TOKEN = "mock.access.token";
 
