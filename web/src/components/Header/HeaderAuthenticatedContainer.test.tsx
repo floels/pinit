@@ -25,7 +25,10 @@ vi.mock("@/components/Header/AccountOptionsFlyout", async () => {
   return { default: MockedAccountOptionsFlyout };
 });
 
-localStorage = new MockLocalStorage();
+Object.defineProperty(window, "localStorage", {
+  value: new MockLocalStorage(),
+  writable: true,
+});
 
 const defaultAccount =
   MOCK_API_RESPONSES_SERIALIZED[API_URL_MY_ACCOUNT_DETAILS];

@@ -7,7 +7,7 @@ app lives in [`../mobile`](../mobile).)
 
 - Vite 8, React 19, React Router 8
 - React Compiler (enabled in the Vite build — see `vite.config.ts`)
-- TypeScript 5, pnpm
+- TypeScript 6, pnpm
 - TanStack Query 5 (server state)
 - react-i18next (i18n)
 - Vitest + Testing Library (unit tests)

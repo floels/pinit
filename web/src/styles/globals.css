@@ -79,7 +79,6 @@ main {
   position: relative;
 }
 
-/* https://fkhadra.github.io/react-toastify/how-to-style#override-existing-css-classes */
-.Toastify__toast-body {
+.Toastify__toast {
   font-family: var(--font-family-main);
 }
