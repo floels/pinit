@@ -1,5 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { StrictMode, useState } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { StrictMode } from "react";
 import "./src/lib/i18n";
 
 import { AccountContextProvider } from "./src/contexts/accountContext";
@@ -7,10 +7,9 @@ import { AuthenticationContextProvider } from "./src/contexts/authenticationCont
 
 import NavigationContainer from "@/src/components/NavigationContainer/NavigationContainer";
 import ToastAnchor from "@/src/components/ToastAnchor/ToastAnchor";
+import { queryClient } from "@/src/lib/queryClient";
 
 const App = () => {
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
     <StrictMode>
       <QueryClientProvider client={queryClient}>
