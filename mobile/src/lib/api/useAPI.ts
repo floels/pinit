@@ -6,7 +6,7 @@ import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
 import { ACCESS_TOKEN_STORAGE_KEY } from "@/src/lib/constants";
 import { MissingAccessTokenError } from "@/src/lib/customErrors";
 import {
-  clearStoredAuthData,
+  onUnrecoverableAuthFailure,
   refreshAccessToken,
 } from "@/src/lib/utils/authentication";
 
@@ -64,12 +64,11 @@ export const useAPI = () => {
       ? await SecureStore.getItemAsync(ACCESS_TOKEN_STORAGE_KEY)
       : null;
 
-    // The session cannot be renewed, so it is over. Clearing the tokens and
-    // dispatching switches the app to the unauthenticated tree, which is why no
-    // screen carries logout logic of its own.
+    // The session cannot be renewed, so it is over. `endSession` (via
+    // `onUnrecoverableAuthFailure`) clears storage, the RQ cache, and
+    // dispatches SESSION_ENDED — no screen carries logout logic of its own.
     if (!refreshedAccessToken) {
-      await clearStoredAuthData();
-      dispatch({ type: "SESSION_ENDED", reason: "expired" });
+      await onUnrecoverableAuthFailure(dispatch);
 
       return response;
     }

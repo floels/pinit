@@ -10,12 +10,15 @@ import {
   PROFILE_PICTURE_URL_STORAGE_KEY,
   REFRESH_TOKEN_STORAGE_KEY,
 } from "@/src/lib/constants";
+import { queryClient } from "@/src/lib/queryClient";
 import {
   TOKEN_REFRESH_BUFFER_BEFORE_EXPIRATION_MS,
   clearStoredAuthData,
+  endSession,
   ensureFreshAccessToken,
-  logOut,
+  onUnrecoverableAuthFailure,
   refreshAccessToken,
+  signOut,
 } from "@/src/lib/utils/authentication";
 
 jest.mock("expo-secure-store", () => ({
@@ -28,6 +31,10 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
+}));
+
+jest.mock("@/src/lib/queryClient", () => ({
+  queryClient: { clear: jest.fn() },
 }));
 
 const refreshEndpoint = `${API_BASE_URL}/${API_ENDPOINT_REFRESH_TOKEN}`;
@@ -180,12 +187,30 @@ describe("clearStoredAuthData", () => {
 
 const logoutEndpoint = `${API_BASE_URL}/${API_ENDPOINT_LOGOUT}`;
 
-describe("logOut", () => {
-  it("posts the refresh token to the logout endpoint, then clears stored data", async () => {
+describe("endSession", () => {
+  it("clears stored auth data, clears the RQ cache, and dispatches SESSION_ENDED", async () => {
+    const dispatch = jest.fn();
+
+    await endSession({ reason: "user", dispatch });
+
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      ACCESS_TOKEN_STORAGE_KEY,
+    );
+    expect(queryClient.clear).toHaveBeenCalledTimes(1);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "SESSION_ENDED",
+      reason: "user",
+    });
+  });
+});
+
+describe("signOut", () => {
+  it("posts the refresh token to the logout endpoint, then ends the session", async () => {
     (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
     fetchMock.mockResponseOnce("{}");
+    const dispatch = jest.fn();
 
-    await logOut();
+    await signOut(dispatch);
 
     expect(fetch).toHaveBeenCalledWith(
       logoutEndpoint,
@@ -197,28 +222,62 @@ describe("logOut", () => {
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
       REFRESH_TOKEN_STORAGE_KEY,
     );
+    expect(queryClient.clear).toHaveBeenCalledTimes(1);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "SESSION_ENDED",
+      reason: "user",
+    });
   });
 
-  it("clears stored data even when the logout request fails", async () => {
+  it("ends the session even when the logout request fails", async () => {
     (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("refresh-token");
     fetchMock.mockRejectOnce(new Error("network error"));
+    const dispatch = jest.fn();
 
-    await logOut();
+    await signOut(dispatch);
 
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
       ACCESS_TOKEN_STORAGE_KEY,
     );
+    expect(queryClient.clear).toHaveBeenCalledTimes(1);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "SESSION_ENDED",
+      reason: "user",
+    });
   });
 
-  it("skips the request and still clears data when there is no refresh token", async () => {
+  it("skips the revoke request and still ends the session when there is no refresh token", async () => {
     (SecureStore.getItemAsync as jest.Mock).mockResolvedValue(null);
+    const dispatch = jest.fn();
 
-    await logOut();
+    await signOut(dispatch);
 
     expect(fetch).not.toHaveBeenCalled();
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
       ACCESS_TOKEN_STORAGE_KEY,
     );
+    expect(queryClient.clear).toHaveBeenCalledTimes(1);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "SESSION_ENDED",
+      reason: "user",
+    });
+  });
+});
+
+describe("onUnrecoverableAuthFailure", () => {
+  it("ends the session with reason expired", async () => {
+    const dispatch = jest.fn();
+
+    await onUnrecoverableAuthFailure(dispatch);
+
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith(
+      ACCESS_TOKEN_STORAGE_KEY,
+    );
+    expect(queryClient.clear).toHaveBeenCalledTimes(1);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "SESSION_ENDED",
+      reason: "expired",
+    });
   });
 });
 

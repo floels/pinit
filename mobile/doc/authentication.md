@@ -194,7 +194,7 @@ sequenceDiagram
             F-->>C: the response of the retry
         else the refresh fails
             B-->>F: 401
-            F->>F: clearStoredAuthData, and dispatch SESSION_ENDED (reason expired)
+            F->>F: onUnrecoverableAuthFailure → endSession (reason expired)
             F-->>C: the original 401
         end
     end
@@ -243,32 +243,50 @@ rest as already rotated, and the user would land on the landing screen.
 
 ## How a session ends
 
-A session ends in two ways. The user logs out, or a refresh fails. Both ways
-clear every stored value, and both return the app to the login tree.
+An authenticated Session ends through one composed path in
+[`authentication.ts`](../src/lib/utils/authentication.ts):
+
+```
+signOut(dispatch)
+  → best-effort server revoke
+  → endSession({ reason: 'user', dispatch })
+
+onUnrecoverableAuthFailure(dispatch)   // after 401 → refresh failed
+  → endSession({ reason: 'expired', dispatch })
+
+endSession({ reason, dispatch })
+  → clearStoredAuthData()
+  → queryClient.clear()          // wipe ALL in-memory RQ cache
+  → dispatch SESSION_ENDED
+```
+
+Both entry points clear every stored auth value, wipe the shared React Query
+cache ([`queryClient.ts`](../src/lib/queryClient.ts)), and return the app to the
+login tree. The launch gate still uses `clearStoredAuthData` + `SESSION_ABSENT`
+when no Session was established yet — that is not an authenticated Session end.
 
 ### Logout
 
 [`ProfileScreen`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) calls
-`logOut()`, and then dispatches `SESSION_ENDED` with `reason: 'user'`. An
-overlay covers the screen while that runs.
+`signOut(dispatch)`. An overlay covers the screen while that runs.
 
-1. `logOut()` reads the refresh token, and sends it to
+1. `signOut` reads the refresh token, and sends it to
    `POST /token/mobile/logout/`.
-2. The backend revokes that refresh token. Mobile logout therefore gets the same
-   server-side revocation as web logout.
-3. `logOut()` calls `clearStoredAuthData()`.
+2. The backend revokes that refresh token. Mobile sign-out therefore gets the
+   same server-side revocation as web logout.
+3. `signOut` calls `endSession({ reason: 'user' })`.
 
-**Logout is best-effort.** Step 3 runs whether or not step 1 succeeded, because
-a failed request must never leave the user stuck in a logged-in UI. On that path
-the refresh token stays valid on the server until it expires.
+**Sign-out is best-effort.** Step 3 runs whether or not step 1 succeeded,
+because a failed request must never leave the user stuck in a logged-in UI. On
+that path the refresh token stays valid on the server until it expires.
 
 ### A dead session
 
 A refresh fails only when the refresh token is gone, expired or revoked. The
 session is therefore over, and no request can save it.
 
-1. `fetchAuthenticated` calls `clearStoredAuthData()`, and dispatches
-   `SESSION_ENDED` with `reason: 'expired'`.
+1. `fetchAuthenticated` calls `onUnrecoverableAuthFailure(dispatch)`, which
+   runs `endSession({ reason: 'expired' })`.
 2. `NavigationContainer` renders `UnauthenticatedNavigator`. The authenticated
    tree unmounts, and the user lands on the landing screen.
 
@@ -289,6 +307,8 @@ way to submit something twice.
 |---|---|
 | [`src/components/NavigationContainer/NavigationContainer.tsx`](../src/components/NavigationContainer/NavigationContainer.tsx) | The launch gate. Refreshes a near-expired token, and then chooses the navigator. |
 | [`src/contexts/authenticationContext.tsx`](../src/contexts/authenticationContext.tsx) | The auth reducer, its two booleans, and its `SESSION_*` actions. |
+| [`src/lib/utils/authentication.ts`](../src/lib/utils/authentication.ts) | Token persist/refresh helpers, plus `signOut` / `onUnrecoverableAuthFailure` / `endSession`. |
+| [`src/lib/queryClient.ts`](../src/lib/queryClient.ts) | Shared QueryClient singleton; cleared on every Session end. |
 | [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | The one hook for API traffic. `fetchAuthenticated` adds the Bearer header, refreshes and retries once on a 401, and ends the session when the refresh fails. |
 | [`src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx`](../src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx) | Login: validation, the token request, and the field-level errors. |
-| [`src/navigators/BrowseMainNavigator/ProfileScreen.tsx`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) | The logout button. |
+| [`src/navigators/BrowseMainNavigator/ProfileScreen.tsx`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) | The logout button (`signOut`). |

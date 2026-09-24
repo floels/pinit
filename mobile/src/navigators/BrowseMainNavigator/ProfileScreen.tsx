@@ -6,7 +6,7 @@ import styles from "./ProfileScreen.styles";
 
 import LoadingOverlay from "@/src/components/LoadingOverlay/LoadingOverlay";
 import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
-import { logOut } from "@/src/lib/utils/authentication";
+import { signOut } from "@/src/lib/utils/authentication";
 
 const ProfileScreen = () => {
   const { t } = useTranslation();
@@ -19,14 +19,12 @@ const ProfileScreen = () => {
     setIsClearingTokensData(true);
 
     try {
-      await logOut();
+      await signOut(dispatch);
     } catch {
       // Fail silently:
       setIsClearingTokensData(false);
       return;
     }
-
-    dispatch({ type: "SESSION_ENDED", reason: "user" });
 
     setIsClearingTokensData(false);
   };
