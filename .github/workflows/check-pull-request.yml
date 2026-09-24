@@ -14,6 +14,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       web: ${{ steps.filter.outputs.web }}
       mobile: ${{ steps.filter.outputs.mobile }}
+      web-e2e: ${{ steps.filter.outputs.web-e2e }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -32,6 +33,24 @@ jobs:
             mobile:
               - 'mobile/**'
               - '.github/workflows/check-pull-request.yml'
+            # Shared E2E stack + web suite. Consumed by a future web-e2e job (FLO-23).
+            web-e2e:
+              - 'web/**'
+              - 'e2e-tests-web/**'
+              - 'backend/**'
+              - 'docker-compose.e2e.yml'
+              - 'scripts/e2e-backend-up.sh'
+              - 'nginx/**'
+              - '.github/workflows/check-pull-request.yml'
+
+  # Placeholder so the new filter is exercised in CI until FLO-23 wires Playwright.
+  web-e2e:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.web-e2e == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm web-e2e path filter
+        run: echo "web-e2e paths changed; Playwright job lands in FLO-23"
 
   backend-checks:
     needs: detect-changes
