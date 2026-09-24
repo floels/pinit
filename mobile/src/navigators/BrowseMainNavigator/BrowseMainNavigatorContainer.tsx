@@ -1,12 +1,12 @@
 import { NavigationProp } from "@react-navigation/native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Toast from "react-native-toast-message";
 
 import BrowseMainNavigator from "./BrowseMainNavigator";
 import { AuthenticatedNavigatorParamList } from "../AuthenticatedNavigator/AuthenticatedNavigator";
 import { BrowseNavigatorParamList } from "../BrowseNavigator/BrowseNavigator";
 
-import { useAccountContext } from "@/src/contexts/accountContext";
+import { useMyAccountDetails } from "@/src/hooks/useMyAccountDetails";
 import { Pin } from "@/src/lib/types";
 
 type BrowseMainNavigatorProps = {
@@ -22,7 +22,9 @@ const BrowseMainNavigatorContainer = ({
   navigation,
   parentNavigation,
 }: BrowseMainNavigatorProps) => {
-  const { account } = useAccountContext();
+  const { data: account } = useMyAccountDetails();
+  // Toast only once per created pin: account may arrive after the pin params.
+  const toastedPinIdRef = useRef<string | null>(null);
 
   const [isCreateSelectModalVisible, setIsCreateSelectModalVisible] =
     useState(false);
@@ -44,10 +46,16 @@ const BrowseMainNavigatorContainer = ({
     setIsCreateSelectModalVisible(false);
   };
 
-  const showPinCreationToast = () => {
-    if (!createdPin || !account) {
+  useEffect(() => {
+    if (!createdPin || !createdPinImageAspectRatio || !account) {
       return;
     }
+
+    if (toastedPinIdRef.current === createdPin.id) {
+      return;
+    }
+
+    toastedPinIdRef.current = createdPin.id;
 
     const createdPinWithAuthorDetails = {
       ...createdPin,
@@ -57,22 +65,18 @@ const BrowseMainNavigatorContainer = ({
     const handlePressView = () => {
       navigation.navigate("Authenticated.Browse.CreatedPin", {
         pin: createdPinWithAuthorDetails,
-        pinImageAspectRatio: createdPinImageAspectRatio as number,
+        pinImageAspectRatio: createdPinImageAspectRatio,
       });
     };
 
     Toast.show({
       type: "pinCreationSuccess",
       position: "bottom",
+      // Long enough for the user (and E2E) to tap View before auto-hide.
+      visibilityTime: 8000,
       props: { handlePressView },
     });
-  };
-
-  useEffect(() => {
-    if (createdPin && createdPinImageAspectRatio) {
-      showPinCreationToast();
-    }
-  }, [createdPin, createdPinImageAspectRatio]);
+  }, [createdPin, createdPinImageAspectRatio, account, navigation]);
 
   return (
     <BrowseMainNavigator

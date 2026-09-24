@@ -6,7 +6,6 @@ import { ReactNode } from "react";
 
 import { useMyAccountDetails } from "./useMyAccountDetails";
 
-import { AccountContext } from "@/src/contexts/accountContext";
 import { AuthenticationContext } from "@/src/contexts/authenticationContext";
 import {
   API_BASE_URL,
@@ -35,7 +34,6 @@ const accountDetailsEndpoint = `${API_BASE_URL}/${API_ENDPOINT_MY_ACCOUNT_DETAIL
 const refreshTokenEndpoint = `${API_BASE_URL}/${API_ENDPOINT_REFRESH_TOKEN}`;
 
 const mockDispatch = jest.fn();
-const mockSetAccount = jest.fn();
 
 const renderUseMyAccountDetails = () => {
   const queryClient = new QueryClient({
@@ -52,11 +50,7 @@ const renderUseMyAccountDetails = () => {
           dispatch: mockDispatch,
         }}
       >
-        <AccountContext.Provider
-          value={{ account: null, setAccount: mockSetAccount }}
-        >
-          {children}
-        </AccountContext.Provider>
+        {children}
       </AuthenticationContext.Provider>
     </QueryClientProvider>
   );
@@ -67,23 +61,22 @@ const renderUseMyAccountDetails = () => {
 beforeEach(() => {
   fetchMock.resetMocks();
   mockDispatch.mockReset();
-  mockSetAccount.mockReset();
   (AsyncStorage.setItem as jest.Mock).mockReset();
   (SecureStore.getItemAsync as jest.Mock).mockClear();
   (SecureStore.setItemAsync as jest.Mock).mockReset();
   (SecureStore.deleteItemAsync as jest.Mock).mockReset();
 });
 
-it("sets the account and caches the profile picture upon successful fetch", async () => {
+it("returns account data and caches the profile picture upon successful fetch", async () => {
   fetchMock.mockOnceIf(
     accountDetailsEndpoint,
     MOCK_API_RESPONSES[API_ENDPOINT_MY_ACCOUNT_DETAILS],
   );
 
-  renderUseMyAccountDetails();
+  const { result } = renderUseMyAccountDetails();
 
   await waitFor(() => {
-    expect(mockSetAccount).toHaveBeenCalledWith(
+    expect(result.current.data).toEqual(
       MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_MY_ACCOUNT_DETAILS],
     );
   });
@@ -116,10 +109,10 @@ it("refreshes the token and retries without logging out upon a recoverable 401",
     return MOCK_API_RESPONSES[API_ENDPOINT_MY_ACCOUNT_DETAILS];
   });
 
-  renderUseMyAccountDetails();
+  const { result } = renderUseMyAccountDetails();
 
   await waitFor(() => {
-    expect(mockSetAccount).toHaveBeenCalledWith(
+    expect(result.current.data).toEqual(
       MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_MY_ACCOUNT_DETAILS],
     );
   });
