@@ -18,9 +18,7 @@ test("shows authenticated header and pin suggestions when logged in", async ({
 
   await page.waitForSelector('[data-testid="sidebar-home-link"]');
   // The seeded database has pins so at least one thumbnail should appear
-  await page.waitForSelector('[data-testid="pin-thumbnail"]');
-  const thumbnails = await page.$$('[data-testid="pin-thumbnail"]');
-  expect(thumbnails.length).toBeGreaterThan(0);
+  await expect(page.locator('[data-testid="pin-thumbnail"]').first()).toBeVisible();
 
   await expect(page.locator('[data-testid="sidebar-home-link"]')).toHaveClass(/navItemActive/);
   await expect(page.locator('[data-testid="sidebar-create-link"]')).not.toHaveClass(/navItemActive/);
