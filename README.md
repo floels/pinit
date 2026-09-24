@@ -146,7 +146,8 @@ services from `docker-compose.e2e.yml`, then migrates and seeds the database.
 Every pull request targeting `main` runs the
 [`Check Pull Request`](.github/workflows/check-pull-request.yml) GitHub Actions workflow.
 A `detect-changes` job first computes which parts of the repo changed (via path filters), and
-only the affected checks then run. Changing the workflow file itself triggers every job.
+only the affected checks then run (other jobs are skipped — which still satisfies a required
+check). Changing the workflow file itself triggers every job.
 
 | Job | Runs when | What it does |
 |-----|-----------|--------------|
