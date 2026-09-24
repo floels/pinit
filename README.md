@@ -153,5 +153,6 @@ only the affected checks then run. Changing the workflow file itself triggers ev
 | `backend-checks` | `backend/**` changed | Builds the test Docker image, runs migrations, runs the Django test suite |
 | `web-checks` | `web/**` changed | `pnpm` install → lint → build → type-check → Vitest unit tests |
 | `mobile-checks` | `mobile/**` changed | `yarn` install → lint → `tsc` → Jest unit tests |
+| `web-e2e` | web app, Playwright suite, backend, or shared E2E stack changed | Installs Chromium, brings up `docker-compose.e2e.yml`, runs the Playwright suite |
 
-NB: E2E tests for web and mobile are not run in the CI.
+NB: Mobile E2E (Detox) is not run in CI yet — run it locally with `make test-e2e-mobile`.
