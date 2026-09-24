@@ -16,6 +16,11 @@ const createTestQueryClient = () =>
         // has failed to exit gracefully" after an otherwise green run.
         gcTime: 0,
       },
+      mutations: {
+        // Same timer trap as queries: unused mutation cache entries keep a
+        // five-minute gcTime timer unless we collect them immediately.
+        gcTime: 0,
+      },
     },
   });
 
