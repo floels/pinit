@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
+import { Dispatch } from "react";
 
 import { fetchPublic } from "@/src/lib/api/fetchers";
 import {
@@ -12,6 +13,14 @@ import {
   REFRESH_TOKEN_STORAGE_KEY,
 } from "@/src/lib/constants";
 import { ResponseKOError } from "@/src/lib/customErrors";
+import { queryClient } from "@/src/lib/queryClient";
+
+type SessionEndReason = "user" | "expired";
+
+type SessionEndedDispatch = Dispatch<{
+  type: "SESSION_ENDED";
+  reason?: SessionEndReason;
+}>;
 
 // Small buffer so the launch gate proactively refreshes an access token that is
 // about to expire, rather than letting the first authenticated request race
@@ -44,9 +53,11 @@ export const persistTokensData = async ({
   }
 };
 
-// Removes every piece of persisted session data. Call this whenever the user
-// logs out or the session becomes invalid (e.g. a 401), so a stale token can't
-// bounce the user back into (and immediately out of) the authenticated tree.
+// Removes every piece of persisted session data (tokens, expiry, and the
+// profile-picture cold-start URL). Used by `endSession` and by the launch gate
+// when no usable session exists yet (SESSION_ABSENT). Clearing storage alone
+// is not enough to leave an authenticated Session — that goes through
+// `endSession`.
 export const clearStoredAuthData = async () => {
   await Promise.all([
     SecureStore.deleteItemAsync(ACCESS_TOKEN_STORAGE_KEY),
@@ -56,12 +67,26 @@ export const clearStoredAuthData = async () => {
   ]);
 };
 
-// Logs the user out: revokes the refresh token server-side, then clears all
-// locally stored session data. Server-side revocation is best-effort — if the
-// request fails (offline, already-expired token), we still clear local data so
-// logout never gets stuck. This gives mobile the same server-side revocation
-// that web logout performs via its httpOnly cookie.
-export const logOut = async () => {
+// Single composed path for ending an authenticated Session. Clears persisted
+// auth data, wipes the in-memory React Query cache, and dispatches
+// SESSION_ENDED so NavigationContainer switches to the login tree.
+export const endSession = async ({
+  reason,
+  dispatch,
+}: {
+  reason: SessionEndReason;
+  dispatch: SessionEndedDispatch;
+}) => {
+  await clearStoredAuthData();
+  queryClient.clear();
+  dispatch({ type: "SESSION_ENDED", reason });
+};
+
+// User-initiated sign-out: best-effort server revoke of the refresh token,
+// then `endSession({ reason: 'user' })`. Revocation never blocks teardown —
+// if the request fails (offline, already-expired token), we still end the
+// Session locally. Matches web logout's server-side revocation intent.
+export const signOut = async (dispatch: SessionEndedDispatch) => {
   try {
     const refreshToken = await SecureStore.getItemAsync(
       REFRESH_TOKEN_STORAGE_KEY,
@@ -75,10 +100,17 @@ export const logOut = async () => {
       });
     }
   } catch {
-    // Best-effort: never block logout on server-side revocation.
+    // Best-effort: never block sign-out on server-side revocation.
   }
 
-  await clearStoredAuthData();
+  await endSession({ reason: "user", dispatch });
+};
+
+// After a 401 whose refresh failed: the Session cannot be renewed.
+export const onUnrecoverableAuthFailure = async (
+  dispatch: SessionEndedDispatch,
+) => {
+  await endSession({ reason: "expired", dispatch });
 };
 
 // Refreshes the access token when it is missing an expiration date or is within

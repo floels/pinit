@@ -6,7 +6,7 @@ import { useAPI } from "./useAPI";
 import { AuthenticationContext } from "@/src/contexts/authenticationContext";
 import { MissingAccessTokenError } from "@/src/lib/customErrors";
 import {
-  clearStoredAuthData,
+  onUnrecoverableAuthFailure,
   refreshAccessToken,
 } from "@/src/lib/utils/authentication";
 
@@ -16,7 +16,7 @@ jest.mock("expo-secure-store", () => ({
 
 jest.mock("@/src/lib/utils/authentication", () => ({
   refreshAccessToken: jest.fn(),
-  clearStoredAuthData: jest.fn(),
+  onUnrecoverableAuthFailure: jest.fn(),
 }));
 
 const endpoint = "https://example.com/api/some-resource/";
@@ -127,12 +127,9 @@ describe("fetchAuthenticated", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
 
     await waitFor(() => {
-      expect(clearStoredAuthData).toHaveBeenCalledTimes(1);
+      expect(onUnrecoverableAuthFailure).toHaveBeenCalledTimes(1);
     });
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: "SESSION_ENDED",
-      reason: "expired",
-    });
+    expect(onUnrecoverableAuthFailure).toHaveBeenCalledWith(mockDispatch);
   });
 });
 
