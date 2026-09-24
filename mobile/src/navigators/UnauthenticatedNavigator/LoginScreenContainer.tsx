@@ -116,7 +116,7 @@ const LoginScreenContainer = ({ navigation }: LoginScreenContainerProps) => {
         accessTokenExpirationDate,
       });
 
-      dispatch({ type: "LOGGED_IN" });
+      dispatch({ type: "SESSION_STARTED" });
     } catch (error) {
       handleSubmitError(error);
     } finally {

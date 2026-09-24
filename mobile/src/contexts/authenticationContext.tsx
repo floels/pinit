@@ -11,14 +11,13 @@ type State = {
   isAuthenticated: boolean;
 };
 
-type Action = {
-  type:
-    | "FOUND_ACCESS_TOKEN"
-    | "CHECKED_NO_ACCESS_TOKEN"
-    | "LOGGED_IN"
-    | "LOGGED_OUT"
-    | "GOT_401_RESPONSE";
-};
+type SessionEndReason = "user" | "expired";
+
+type Action =
+  | { type: "SESSION_RESTORED" }
+  | { type: "SESSION_ABSENT" }
+  | { type: "SESSION_STARTED" }
+  | { type: "SESSION_ENDED"; reason?: SessionEndReason };
 
 type ContextType = {
   state: State;
@@ -36,28 +35,28 @@ export const AuthenticationContext = createContext<ContextType>({
 });
 
 const reducer = (state: State, action: Action) => {
-  if (action.type === "FOUND_ACCESS_TOKEN") {
+  if (action.type === "SESSION_RESTORED") {
     return {
       isCheckingAccessToken: false,
       isAuthenticated: true,
     };
   }
 
-  if (action.type === "CHECKED_NO_ACCESS_TOKEN") {
+  if (action.type === "SESSION_ABSENT") {
     return {
       isCheckingAccessToken: false,
       isAuthenticated: false,
     };
   }
 
-  if (action.type === "LOGGED_IN") {
+  if (action.type === "SESSION_STARTED") {
     return {
       isCheckingAccessToken: false,
       isAuthenticated: true,
     };
   }
 
-  if (action.type === "LOGGED_OUT" || action.type === "GOT_401_RESPONSE") {
+  if (action.type === "SESSION_ENDED") {
     return {
       isCheckingAccessToken: false,
       isAuthenticated: false,
