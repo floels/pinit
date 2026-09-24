@@ -30,7 +30,7 @@ pinit/
 └── .gitignore                # Files and folders that Git must not track
 ```
 
-Some sub-folders has their own README: [`backend/README.md`](backend/README.md), [`web/README.md`](web/README.md), [`mobile/README.md`](mobile/README.md), and [`e2e-tests-web/README.md`](e2e-tests-web/README.md).
+Some sub-folders have their own README: [`backend/README.md`](backend/README.md), [`web/README.md`](web/README.md), [`mobile/README.md`](mobile/README.md), and [`e2e-tests-web/README.md`](e2e-tests-web/README.md).
 
 ## Local setup
 
