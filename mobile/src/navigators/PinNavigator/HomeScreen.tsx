@@ -36,7 +36,7 @@ const HomeScreen = ({
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: ["queryPinDetails", { id }],
+    queryKey: ["pin", "detail", { id }],
     queryFn: fetchPinDetails,
   });
 
