@@ -14,7 +14,7 @@ import {
   API_ENDPOINT_CREATE_PIN,
   API_ENDPOINT_PIN_IMAGE_UPLOAD_URL,
 } from "@/src/lib/constants";
-import { pressButton } from "@/src/lib/testing-utils/misc";
+import { pressButton, withQueryClient } from "@/src/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
@@ -83,11 +83,13 @@ const renderComponent = (
   },
 ) => {
   render(
-    <EnterPinDetailsScreenContainer
-      navigation={mockNavigation}
-      route={route}
-      handleCreateSuccess={mockHandleCreateSuccess}
-    />,
+    withQueryClient(
+      <EnterPinDetailsScreenContainer
+        navigation={mockNavigation}
+        route={route}
+        handleCreateSuccess={mockHandleCreateSuccess}
+      />,
+    ),
   );
 };
 
