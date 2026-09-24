@@ -32,6 +32,6 @@ export default defineConfig({
     command: "pnpm dev",
     cwd: path.resolve(__dirname, "../web"),
     url: "http://localhost:3000",
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
   },
 });

@@ -6,9 +6,9 @@ const REPO_ROOT = path.resolve(__dirname, "..");
 const SCRIPT = path.resolve(REPO_ROOT, "scripts/e2e-backend-up.sh");
 
 setup("start E2E services and seed database", async () => {
-  // Starting Docker services, running migrations and seeding takes longer
-  // than the default per-test timeout.
-  setup.setTimeout(120_000);
+  // Cold image pulls (Elasticsearch especially) plus migrate/seed exceed the
+  // default per-test timeout; CI runners need more headroom than a warm laptop.
+  setup.setTimeout(900_000);
 
   // The same script backs the mobile Detox suite, so both suites share
   // one definition of the stack and the seed data.

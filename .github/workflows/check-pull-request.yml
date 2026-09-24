@@ -33,7 +33,7 @@ jobs:
             mobile:
               - 'mobile/**'
               - '.github/workflows/check-pull-request.yml'
-            # Shared E2E stack + web suite. Consumed by a future web-e2e job (FLO-23).
+            # Shared E2E stack + web suite — drives the web-e2e Playwright job.
             web-e2e:
               - 'web/**'
               - 'e2e-tests-web/**'
@@ -43,14 +43,41 @@ jobs:
               - 'nginx/**'
               - '.github/workflows/check-pull-request.yml'
 
-  # Placeholder so the new filter is exercised in CI until FLO-23 wires Playwright.
   web-e2e:
     needs: detect-changes
     if: needs.detect-changes.outputs.web-e2e == 'true'
     runs-on: ubuntu-latest
+    # Cold Elasticsearch/Postgres pulls + backend image build dominate wall time.
+    timeout-minutes: 45
     steps:
-      - name: Confirm web-e2e path filter
-        run: echo "web-e2e paths changed; Playwright job lands in FLO-23"
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.33.2
+
+      - name: Install web dependencies
+        run: pnpm --dir web install
+
+      - name: Install e2e-tests-web dependencies
+        run: pnpm --dir e2e-tests-web install
+
+      - name: Install Playwright Chromium
+        run: pnpm --dir e2e-tests-web exec playwright install --with-deps chromium
+
+      - name: Run Playwright web E2E
+        run: pnpm --dir e2e-tests-web test
+
+      - name: Tear down E2E Docker stack
+        if: always()
+        run: docker compose -f docker-compose.e2e.yml down -v
 
   backend-checks:
     needs: detect-changes
