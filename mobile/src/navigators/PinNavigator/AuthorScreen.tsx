@@ -35,7 +35,7 @@ const AuthorScreen = ({ route, navigation }: AuthorScreenProps) => {
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: ["queryAccountDetails", { username }],
+    queryKey: ["account", "detail", { username }],
     queryFn: fetchAccountDetails,
   });
 

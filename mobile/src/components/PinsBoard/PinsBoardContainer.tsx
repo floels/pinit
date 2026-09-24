@@ -65,7 +65,7 @@ const PinsBoardContainer = ({
   // The endpoint identifies the board, and a search endpoint carries its search
   // term, so it keys the cache on its own. A change of endpoint therefore reads
   // another cache entry instead of resetting local state.
-  const queryKey = ["pinsBoard", fetchEndpoint];
+  const queryKey = ["pin", "board", { endpoint: fetchEndpoint }];
 
   const fetchPins = async (page: number) => {
     const endpointWithPageParameter = appendQueryParam({
