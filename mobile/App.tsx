@@ -2,7 +2,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import "./src/lib/i18n";
 
-import { AccountContextProvider } from "./src/contexts/accountContext";
 import { AuthenticationContextProvider } from "./src/contexts/authenticationContext";
 
 import NavigationContainer from "@/src/components/NavigationContainer/NavigationContainer";
@@ -14,9 +13,7 @@ const App = () => {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <AuthenticationContextProvider>
-          <AccountContextProvider>
-            <NavigationContainer />
-          </AccountContextProvider>
+          <NavigationContainer />
         </AuthenticationContextProvider>
       </QueryClientProvider>
       <ToastAnchor />

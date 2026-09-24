@@ -66,7 +66,7 @@ describe("Pin creation", () => {
     await waitForText("Your Pin is published!");
 
     // The toast hides itself after a few seconds, so this taps without delay.
-    // The View action needs the account context, because the create response
+    // The View action needs my-account query data, because the create response
     // carries no author. See BrowseMainNavigatorContainer.
     await tapUntilVisible(
       "pin-creation-success-toast-view-button",

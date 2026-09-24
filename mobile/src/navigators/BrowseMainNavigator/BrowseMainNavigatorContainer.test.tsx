@@ -5,7 +5,6 @@ import React from "react";
 import BrowseMainNavigatorContainer from "./BrowseMainNavigatorContainer";
 
 import ToastAnchor from "@/src/components/ToastAnchor/ToastAnchor";
-import { AccountContext } from "@/src/contexts/accountContext";
 import { API_ENDPOINT_MY_ACCOUNT_DETAILS } from "@/src/lib/constants";
 import { pressButton } from "@/src/lib/testing-utils/misc";
 import { MOCK_API_RESPONSES_SERIALIZED } from "@/src/lib/testing-utils/mockAPIResponses";
@@ -34,24 +33,27 @@ jest.mock(
   },
 );
 
+const mockAccount =
+  MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_MY_ACCOUNT_DETAILS];
+
+jest.mock("@/src/hooks/useMyAccountDetails", () => ({
+  useMyAccountDetails: () => ({ data: mockAccount, isError: false }),
+}));
+
 const mockNavigation = {
   navigate: jest.fn(),
 };
 
-const account = MOCK_API_RESPONSES_SERIALIZED[API_ENDPOINT_MY_ACCOUNT_DETAILS];
-
 const renderComponent = (props?: any) => {
   render(
     <>
-      <AccountContext.Provider value={{ account, setAccount: () => {} }}>
-        <NavigationContainer>
-          <BrowseMainNavigatorContainer
-            navigation={mockNavigation as any}
-            {...props}
-          />
-        </NavigationContainer>
-        <ToastAnchor />
-      </AccountContext.Provider>
+      <NavigationContainer>
+        <BrowseMainNavigatorContainer
+          navigation={mockNavigation as any}
+          {...props}
+        />
+      </NavigationContainer>
+      <ToastAnchor />
     </>,
   );
 };
@@ -88,7 +90,7 @@ and clicking on 'View' link in toast navigates to relevant screen with relevant 
     {
       pin: {
         ...props.createdPin,
-        author: account,
+        author: mockAccount,
       },
       pinImageAspectRatio: 1.5,
     },
