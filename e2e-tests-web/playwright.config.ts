@@ -12,7 +12,8 @@ export default defineConfig({
   reporter: "html",
   use: {
     baseURL: "http://localhost:3000",
-    trace: "on-first-retry",
+    // retries stay 0 — retain traces on the failed attempt itself (not only on retry).
+    trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
 
