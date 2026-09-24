@@ -10,7 +10,7 @@ import {
   ACCESS_TOKEN_STORAGE_KEY,
   REFRESH_TOKEN_STORAGE_KEY,
 } from "@/src/lib/constants";
-import { pressButton } from "@/src/lib/testing-utils/misc";
+import { pressButton, withQueryClient } from "@/src/lib/testing-utils/misc";
 
 jest.mock("@/src/components/LoadingOverlay/LoadingOverlay", () => {
   const View = jest.requireActual("react-native").View;
@@ -36,11 +36,13 @@ const renderComponent = () => {
   };
 
   render(
-    <AuthenticationContext.Provider
-      value={{ state: initialState, dispatch: mockDispatch }}
-    >
-      <ProfileScreen />
-    </AuthenticationContext.Provider>,
+    withQueryClient(
+      <AuthenticationContext.Provider
+        value={{ state: initialState, dispatch: mockDispatch }}
+      >
+        <ProfileScreen />
+      </AuthenticationContext.Provider>,
+    ),
   );
 };
 

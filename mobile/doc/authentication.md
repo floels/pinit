@@ -268,6 +268,7 @@ when no Session was established yet — that is not an authenticated Session end
 ### Logout
 
 [`ProfileScreen`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) calls
+[`useLogoutMutation`](../src/hooks/useLogoutMutation.ts), which runs
 `signOut(dispatch)`. An overlay covers the screen while that runs.
 
 1. `signOut` reads the refresh token, and sends it to
@@ -311,5 +312,6 @@ way to submit something twice.
 | [`src/lib/queryClient.ts`](../src/lib/queryClient.ts) | Shared QueryClient singleton; cleared on every Session end. |
 | [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | The one hook for API traffic. `fetchAuthenticated` adds the Bearer header, refreshes and retries once on a 401, and ends the session when the refresh fails. |
 | [`src/hooks/useLoginMutation.ts`](../src/hooks/useLoginMutation.ts) | Login mutation: obtain tokens, persist them, dispatch `SESSION_STARTED`. |
+| [`src/hooks/useLogoutMutation.ts`](../src/hooks/useLogoutMutation.ts) | Logout mutation: calls `signOut` (revoke → `endSession` with reason `'user'`). |
 | [`src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx`](../src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx) | Login: validation, calls `useLoginMutation`, and field-level errors. |
-| [`src/navigators/BrowseMainNavigator/ProfileScreen.tsx`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) | The logout button (`signOut`). |
+| [`src/navigators/BrowseMainNavigator/ProfileScreen.tsx`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) | The logout button (`useLogoutMutation`). |

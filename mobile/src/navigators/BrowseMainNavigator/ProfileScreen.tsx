@@ -5,21 +5,20 @@ import { View, TouchableOpacity, Text } from "react-native";
 import styles from "./ProfileScreen.styles";
 
 import LoadingOverlay from "@/src/components/LoadingOverlay/LoadingOverlay";
-import { useAuthenticationContext } from "@/src/contexts/authenticationContext";
-import { signOut } from "@/src/lib/utils/authentication";
+import { useLogoutMutation } from "@/src/hooks/useLogoutMutation";
 
 const ProfileScreen = () => {
   const { t } = useTranslation();
 
-  const { dispatch } = useAuthenticationContext();
-
   const [isClearingTokensData, setIsClearingTokensData] = useState(false);
+
+  const { mutateAsync } = useLogoutMutation();
 
   const handleLogOut = async () => {
     setIsClearingTokensData(true);
 
     try {
-      await signOut(dispatch);
+      await mutateAsync();
     } catch {
       // Fail silently:
       setIsClearingTokensData(false);
