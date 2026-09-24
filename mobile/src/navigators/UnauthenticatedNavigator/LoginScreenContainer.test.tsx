@@ -19,7 +19,7 @@ import {
   ERROR_CODE_INVALID_EMAIL,
   REFRESH_TOKEN_STORAGE_KEY,
 } from "@/src/lib/constants";
-import { pressButton } from "@/src/lib/testing-utils/misc";
+import { pressButton, withQueryClient } from "@/src/lib/testing-utils/misc";
 import {
   MOCK_API_RESPONSES,
   MOCK_API_RESPONSES_JSON,
@@ -45,11 +45,13 @@ const renderComponent = () => {
   };
 
   render(
-    <AuthenticationContext.Provider
-      value={{ state: initialState, dispatch: mockDispatch }}
-    >
-      <LoginScreenContainer navigation={mockNavigation} />
-    </AuthenticationContext.Provider>,
+    withQueryClient(
+      <AuthenticationContext.Provider
+        value={{ state: initialState, dispatch: mockDispatch }}
+      >
+        <LoginScreenContainer navigation={mockNavigation} />
+      </AuthenticationContext.Provider>,
+    ),
   );
 };
 

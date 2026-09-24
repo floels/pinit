@@ -128,12 +128,12 @@ The app has no signup screen, although the backend exposes
 
 | Flow | Container | Endpoint |
 |---|---|---|
-| Login | [`LoginScreenContainer`](../src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx) | `POST /token/mobile/` |
+| Login | [`LoginScreenContainer`](../src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx) via [`useLoginMutation`](../src/hooks/useLoginMutation.ts) | `POST /token/mobile/` |
 
 1. The user submits the form. The container validates the email and the password
    before it enables the button.
 2. **The backend accepts.** It returns `200` with the access token, the refresh
-   token, and the expiry date. The container calls `persistTokensData()`, and
+   token, and the expiry date. `useLoginMutation` calls `persistTokensData()`,
    then dispatches `SESSION_STARTED`.
 3. **The backend rejects.** It returns `401 { errors: [{ code }] }`. The
    container shows a message for `invalid_email` on the email field, and a
@@ -310,5 +310,6 @@ way to submit something twice.
 | [`src/lib/utils/authentication.ts`](../src/lib/utils/authentication.ts) | Token persist/refresh helpers, plus `signOut` / `onUnrecoverableAuthFailure` / `endSession`. |
 | [`src/lib/queryClient.ts`](../src/lib/queryClient.ts) | Shared QueryClient singleton; cleared on every Session end. |
 | [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | The one hook for API traffic. `fetchAuthenticated` adds the Bearer header, refreshes and retries once on a 401, and ends the session when the refresh fails. |
-| [`src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx`](../src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx) | Login: validation, the token request, and the field-level errors. |
+| [`src/hooks/useLoginMutation.ts`](../src/hooks/useLoginMutation.ts) | Login mutation: obtain tokens, persist them, dispatch `SESSION_STARTED`. |
+| [`src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx`](../src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx) | Login: validation, calls `useLoginMutation`, and field-level errors. |
 | [`src/navigators/BrowseMainNavigator/ProfileScreen.tsx`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) | The logout button (`signOut`). |
