@@ -129,7 +129,10 @@ describe("fetchAuthenticated", () => {
     await waitFor(() => {
       expect(clearStoredAuthData).toHaveBeenCalledTimes(1);
     });
-    expect(mockDispatch).toHaveBeenCalledWith({ type: "GOT_401_RESPONSE" });
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: "SESSION_ENDED",
+      reason: "expired",
+    });
   });
 });
 

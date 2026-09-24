@@ -23,12 +23,12 @@ const NavigatorContainer = () => {
     try {
       accessToken = await SecureStore.getItemAsync(ACCESS_TOKEN_STORAGE_KEY);
     } catch {
-      dispatch({ type: "CHECKED_NO_ACCESS_TOKEN" });
+      dispatch({ type: "SESSION_ABSENT" });
       return;
     }
 
     if (!accessToken) {
-      dispatch({ type: "CHECKED_NO_ACCESS_TOKEN" });
+      dispatch({ type: "SESSION_ABSENT" });
       return;
     }
 
@@ -47,11 +47,11 @@ const NavigatorContainer = () => {
 
     if (!hasValidSession) {
       await clearStoredAuthData();
-      dispatch({ type: "CHECKED_NO_ACCESS_TOKEN" });
+      dispatch({ type: "SESSION_ABSENT" });
       return;
     }
 
-    dispatch({ type: "FOUND_ACCESS_TOKEN" });
+    dispatch({ type: "SESSION_RESTORED" });
   };
 
   useEffect(() => {

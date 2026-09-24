@@ -125,7 +125,10 @@ it("refreshes the token and retries without logging out upon a recoverable 401",
   });
   // The recoverable 401 must not have logged the user out, and the refreshed
   // access token must have been persisted:
-  expect(mockDispatch).not.toHaveBeenCalledWith({ type: "GOT_401_RESPONSE" });
+  expect(mockDispatch).not.toHaveBeenCalledWith({
+    type: "SESSION_ENDED",
+    reason: "expired",
+  });
   expect(SecureStore.setItemAsync).toHaveBeenCalled();
 });
 
@@ -137,7 +140,10 @@ it("clears stored auth data and logs out when a 401 cannot be recovered", async 
   renderUseMyAccountDetails();
 
   await waitFor(() => {
-    expect(mockDispatch).toHaveBeenCalledWith({ type: "GOT_401_RESPONSE" });
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: "SESSION_ENDED",
+      reason: "expired",
+    });
   });
   expect(SecureStore.deleteItemAsync).toHaveBeenCalled();
 });

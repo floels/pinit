@@ -68,7 +68,10 @@ upon click on 'Log out' button`, async () => {
       ACCESS_TOKEN_EXPIRATION_DATE_STORAGE_KEY,
     );
 
-    expect(mockDispatch).toHaveBeenCalledWith({ type: "LOGGED_OUT" });
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: "SESSION_ENDED",
+      reason: "user",
+    });
   });
 });
 

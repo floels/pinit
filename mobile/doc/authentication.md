@@ -24,11 +24,10 @@ which.
 ```mermaid
 stateDiagram-v2
     [*] --> Checking
-    Checking --> Authenticated : FOUND_ACCESS_TOKEN
-    Checking --> Unauthenticated : CHECKED_NO_ACCESS_TOKEN
-    Unauthenticated --> Authenticated : LOGGED_IN
-    Authenticated --> Unauthenticated : LOGGED_OUT
-    Authenticated --> Unauthenticated : GOT_401_RESPONSE
+    Checking --> Authenticated : SESSION_RESTORED
+    Checking --> Unauthenticated : SESSION_ABSENT
+    Unauthenticated --> Authenticated : SESSION_STARTED
+    Authenticated --> Unauthenticated : SESSION_ENDED
 ```
 
 The authentication context
@@ -45,9 +44,11 @@ states:
 The app reaches **Checking** once, on the first render. No transition goes back
 to it. Every later transition is a state change in React.
 
-The five actions above are the only way to change that state. `LOGGED_OUT` and
-`GOT_401_RESPONSE` produce the same state. They stay separate because they say
-why the session ended, which a reader of a call site needs to know.
+The four `SESSION_*` actions above are the only way to change that state. A
+session end always dispatches `SESSION_ENDED`. Call sites may pass an optional
+`reason` (`'user'` on logout, `'expired'` after a failed refresh) so a reader
+of the call site still sees why the session ended. The reducer ignores
+`reason`; the resulting state is the same.
 
 **Mobile has no expired state, and no login prompt.** A dead session unmounts
 the authenticated navigator, so the screen the user was on is gone, together
@@ -82,12 +83,12 @@ stale token and gets logged out by a 401 that the gate can prevent.
 
 1. The container reads the access token from secure store.
 2. **The read fails, or the store holds no token** → dispatch
-   `CHECKED_NO_ACCESS_TOKEN`, and render the login tree.
+   `SESSION_ABSENT`, and render the login tree.
 3. **The store holds a token** → call `ensureFreshAccessToken()`, and act on its
    answer:
-   - **The session is usable** → dispatch `FOUND_ACCESS_TOKEN`.
+   - **The session is usable** → dispatch `SESSION_RESTORED`.
    - **The session cannot be refreshed** → call `clearStoredAuthData()`, then
-     dispatch `CHECKED_NO_ACCESS_TOKEN`.
+     dispatch `SESSION_ABSENT`.
 
 ```mermaid
 sequenceDiagram
@@ -110,7 +111,7 @@ sequenceDiagram
             A-->>N: false, so the gate clears the stored data
         end
     end
-    Note over N: dispatch FOUND_ACCESS_TOKEN, or CHECKED_NO_ACCESS_TOKEN
+    Note over N: dispatch SESSION_RESTORED, or SESSION_ABSENT
 ```
 
 The gate clears the stored data on the failing path for a reason. A stale token
@@ -133,7 +134,7 @@ The app has no signup screen, although the backend exposes
    before it enables the button.
 2. **The backend accepts.** It returns `200` with the access token, the refresh
    token, and the expiry date. The container calls `persistTokensData()`, and
-   then dispatches `LOGGED_IN`.
+   then dispatches `SESSION_STARTED`.
 3. **The backend rejects.** It returns `401 { errors: [{ code }] }`. The
    container shows a message for `invalid_email` on the email field, and a
    message for any other code on the password field. Any other failure shows the
@@ -193,7 +194,7 @@ sequenceDiagram
             F-->>C: the response of the retry
         else the refresh fails
             B-->>F: 401
-            F->>F: clearStoredAuthData, and dispatch GOT_401_RESPONSE
+            F->>F: clearStoredAuthData, and dispatch SESSION_ENDED (reason expired)
             F-->>C: the original 401
         end
     end
@@ -248,8 +249,8 @@ clear every stored value, and both return the app to the login tree.
 ### Logout
 
 [`ProfileScreen`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) calls
-`logOut()`, and then dispatches `LOGGED_OUT`. An overlay covers the screen while
-that runs.
+`logOut()`, and then dispatches `SESSION_ENDED` with `reason: 'user'`. An
+overlay covers the screen while that runs.
 
 1. `logOut()` reads the refresh token, and sends it to
    `POST /token/mobile/logout/`.
@@ -267,7 +268,7 @@ A refresh fails only when the refresh token is gone, expired or revoked. The
 session is therefore over, and no request can save it.
 
 1. `fetchAuthenticated` calls `clearStoredAuthData()`, and dispatches
-   `GOT_401_RESPONSE`.
+   `SESSION_ENDED` with `reason: 'expired'`.
 2. `NavigationContainer` renders `UnauthenticatedNavigator`. The authenticated
    tree unmounts, and the user lands on the landing screen.
 
@@ -287,7 +288,7 @@ way to submit something twice.
 | File | Role |
 |---|---|
 | [`src/components/NavigationContainer/NavigationContainer.tsx`](../src/components/NavigationContainer/NavigationContainer.tsx) | The launch gate. Refreshes a near-expired token, and then chooses the navigator. |
-| [`src/contexts/authenticationContext.tsx`](../src/contexts/authenticationContext.tsx) | The auth reducer, its two booleans, and its five actions. |
+| [`src/contexts/authenticationContext.tsx`](../src/contexts/authenticationContext.tsx) | The auth reducer, its two booleans, and its `SESSION_*` actions. |
 | [`src/lib/api/useAPI.ts`](../src/lib/api/useAPI.ts) | The one hook for API traffic. `fetchAuthenticated` adds the Bearer header, refreshes and retries once on a 401, and ends the session when the refresh fails. |
 | [`src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx`](../src/navigators/UnauthenticatedNavigator/LoginScreenContainer.tsx) | Login: validation, the token request, and the field-level errors. |
 | [`src/navigators/BrowseMainNavigator/ProfileScreen.tsx`](../src/navigators/BrowseMainNavigator/ProfileScreen.tsx) | The logout button. |

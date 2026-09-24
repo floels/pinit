@@ -69,7 +69,7 @@ export const useAPI = () => {
     // screen carries logout logic of its own.
     if (!refreshedAccessToken) {
       await clearStoredAuthData();
-      dispatch({ type: "GOT_401_RESPONSE" });
+      dispatch({ type: "SESSION_ENDED", reason: "expired" });
 
       return response;
     }

@@ -125,7 +125,7 @@ it("does not enable submit button before inputs are valid", async () => {
   expect(submitButton).toBeEnabled();
 });
 
-it("persists tokens data and dispatch 'LOGGED_IN' action upon successful login", async () => {
+it("persists tokens data and dispatch 'SESSION_STARTED' action upon successful login", async () => {
   renderComponent();
 
   await fillInputsWithValidCredentials();
@@ -149,7 +149,7 @@ it("persists tokens data and dispatch 'LOGGED_IN' action upon successful login",
         .access_token_expiration_utc,
     );
 
-    expect(mockDispatch).toHaveBeenCalledWith({ type: "LOGGED_IN" });
+    expect(mockDispatch).toHaveBeenCalledWith({ type: "SESSION_STARTED" });
   });
 });
 

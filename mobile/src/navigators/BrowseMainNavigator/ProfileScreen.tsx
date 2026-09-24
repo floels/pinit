@@ -26,7 +26,7 @@ const ProfileScreen = () => {
       return;
     }
 
-    dispatch({ type: "LOGGED_OUT" });
+    dispatch({ type: "SESSION_ENDED", reason: "user" });
 
     setIsClearingTokensData(false);
   };
