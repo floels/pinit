@@ -75,6 +75,17 @@ jobs:
       - name: Run Playwright web E2E
         run: pnpm --dir e2e-tests-web test
 
+      - name: Upload Playwright report and traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-e2e-playwright-report
+          path: |
+            e2e-tests-web/playwright-report/
+            e2e-tests-web/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Tear down E2E Docker stack
         if: always()
         run: docker compose -f docker-compose.e2e.yml down -v
