@@ -4368,10 +4368,10 @@ expo-image-loader@~57.0.1:
   resolved "https://registry.yarnpkg.com/expo-image-loader/-/expo-image-loader-57.0.1.tgz#b031dc3e62ac09004f3e436d7081487236791f53"
   integrity sha512-uhrZKLT/cTl2mXyR28kPpVkS5O+PK9N1QA/07IFM4f5T4g0lTW1JHT3NEWwEEsGFldPmVX4j7LwUVVZxE+woug==
 
-expo-image-manipulator@~57.0.17:
-  version "57.0.17"
-  resolved "https://registry.yarnpkg.com/expo-image-manipulator/-/expo-image-manipulator-57.0.17.tgz#ec67a6dc910eea9958e819e528fa97d6ae4d4ab4"
-  integrity sha512-VpM8qAotTeSIobIAL8RAIDrZKL0jQBK/6O41NnwmdT96sd2wT263DlTbkvQ6RkcFrR9+NZiC5Um7FDBK+jFneg==
+expo-image-manipulator@57.0.5:
+  version "57.0.5"
+  resolved "https://registry.yarnpkg.com/expo-image-manipulator/-/expo-image-manipulator-57.0.5.tgz#6590aed07b24aa04570d8217ce084a3356eac0b3"
+  integrity sha512-gEZ6tEsLwtz+dRXPC2QDObcQhAW7c9J6WW4W+5qQ4T6DlgkjtunLpHijM79W8fc99ER2X2IQS1ogJ8u9VAF7qA==
   dependencies:
     expo-image-loader "~57.0.1"
 
@@ -4385,10 +4385,10 @@ expo-linear-gradient@~57.0.2:
   resolved "https://registry.yarnpkg.com/expo-linear-gradient/-/expo-linear-gradient-57.0.2.tgz#a9d85700cd822678556a6166640b0240d31fe011"
   integrity sha512-eGNSfcbdXYvw0B/TQ3nmXKQgj0jLUi3EgsXGlvI79rlXg5RR5dQTkY2yqkf7BQDM3PMd3tqBMZdsLhvBqSUaMg==
 
-expo-media-library@~57.0.5:
-  version "57.0.5"
-  resolved "https://registry.yarnpkg.com/expo-media-library/-/expo-media-library-57.0.5.tgz#d2962086511ae648b022689995891d64f6fe32af"
-  integrity sha512-amSLrLsS7Gl4nCqbc2PlVbHj5jK9kQLsSOQgJ2QasHCSHzYXw6Ui7aolxX5APg9P4TgYPE0yWn46ndifh52bRw==
+expo-media-library@57.0.3:
+  version "57.0.3"
+  resolved "https://registry.yarnpkg.com/expo-media-library/-/expo-media-library-57.0.3.tgz#f8553cebc4b8b13418eecbc612b3de4a02088f7f"
+  integrity sha512-VI2NEDaMWIfz9Gxgibzu8BxxxVvgwHRAeZDjV9gci9YH+JkXn5vdvNAnRdmojaPxpp3tbWMfMDB1ympFcrak9A==
 
 expo-modules-autolinking@~57.0.8:
   version "57.0.8"
