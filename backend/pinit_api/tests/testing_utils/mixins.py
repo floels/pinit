@@ -1,4 +1,4 @@
-from pinit_api.lib.utils.tokens import create_access_token
+from pinit_api.domain.auth.access_tokens import create_access_token
 
 
 class AccessTokenAuthenticationMixin:

@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from ..elasticsearch_client import get_es_client, PINS_INDEX
+from pinit_api.adapters.elasticsearch import get_es_client, PINS_INDEX
 
 logger = logging.getLogger(__name__)
 

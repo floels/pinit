@@ -2,7 +2,7 @@ from rest_framework.authentication import BaseAuthentication, get_authorization_
 from rest_framework.exceptions import AuthenticationFailed
 
 from pinit_api.models import User
-from pinit_api.lib.utils.tokens import InvalidTokenError, decode_access_token
+from pinit_api.domain.auth.access_tokens import InvalidTokenError, decode_access_token
 
 AUTH_SCHEME = "Bearer"
 

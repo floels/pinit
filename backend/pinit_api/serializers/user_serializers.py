@@ -3,7 +3,7 @@ from rest_framework.validators import UniqueValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from ..models import User
-from ..lib.constants import (
+from pinit_api.shared.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
 )

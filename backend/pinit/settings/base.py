@@ -127,9 +127,9 @@ REFRESH_TOKEN_LIFETIME = timedelta(days=30)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "pinit_api.lib.authentication.PasetoAuthentication",
+        "pinit_api.domain.auth.request_auth.PasetoAuthentication",
     ],
-    "EXCEPTION_HANDLER": "pinit_api.lib.utils.exception_handling.handle_unauthorized_exception",
+    "EXCEPTION_HANDLER": "pinit_api.shared.exception_handling.handle_unauthorized_exception",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
 }

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from pinit_api.lib.utils.string_operations import *
+from pinit_api.domain.accounts.string_operations import *
 
 
 class TestComputeInitialFromEmail(TestCase):

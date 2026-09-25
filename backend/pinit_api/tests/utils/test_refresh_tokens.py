@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.test import TestCase, override_settings
 
 from pinit_api.models import RefreshToken, User
-from pinit_api.lib.utils.refresh_tokens import (
+from pinit_api.domain.auth.refresh_tokens import (
     InvalidRefreshTokenError,
     issue_refresh_token,
     revoke_refresh_token,

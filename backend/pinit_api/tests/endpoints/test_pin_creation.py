@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from ..testing_utils import AccountFactory
 from pinit_api.models import Pin
-from pinit_api.lib.constants import (
+from pinit_api.shared.constants import (
     ERROR_CODE_MISSING_PIN_IMAGE_FILE,
     ERROR_CODE_INVALID_PIN_IMAGE_FILE_KEY,
     ERROR_CODE_INVALID_PIN_IMAGE_DIMENSIONS,

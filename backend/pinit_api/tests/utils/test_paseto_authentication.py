@@ -3,8 +3,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.test import APIRequestFactory
 
 from pinit_api.models import User
-from pinit_api.lib.authentication import PasetoAuthentication
-from pinit_api.lib.utils.tokens import create_access_token
+from pinit_api.domain.auth.request_auth import PasetoAuthentication
+from pinit_api.domain.auth.access_tokens import create_access_token
 
 
 class PasetoAuthenticationTests(TestCase):

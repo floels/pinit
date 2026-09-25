@@ -31,7 +31,7 @@ A [PASETO](https://paseto.io/) v4.local token: an encrypted token.
   python -c "import secrets; print(secrets.token_hex(32))"
   ```
 
-Implemented in [`lib/utils/tokens.py`](../lib/utils/tokens.py):
+Implemented in [`domain/auth/access_tokens.py`](../domain/auth/access_tokens.py):
 
 | Function | Purpose |
 |---|---|
@@ -54,19 +54,18 @@ The token is rotated on every refresh: each call to a refresh endpoint
 issues a new refresh token and revokes the presented one, so a captured-but-
 superseded token stops working.
 
-Implemented in [`lib/utils/refresh_tokens.py`](../lib/utils/refresh_tokens.py):
+Implemented in [`domain/auth/refresh_tokens.py`](../domain/auth/refresh_tokens.py):
 
 | Function | Purpose |
 |---|---|
 | `issue_refresh_token(user)` | Create a token; return the raw (unhashed) value. |
-| `resolve_valid_user(raw_token)` | Return the owning user if the token is valid, else raise `InvalidRefreshTokenError`. |
 | `revoke_refresh_token(raw_token)` | Mark the token revoked (no-op if unknown). |
 | `rotate_refresh_token(raw_token)` | Validate + revoke the old token, issue a new one; return `(new_raw_token, user)`. |
 
 ## Verifying requests
 
 `Authorization: Bearer <access-token>` is verified by
-[`PasetoAuthentication`](../lib/authentication.py), wired as the sole
+[`PasetoAuthentication`](../domain/auth/request_auth.py), wired as the sole
 `DEFAULT_AUTHENTICATION_CLASSES` entry in `REST_FRAMEWORK`:
 
 1. No `Bearer` header → `authenticate()` returns `None` (request is anonymous).
@@ -80,12 +79,12 @@ response stays a **401** and that value becomes the `WWW-Authenticate` header.
 `PasetoAuthentication` returns `"Bearer"`, so unauthenticated requests to
 protected views get a **401** rather than a 403. The 401 body is then normalised
 to `{"errors": [{"code": "unauthorized"}]}` by
-[`handle_unauthorized_exception`](../lib/utils/exception_handling.py).
+[`handle_unauthorized_exception`](../shared/exception_handling.py).
 
 ## Endpoints
 
 Token issuance goes through
-[`get_tokens_data(user)`](../lib/utils/authentication.py), which returns
+[`get_tokens_data(user)`](../domain/auth/session.py), which returns
 `{access_token, access_token_expiration_utc, refresh_token}`. Web and mobile
 differ only in how the refresh token is delivered: web uses an httpOnly
 cookie, mobile uses the JSON body.
@@ -106,7 +105,7 @@ Views live in [`views/authentication.py`](../views/authentication.py) and
 
 ### The refresh token cookie (web)
 
-Set by `set_refresh_token_cookie` in [`views/authentication.py`](../views/authentication.py):
+Set by `set_refresh_token_cookie` in [`domain/auth/cookies.py`](../domain/auth/cookies.py):
 `httponly=True`, `secure=not DEBUG`, `samesite="None"` in production /`"Lax"` in
 DEBUG (Chromium rejects `SameSite=None` without `Secure` over HTTP),
 `max_age=30 days`, `path="/"`. The cookie name is `REFRESH_TOKEN_COOKIE_NAME`
@@ -151,17 +150,18 @@ handled as follows:
 | `missing_refresh_token` | No refresh token supplied to a refresh endpoint. |
 | `invalid_email` / `invalid_password` | Login credential failures. |
 
-Defined in [`lib/constants.py`](../lib/constants.py).
+Defined in [`shared/constants.py`](../shared/constants.py).
 
 ## Key files
 
 | File | Role |
 |---|---|
-| `lib/utils/tokens.py` | PASETO access-token mint/verify. |
-| `lib/utils/refresh_tokens.py` | Opaque refresh-token issue/validate/revoke/rotate. |
-| `lib/utils/authentication.py` | `get_tokens_data` — bundles a fresh access + refresh token. |
-| `lib/authentication.py` | `PasetoAuthentication` DRF authentication class. |
+| `domain/auth/access_tokens.py` | PASETO access-token mint/verify. |
+| `domain/auth/refresh_tokens.py` | Opaque refresh-token issue/validate/revoke/rotate. |
+| `domain/auth/session.py` | `get_tokens_data` — bundles a fresh access + refresh token. |
+| `domain/auth/cookies.py` | Web refresh-token cookie set/clear policy. |
+| `domain/auth/request_auth.py` | `PasetoAuthentication` DRF authentication class. |
 | `models.py` | `RefreshToken` model. |
-| `views/authentication.py` | Web login/logout, mobile obtain/logout, cookie helper. |
+| `views/authentication.py` | Web login/logout, mobile obtain/logout. |
 | `views/token_refresh.py` | Web + mobile refresh (rotating) views. |
 | `pinit/settings/base.py` | Token lifetimes, `REST_FRAMEWORK` auth class. |

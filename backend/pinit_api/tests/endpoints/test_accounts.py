@@ -2,7 +2,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 
 from ..testing_utils import AccountFactory, BoardFactory, PinFactory
-from pinit_api.lib.constants import ERROR_CODE_UNAUTHORIZED
+from pinit_api.shared.constants import ERROR_CODE_UNAUTHORIZED
 from pinit_api.serializers.board_serializers import NUMBER_FIRST_IMAGES
 
 

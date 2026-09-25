@@ -2,15 +2,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from ..lib.utils.string_operations import (
+from pinit_api.domain.accounts.string_operations import (
     compute_username_candidate,
     compute_first_and_last_name,
     compute_initial,
 )
-from ..lib.utils.authentication import get_tokens_data
+from pinit_api.domain.auth import get_tokens_data, set_refresh_token_cookie
 from ..models import Account
 from ..serializers.user_serializers import UserCreateSerializer
-from .authentication import set_refresh_token_cookie
 
 FORBIDDEN_USERNAMES = [
     "me",  # since '/accounts/me/' URL is reserved (see 'urls.py')

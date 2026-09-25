@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from pinit_api.elasticsearch_client import get_es_client, index_pin, PINS_INDEX
+from pinit_api.adapters.elasticsearch import get_es_client, index_pin, PINS_INDEX
 from pinit_api.models import Pin
 
 INDEX_MAPPINGS = {

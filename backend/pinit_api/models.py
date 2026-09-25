@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.utils import timezone
-from pinit_api.lib.utils.user_manager import UserManager
+from pinit_api.domain.accounts.user_manager import UserManager
 
 
 class UUIDModel(models.Model):

@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from ..testing_utils.factories import AccountFactory, BoardFactory, PinFactory
 from pinit_api.models import Board
-from pinit_api.lib.constants import (
+from pinit_api.shared.constants import (
     ERROR_CODE_ACCOUNT_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
     ERROR_CODE_BOARD_NAME_REQUIRED,

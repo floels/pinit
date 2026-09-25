@@ -7,7 +7,7 @@ from rest_framework.exceptions import NotFound
 
 from ..models import Pin, Board, PinInBoard, Account
 from ..serializers.pin_serializers import PinWithFullDetailsReadSerializer
-from ..lib.constants import (
+from pinit_api.shared.constants import (
     ERROR_CODE_PIN_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
     ERROR_CODE_FORBIDDEN,

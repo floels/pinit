@@ -3,14 +3,20 @@ from rest_framework import status, views
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from ..models import User
-from ..lib.constants import (
+from pinit_api.domain.auth import (
+    clear_refresh_token_cookie,
+    get_tokens_data,
+    revoke_refresh_token,
+    set_refresh_token_cookie,
+)
+from pinit_api.shared.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
     REFRESH_TOKEN_COOKIE_NAME,
 )
-from ..lib.utils.authentication import get_tokens_data
-from ..lib.utils.refresh_tokens import revoke_refresh_token
+
+from ..models import User
+
 
 def get_user_from_credentials(email, password):
     """Returns (user, error_response). Exactly one of the two is None."""
@@ -30,22 +36,6 @@ def get_user_from_credentials(email, password):
         )
 
     return user, None
-
-
-def set_refresh_token_cookie(response, refresh_token):
-    # Production uses HTTPS: SameSite=None + Secure for cross-domain support.
-    # Development uses HTTP on localhost: SameSite=Lax so the browser accepts
-    # the cookie (Chromium rejects SameSite=None without Secure on HTTP).
-    samesite = "None" if not settings.DEBUG else "Lax"
-    response.set_cookie(
-        REFRESH_TOKEN_COOKIE_NAME,
-        refresh_token,
-        httponly=True,
-        secure=not settings.DEBUG,
-        samesite=samesite,
-        max_age=30 * 24 * 60 * 60,
-        path="/",
-    )
 
 
 @api_view(["POST"])
@@ -99,5 +89,5 @@ class TokenWebView(views.APIView):
             revoke_refresh_token(refresh_token_str)
 
         response = Response(status=status.HTTP_200_OK)
-        response.delete_cookie(REFRESH_TOKEN_COOKIE_NAME, path="/")
+        clear_refresh_token_cookie(response)
         return response

@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from pinit_api.models import Pin
 from ..testing_utils import PinFactory, BoardFactory
-from pinit_api.lib.constants import (
+from pinit_api.shared.constants import (
     ERROR_CODE_PIN_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
     ERROR_CODE_FORBIDDEN,

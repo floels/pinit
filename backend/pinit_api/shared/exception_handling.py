@@ -1,7 +1,7 @@
 from rest_framework.views import exception_handler
 from rest_framework import status
 
-from ..constants import ERROR_CODE_UNAUTHORIZED
+from pinit_api.shared.constants import ERROR_CODE_UNAUTHORIZED
 
 
 def handle_unauthorized_exception(exc, context):

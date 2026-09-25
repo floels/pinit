@@ -4,7 +4,7 @@ from django.conf import settings
 
 from pinit_api.models import Pin
 from ..testing_utils import UserFactory, PinFactory, AccessTokenAuthenticationMixin
-from pinit_api.lib.constants import ERROR_CODE_UNAUTHORIZED
+from pinit_api.shared.constants import ERROR_CODE_UNAUTHORIZED
 
 NUMBER_EXISTING_PINS = 150
 PAGINATION_PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]

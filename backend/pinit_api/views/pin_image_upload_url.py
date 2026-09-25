@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from pinit_api.lib.constants import ERROR_CODE_INVALID_PIN_IMAGE_FILE_EXTENSION
+from pinit_api.shared.constants import ERROR_CODE_INVALID_PIN_IMAGE_FILE_EXTENSION
 
 ALLOWED_EXTENSIONS = {".jpg": "image/jpeg", ".png": "image/png"}
 PRESIGNED_URL_EXPIRATION_SECONDS = 3600

@@ -5,7 +5,7 @@ from django.test import override_settings
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from ..testing_utils import AccountFactory
-from pinit_api.lib.constants import ERROR_CODE_INVALID_PIN_IMAGE_FILE_EXTENSION
+from pinit_api.shared.constants import ERROR_CODE_INVALID_PIN_IMAGE_FILE_EXTENSION
 
 S3_BUCKET_NAME = "pinit-pins"
 S3_BUCKET_REGION = "eu-north-1"
