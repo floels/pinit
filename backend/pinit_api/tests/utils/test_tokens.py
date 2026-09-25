@@ -5,7 +5,7 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 
 from pinit_api.models import User
-from pinit_api.lib.utils.tokens import (
+from pinit_api.domain.auth.access_tokens import (
     InvalidTokenError,
     create_access_token,
     decode_access_token,

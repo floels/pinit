@@ -1,5 +1,5 @@
-from pinit_api.lib.utils.refresh_tokens import issue_refresh_token
-from pinit_api.lib.constants import (
+from pinit_api.domain.auth.refresh_tokens import issue_refresh_token
+from pinit_api.shared.constants import (
     ERROR_CODE_INVALID_REFRESH_TOKEN,
     ERROR_CODE_MISSING_REFRESH_TOKEN,
     REFRESH_TOKEN_COOKIE_NAME,

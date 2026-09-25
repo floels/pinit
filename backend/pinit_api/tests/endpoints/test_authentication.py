@@ -4,12 +4,12 @@ from django.utils.dateparse import parse_datetime
 from django.conf import settings
 from rest_framework import status
 from pinit_api.models import User
-from pinit_api.lib.utils.refresh_tokens import issue_refresh_token
-from pinit_api.lib.constants import (
+from pinit_api.domain.auth.refresh_tokens import issue_refresh_token
+from pinit_api.shared.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
 )
-from pinit_api.lib.constants import REFRESH_TOKEN_COOKIE_NAME
+from pinit_api.shared.constants import REFRESH_TOKEN_COOKIE_NAME
 
 
 class AuthenticationTests(TestCase):

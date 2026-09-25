@@ -11,7 +11,7 @@ from ..serializers.board_serializers import (
     BoardReadBaseSerializer,
     BoardWithFullDetailsReadSerializer,
 )
-from pinit_api.lib.constants import (
+from pinit_api.shared.constants import (
     ERROR_CODE_ACCOUNT_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
     ERROR_CODE_BOARD_NAME_REQUIRED,

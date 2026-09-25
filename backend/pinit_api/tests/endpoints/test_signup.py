@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework import status
 from pinit_api.models import User, Account
-from pinit_api.lib.constants import (
+from pinit_api.shared.constants import (
     ERROR_CODE_INVALID_EMAIL,
     ERROR_CODE_INVALID_PASSWORD,
 )
@@ -10,7 +10,7 @@ from pinit_api.serializers.user_serializers import (
     ERROR_CODE_INVALID_BIRTHDATE,
 )
 from pinit_api.tests.testing_utils.factories import AccountFactory
-from pinit_api.lib.constants import REFRESH_TOKEN_COOKIE_NAME
+from pinit_api.shared.constants import REFRESH_TOKEN_COOKIE_NAME
 
 
 class SignupTestsMixin:

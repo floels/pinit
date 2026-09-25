@@ -2,7 +2,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from .models import Pin
-from .elasticsearch_client import index_pin, delete_pin
+from pinit_api.adapters.elasticsearch import delete_pin, index_pin
 
 
 @receiver(post_save, sender=Pin)

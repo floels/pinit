@@ -1,17 +1,17 @@
 from rest_framework import status, views
 from rest_framework.response import Response
 
-from ..lib.constants import (
+from pinit_api.domain.auth import (
+    InvalidRefreshTokenError,
+    create_access_token,
+    rotate_refresh_token,
+    set_refresh_token_cookie,
+)
+from pinit_api.shared.constants import (
     ERROR_CODE_INVALID_REFRESH_TOKEN,
     ERROR_CODE_MISSING_REFRESH_TOKEN,
     REFRESH_TOKEN_COOKIE_NAME,
 )
-from ..lib.utils.tokens import create_access_token
-from ..lib.utils.refresh_tokens import (
-    InvalidRefreshTokenError,
-    rotate_refresh_token,
-)
-from .authentication import set_refresh_token_cookie
 
 
 class RefreshTokenView(views.APIView):

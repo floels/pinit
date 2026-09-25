@@ -3,7 +3,7 @@ from rest_framework import status
 from django.conf import settings
 
 from ..testing_utils import PinFactory, AccountFactory
-from pinit_api.lib.constants import (
+from pinit_api.shared.constants import (
     ERROR_CODE_FORBIDDEN,
     ERROR_CODE_PIN_NOT_FOUND,
     ERROR_CODE_ACCOUNT_NOT_FOUND,
