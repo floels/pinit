@@ -7,7 +7,7 @@ from pinit_api.domain.accounts.string_operations import (
     compute_first_and_last_name,
     compute_initial,
 )
-from pinit_api.domain.auth import get_tokens_data, set_refresh_token_cookie
+from pinit_api.domain.auth import issue_session, set_refresh_token_cookie
 from ..models import Account
 from ..serializers.user_serializers import UserCreateSerializer
 
@@ -18,7 +18,7 @@ FORBIDDEN_USERNAMES = [
 
 
 def create_user_and_get_tokens(request):
-    """Returns (tokens_data, error_response). Exactly one of the two is None."""
+    """Returns (session, error_response). Exactly one of the two is None."""
     user_serializer = UserCreateSerializer(data=request.data)
 
     if not user_serializer.is_valid():
@@ -28,34 +28,34 @@ def create_user_and_get_tokens(request):
 
     create_personal_account(user=user)
 
-    return get_tokens_data(user=user), None
+    return issue_session(user), None
 
 
 @api_view(["POST"])
 def sign_up_mobile(request):
-    tokens_data, error = create_user_and_get_tokens(request)
+    session, error = create_user_and_get_tokens(request)
 
     if error:
         return error
 
-    return Response(tokens_data, status=status.HTTP_201_CREATED)
+    return Response(session, status=status.HTTP_201_CREATED)
 
 
 @api_view(["POST"])
 def sign_up_web(request):
-    tokens_data, error = create_user_and_get_tokens(request)
+    session, error = create_user_and_get_tokens(request)
 
     if error:
         return error
 
     response = Response(
         {
-            "access_token": tokens_data["access_token"],
-            "access_token_expiration_utc": tokens_data["access_token_expiration_utc"],
+            "access_token": session["access_token"],
+            "access_token_expiration_utc": session["access_token_expiration_utc"],
         },
         status=status.HTTP_201_CREATED,
     )
-    set_refresh_token_cookie(response, tokens_data["refresh_token"])
+    set_refresh_token_cookie(response, session["refresh_token"])
     return response
 
 

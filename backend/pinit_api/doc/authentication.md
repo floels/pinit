@@ -84,8 +84,10 @@ to `{"errors": [{"code": "unauthorized"}]}` by
 ## Endpoints
 
 Token issuance goes through
-[`get_tokens_data(user)`](../domain/auth/session.py), which returns
-`{access_token, access_token_expiration_utc, refresh_token}`. Web and mobile
+[`issue_session(user)`](../domain/auth/session.py), which returns
+`{access_token, access_token_expiration_utc, refresh_token}`. Refresh goes
+through [`rotate_session(raw)`](../domain/auth/session.py) (same return shape);
+logout through [`revoke_session(raw)`](../domain/auth/session.py). Web and mobile
 differ only in how the refresh token is delivered: web uses an httpOnly
 cookie, mobile uses the JSON body.
 
@@ -119,11 +121,11 @@ handled as follows:
 1. **Extract the refresh token** — from the httpOnly cookie (web) or the JSON
    body (mobile).
 2. **No token present** → respond `400 { "code": "missing_refresh_token" }`.
-3. **Token present** → call `rotate_refresh_token(raw)`:
+3. **Token present** → call `rotate_session(raw)`:
    - **Unknown, revoked, or expired** → respond
      `401 { "code": "invalid_refresh_token" }`.
-   - **Valid** → revoke the presented token, insert a new refresh-token row, and
-     mint a new access token via `create_access_token(user)`.
+   - **Valid** → revoke the presented refresh token, insert a new refresh-token
+     row, and mint a new access token.
 4. **On success** → respond `200` with the new access token and its expiry. The
    rotated refresh token is returned per client: web re-sets the httpOnly
    cookie; mobile returns `refresh_token` in the body.
@@ -156,9 +158,9 @@ Defined in [`shared/constants.py`](../shared/constants.py).
 
 | File | Role |
 |---|---|
-| `domain/auth/access_tokens.py` | PASETO access-token mint/verify. |
-| `domain/auth/refresh_tokens.py` | Opaque refresh-token issue/validate/revoke/rotate. |
-| `domain/auth/session.py` | `get_tokens_data` — bundles a fresh access + refresh token. |
+| `domain/auth/access_tokens.py` | PASETO access-token mint/verify (internal to session). |
+| `domain/auth/refresh_tokens.py` | Opaque refresh-token issue/validate/revoke/rotate (internal). |
+| `domain/auth/session.py` | `issue_session` / `rotate_session` / `revoke_session` — view-facing surface. |
 | `domain/auth/cookies.py` | Web refresh-token cookie set/clear policy. |
 | `domain/auth/request_auth.py` | `PasetoAuthentication` DRF authentication class. |
 | `models.py` | `RefreshToken` model. |
