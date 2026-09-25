@@ -111,7 +111,8 @@ class CreateBoardViewTests(APITestCase):
         # If a write partway through board creation fails, the board must not
         # be left half-created.
         with patch(
-            "pinit_api.views.boards.timezone.now", side_effect=RuntimeError("boom")
+            "pinit_api.views.boards.save_pin_to_board",
+            side_effect=RuntimeError("boom"),
         ):
             with self.assertRaises(RuntimeError):
                 self.post({"name": "My Board", "pin_id": self.pin.unique_id})

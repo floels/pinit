@@ -1,12 +1,12 @@
-from django.utils import timezone
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, views
 from rest_framework.exceptions import NotFound
 
-from ..models import Pin, Board, PinInBoard, Account
+from ..models import Pin, Board, Account
 from ..serializers.pin_serializers import PinWithFullDetailsReadSerializer
+from pinit_api.domain.boards import save_pin_to_board
 from pinit_api.shared.constants import (
     ERROR_CODE_PIN_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
@@ -97,41 +97,16 @@ class SavePinView(views.APIView):
         if not board:
             return self.get_response_board_not_found()
 
-        if not self.check_user_is_board_author(user=request.user, board=board):
+        if board.author != request.user.account:
             return self.get_response_forbidden()
 
-        was_updated = self.update_or_create_pin_in_board(pin=pin, board=board)
+        _, created = save_pin_to_board(pin, board)
 
         return self.get_ok_response(
             pin_unique_id=pin_unique_id,
             board_unique_id=board_unique_id,
-            was_updated=was_updated,
+            was_updated=not created,
         )
-
-    def check_user_is_board_author(self, user=None, board=None):
-        return board.author == user.account
-
-    def update_or_create_pin_in_board(self, pin=None, board=None):
-        now = timezone.now()
-
-        self.update_last_pin_added_at(board=board, date=now)
-
-        existing_pin_save = PinInBoard.objects.filter(pin=pin, board=board).first()
-
-        if existing_pin_save:
-            existing_pin_save.last_saved_at = now
-            existing_pin_save.save()
-
-        else:
-            board.pins.add(pin)
-
-        was_updated = existing_pin_save is not None
-
-        return was_updated
-
-    def update_last_pin_added_at(self, board=None, date=None):
-        board.last_pin_added_at = date
-        board.save()
 
     def get_response_pin_not_found(self):
         return Response(
