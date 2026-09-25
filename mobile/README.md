@@ -28,7 +28,7 @@ mobile/
 
 ## Running E2E
 
-Detox iOS E2E is local-only for now (not a CI check yet). From the repo root:
+Detox iOS E2E is **local-only** (not a CI check). From the repo root:
 
 ```bash
 make test-e2e-mobile
