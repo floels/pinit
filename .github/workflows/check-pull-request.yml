@@ -13,6 +13,8 @@ jobs:
       web: ${{ steps.filter.outputs.web }}
       mobile: ${{ steps.filter.outputs.mobile }}
       web-e2e: ${{ steps.filter.outputs.web-e2e }}
+      # Consumed by a future macOS Detox job (not wired yet).
+      mobile-e2e: ${{ steps.filter.outputs.mobile-e2e }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -35,6 +37,18 @@ jobs:
             web-e2e:
               - 'web/**'
               - 'e2e-tests-web/**'
+              - 'backend/**'
+              - 'docker-compose.e2e.yml'
+              - 'scripts/e2e-backend-up.sh'
+              - 'nginx/**'
+              - '.github/workflows/check-pull-request.yml'
+            # Mobile app + shared E2E stack — for a future macos Detox job.
+            # True when any of: mobile/** (incl. e2e-tests), backend/**,
+            # docker-compose.e2e.yml, scripts/e2e-backend-up.sh, nginx/**,
+            # or this workflow file. Overlaps web-e2e on purpose; each suite
+            # has its own job when the shared stack changes.
+            mobile-e2e:
+              - 'mobile/**'
               - 'backend/**'
               - 'docker-compose.e2e.yml'
               - 'scripts/e2e-backend-up.sh'
