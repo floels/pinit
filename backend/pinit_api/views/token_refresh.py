@@ -2,9 +2,8 @@ from rest_framework import status, views
 from rest_framework.response import Response
 
 from pinit_api.domain.auth import (
-    InvalidRefreshTokenError,
-    create_access_token,
-    rotate_refresh_token,
+    InvalidSessionError,
+    rotate_session,
     set_refresh_token_cookie,
 )
 from pinit_api.shared.constants import (
@@ -15,14 +14,14 @@ from pinit_api.shared.constants import (
 
 
 class RefreshTokenView(views.APIView):
-    """Rotating refresh: validate the presented opaque refresh token, revoke it,
-    issue a fresh one, and mint a new access token. Subclasses decide where the
-    incoming token is read from and how the new one is returned."""
+    """Rotating refresh: subclasses decide where the incoming refresh token is
+    read from and how the new session is returned; session rotation itself lives
+    in ``domain.auth``."""
 
     def get_refresh_token(self, request):
         raise NotImplementedError
 
-    def build_response(self, access_token, access_token_expiration_utc, new_refresh_token):
+    def build_response(self, session):
         raise NotImplementedError
 
     def post(self, request):
@@ -32,20 +31,14 @@ class RefreshTokenView(views.APIView):
             return error
 
         try:
-            new_refresh_token, user = rotate_refresh_token(refresh_token)
-        except InvalidRefreshTokenError:
+            session = rotate_session(refresh_token)
+        except InvalidSessionError:
             return Response(
                 {"errors": [{"code": ERROR_CODE_INVALID_REFRESH_TOKEN}]},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        access_token, access_token_expiration_utc = create_access_token(user)
-
-        return self.build_response(
-            access_token,
-            access_token_expiration_utc.isoformat(),
-            new_refresh_token,
-        )
+        return self.build_response(session)
 
 
 class RefreshTokenMobileView(RefreshTokenView):
@@ -58,12 +51,12 @@ class RefreshTokenMobileView(RefreshTokenView):
 
         return request.data["refresh_token"], None
 
-    def build_response(self, access_token, access_token_expiration_utc, new_refresh_token):
+    def build_response(self, session):
         return Response(
             {
-                "access_token": access_token,
-                "access_token_expiration_utc": access_token_expiration_utc,
-                "refresh_token": new_refresh_token,
+                "access_token": session["access_token"],
+                "access_token_expiration_utc": session["access_token_expiration_utc"],
+                "refresh_token": session["refresh_token"],
             }
         )
 
@@ -80,12 +73,12 @@ class RefreshTokenWebView(RefreshTokenView):
 
         return token, None
 
-    def build_response(self, access_token, access_token_expiration_utc, new_refresh_token):
+    def build_response(self, session):
         response = Response(
             {
-                "access_token": access_token,
-                "access_token_expiration_utc": access_token_expiration_utc,
+                "access_token": session["access_token"],
+                "access_token_expiration_utc": session["access_token_expiration_utc"],
             }
         )
-        set_refresh_token_cookie(response, new_refresh_token)
+        set_refresh_token_cookie(response, session["refresh_token"])
         return response

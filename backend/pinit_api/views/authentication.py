@@ -1,12 +1,11 @@
-from django.conf import settings
 from rest_framework import status, views
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from pinit_api.domain.auth import (
     clear_refresh_token_cookie,
-    get_tokens_data,
-    revoke_refresh_token,
+    issue_session,
+    revoke_session,
     set_refresh_token_cookie,
 )
 from pinit_api.shared.constants import (
@@ -47,7 +46,7 @@ def obtain_token_pair_mobile(request):
     if error:
         return error
 
-    return Response(get_tokens_data(user))
+    return Response(issue_session(user))
 
 
 @api_view(["POST"])
@@ -58,7 +57,7 @@ def logout_mobile(request):
     refresh_token_str = request.data.get("refresh_token")
 
     if refresh_token_str:
-        revoke_refresh_token(refresh_token_str)
+        revoke_session(refresh_token_str)
 
     return Response(status=status.HTTP_200_OK)
 
@@ -72,21 +71,21 @@ class TokenWebView(views.APIView):
         if error:
             return error
 
-        tokens_data = get_tokens_data(user)
+        session = issue_session(user)
         response = Response(
             {
-                "access_token": tokens_data["access_token"],
-                "access_token_expiration_utc": tokens_data["access_token_expiration_utc"],
+                "access_token": session["access_token"],
+                "access_token_expiration_utc": session["access_token_expiration_utc"],
             }
         )
-        set_refresh_token_cookie(response, tokens_data["refresh_token"])
+        set_refresh_token_cookie(response, session["refresh_token"])
         return response
 
     def delete(self, request):
         refresh_token_str = request.COOKIES.get(REFRESH_TOKEN_COOKIE_NAME)
 
         if refresh_token_str:
-            revoke_refresh_token(refresh_token_str)
+            revoke_session(refresh_token_str)
 
         response = Response(status=status.HTTP_200_OK)
         clear_refresh_token_cookie(response)

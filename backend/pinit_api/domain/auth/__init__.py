@@ -1,34 +1,31 @@
 """Auth session: issue, rotate, revoke, and web cookie delivery.
 
-Views import from this package — not from access_tokens / refresh_tokens
-directly — so session rules stay in one module.
+Views import session operations and cookies from this package. Access-token
+crypto and refresh-token persistence stay in sibling modules and are not part
+of the view-facing surface.
 """
 
-from .access_tokens import (
-    InvalidTokenError,
-    create_access_token,
-    decode_access_token,
-)
+from .access_tokens import InvalidTokenError, create_access_token, decode_access_token
 from .cookies import clear_refresh_token_cookie, set_refresh_token_cookie
-from .refresh_tokens import (
-    InvalidRefreshTokenError,
-    issue_refresh_token,
-    revoke_refresh_token,
-    rotate_refresh_token,
-)
+from .refresh_tokens import issue_refresh_token
 from .request_auth import PasetoAuthentication
-from .session import get_tokens_data
+from .session import (
+    InvalidSessionError,
+    issue_session,
+    revoke_session,
+    rotate_session,
+)
 
 __all__ = [
-    "InvalidRefreshTokenError",
+    "InvalidSessionError",
     "InvalidTokenError",
     "PasetoAuthentication",
     "clear_refresh_token_cookie",
     "create_access_token",
     "decode_access_token",
-    "get_tokens_data",
     "issue_refresh_token",
-    "revoke_refresh_token",
-    "rotate_refresh_token",
+    "issue_session",
+    "revoke_session",
+    "rotate_session",
     "set_refresh_token_cookie",
 ]
