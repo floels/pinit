@@ -158,7 +158,9 @@ jobs:
         # Leave headroom on the 14GiB host; Elasticsearch + backend need ~2–3GiB.
         run: |
           set -euo pipefail
-          colima start --cpu 3 --memory 6 --disk 20 --arch x86_64 --vm-type=vz --mount-type=virtiofs
+          colima start --cpu 4 --memory 8 --disk 20 --arch x86_64 --vm-type=vz --mount-type=virtiofs
+          # Elasticsearch refuses to start (or stays unhealthy) without this.
+          colima ssh -- sudo sysctl -w vm.max_map_count=262144
           docker info
 
       - name: Set up Node.js
@@ -182,6 +184,11 @@ jobs:
       - name: Start E2E Docker backend
         working-directory: ${{ github.workspace }}
         run: ./scripts/e2e-backend-up.sh
+
+      - name: Dump E2E stack logs on failure
+        if: failure()
+        working-directory: ${{ github.workspace }}
+        run: docker compose -f docker-compose.e2e.yml logs --tail 100 || true
 
       - name: Build Detox iOS app (ios.sim.release)
         run: yarn test:e2e:build
