@@ -13,7 +13,6 @@ jobs:
       web: ${{ steps.filter.outputs.web }}
       mobile: ${{ steps.filter.outputs.mobile }}
       web-e2e: ${{ steps.filter.outputs.web-e2e }}
-      # Consumed by a future macOS Detox job (not wired yet).
       mobile-e2e: ${{ steps.filter.outputs.mobile-e2e }}
     steps:
       - name: Check out repository
@@ -42,7 +41,7 @@ jobs:
               - 'scripts/e2e-backend-up.sh'
               - 'nginx/**'
               - '.github/workflows/check-pull-request.yml'
-            # Mobile app + shared E2E stack — for a future macos Detox job.
+            # Mobile app + shared E2E stack — drives the mobile-e2e Detox job.
             # True when any of: mobile/** (incl. e2e-tests), backend/**,
             # docker-compose.e2e.yml, scripts/e2e-backend-up.sh, nginx/**,
             # or this workflow file. Overlaps web-e2e on purpose; each suite
@@ -100,6 +99,62 @@ jobs:
 
       - name: Tear down E2E Docker stack
         if: always()
+        run: docker compose -f docker-compose.e2e.yml down -v
+
+  # Detox iOS needs a simulator, so this job runs on macOS. Standard arm64
+  # runners (macos-latest) cannot run Docker (no nested virt); macos-15-intel
+  # is still a free standard public runner and can host Colima for the shared
+  # E2E stack. Do not switch to billed larger macOS runners.
+  mobile-e2e:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mobile-e2e == 'true'
+    runs-on: macos-15-intel
+    # Expo prebuild + CocoaPods + Release xcodebuild + Detox dominate wall time.
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker (Colima)
+        uses: douglascamata/setup-docker-macos-action@v1.1.0
+        with:
+          # Elasticsearch + Postgres + backend image build need headroom.
+          colima-additional-options: --cpu 4 --memory 8 --disk 40
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+
+      - name: Install mobile dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install applesimutils
+        working-directory: ${{ github.workspace }}
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+      - name: Start E2E Docker backend
+        working-directory: ${{ github.workspace }}
+        run: ./scripts/e2e-backend-up.sh
+
+      - name: Build Detox iOS app (ios.sim.release)
+        run: yarn test:e2e:build
+
+      - name: Run Detox iOS E2E
+        # No suite-level CI retries — first pass must succeed.
+        run: yarn test:e2e --cleanup
+
+      - name: Tear down E2E Docker stack
+        if: always()
+        working-directory: ${{ github.workspace }}
         run: docker compose -f docker-compose.e2e.yml down -v
 
   backend-checks:
