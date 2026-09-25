@@ -80,7 +80,7 @@ class CreateBoardViewTests(APITestCase):
     def test_slug_collision_race_is_retried(self):
         # Simulate a concurrent request winning the slug between the
         # uniqueness check and the create() call: the first insert is rejected
-        # by the DB unique constraint, the view must retry rather than 500.
+        # by the DB unique constraint; create_board must retry rather than 500.
         real_create = Board.objects.create
         slugs_attempted = []
 
@@ -111,7 +111,7 @@ class CreateBoardViewTests(APITestCase):
         # If a write partway through board creation fails, the board must not
         # be left half-created.
         with patch(
-            "pinit_api.views.boards.save_pin_to_board",
+            "pinit_api.domain.boards.identity.save_pin_to_board",
             side_effect=RuntimeError("boom"),
         ):
             with self.assertRaises(RuntimeError):
