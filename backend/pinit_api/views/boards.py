@@ -1,5 +1,4 @@
 from django.db import IntegrityError, transaction
-from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,6 +10,7 @@ from ..serializers.board_serializers import (
     BoardReadBaseSerializer,
     BoardWithFullDetailsReadSerializer,
 )
+from pinit_api.domain.boards import save_pin_to_board
 from pinit_api.shared.constants import (
     ERROR_CODE_ACCOUNT_NOT_FOUND,
     ERROR_CODE_BOARD_NOT_FOUND,
@@ -68,9 +68,7 @@ class CreateBoardView(APIView):
                         name=name, slug=slug, author=author
                     )
                     if pin:
-                        board.pins.add(pin)
-                        board.last_pin_added_at = timezone.now()
-                        board.save()
+                        save_pin_to_board(pin, board)
                 return board
             except IntegrityError:
                 if attempt == self.MAX_SLUG_ATTEMPTS - 1:
