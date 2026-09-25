@@ -1,9 +1,10 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from django.conf import settings
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
+from pinit_api.domain.search import SearchUnavailableError
 from pinit_api.views.search import ERROR_CODE_MISSING_SEARCH_PARAMETER
 
 PAGINATION_PAGE_SIZE = settings.REST_FRAMEWORK["PAGE_SIZE"]
@@ -16,23 +17,15 @@ SAMPLE_AUTHOR = {
 }
 
 
-def make_hit(title, created_at="2024-01-01T00:00:00", unique_id=None):
+def make_result(title, unique_id=None):
     return {
-        "_source": {
-            "unique_id": unique_id or "100000000000000001",
-            "title": title,
-            "image_url": "https://example.com/image.jpg",
-            "image_width": 1024,
-            "image_height": 768,
-            "description": "Some description.",
-            "created_at": created_at,
-            "author": SAMPLE_AUTHOR,
-        }
+        "unique_id": unique_id or "100000000000000001",
+        "title": title,
+        "image_url": "https://example.com/image.jpg",
+        "image_width": 1024,
+        "image_height": 768,
+        "author": SAMPLE_AUTHOR,
     }
-
-
-def make_es_response(total, hits):
-    return {"hits": {"total": {"value": total, "relation": "eq"}, "hits": hits}}
 
 
 class SearchPinsTests(APITestCase):
@@ -42,14 +35,20 @@ class SearchPinsTests(APITestCase):
     def get(self, q="sunset", page=1):
         return self.client.get("/api/search/", {"q": q, "page": page})
 
-    @patch("pinit_api.views.search.get_es_client")
-    def test_happy_path_first_page(self, mock_get_client):
-        # Simulate ES returning exactly PAGE_SIZE hits: first 40 title matches, then 10 description matches
-        title_hits = [make_hit("Beautiful sunset", unique_id=str(i)) for i in range(PAGINATION_PAGE_SIZE - 10)]
-        desc_hits = [make_hit("Some title", unique_id=str(i + PAGINATION_PAGE_SIZE)) for i in range(10)]
-        mock_get_client.return_value.search.return_value = make_es_response(
-            total=150, hits=title_hits + desc_hits
-        )
+    @patch("pinit_api.views.search.find_pins")
+    def test_happy_path_first_page(self, mock_find_pins):
+        title_results = [
+            make_result("Beautiful sunset", unique_id=str(i))
+            for i in range(PAGINATION_PAGE_SIZE - 10)
+        ]
+        desc_results = [
+            make_result("Some title", unique_id=str(i + PAGINATION_PAGE_SIZE))
+            for i in range(10)
+        ]
+        mock_find_pins.return_value = {
+            "total_count": 150,
+            "results": title_results + desc_results,
+        }
 
         response = self.get(page=1)
 
@@ -63,24 +62,29 @@ class SearchPinsTests(APITestCase):
         self._assert_result_shape(data["results"][0])
         self.assertEqual(data["results"][0]["image_width"], 1024)
         self.assertEqual(data["results"][0]["image_height"], 768)
-
-    @patch("pinit_api.views.search.get_es_client")
-    def test_happy_path_second_page_sends_correct_offset(self, mock_get_client):
-        mock_get_client.return_value.search.return_value = make_es_response(
-            total=150, hits=[make_hit("Some title", unique_id=str(i)) for i in range(50)]
+        mock_find_pins.assert_called_once_with(
+            query="sunset", page=1, page_size=PAGINATION_PAGE_SIZE
         )
+
+    @patch("pinit_api.views.search.find_pins")
+    def test_happy_path_second_page_passes_page(self, mock_find_pins):
+        mock_find_pins.return_value = {
+            "total_count": 150,
+            "results": [make_result("Some title", unique_id=str(i)) for i in range(50)],
+        }
 
         self.get(page=2)
 
-        call_kwargs = mock_get_client.return_value.search.call_args.kwargs
-        self.assertEqual(call_kwargs["from_"], PAGINATION_PAGE_SIZE)
-        self.assertEqual(call_kwargs["size"], PAGINATION_PAGE_SIZE)
-
-    @patch("pinit_api.views.search.get_es_client")
-    def test_happy_path_pagination_links(self, mock_get_client):
-        mock_get_client.return_value.search.return_value = make_es_response(
-            total=150, hits=[make_hit("Pin", unique_id=str(i)) for i in range(50)]
+        mock_find_pins.assert_called_once_with(
+            query="sunset", page=2, page_size=PAGINATION_PAGE_SIZE
         )
+
+    @patch("pinit_api.views.search.find_pins")
+    def test_happy_path_pagination_links(self, mock_find_pins):
+        mock_find_pins.return_value = {
+            "total_count": 150,
+            "results": [make_result("Pin", unique_id=str(i)) for i in range(50)],
+        }
 
         response = self.get(page=2)
         data = response.json()
@@ -88,25 +92,9 @@ class SearchPinsTests(APITestCase):
         self.assertIn("page=3", data["next"])
         self.assertIn("page=1", data["previous"])
 
-    @patch("pinit_api.views.search.get_es_client")
-    def test_happy_path_es_query_structure(self, mock_get_client):
-        mock_get_client.return_value.search.return_value = make_es_response(
-            total=1, hits=[make_hit("Beautiful sunset")]
-        )
-
-        self.get(q="sunset")
-
-        call_kwargs = mock_get_client.return_value.search.call_args.kwargs
-        multi_match = call_kwargs["query"]["multi_match"]
-        self.assertEqual(multi_match["query"], "sunset")
-        self.assertIn("title^2", multi_match["fields"])
-        self.assertIn("description", multi_match["fields"])
-
-    @patch("pinit_api.views.search.get_es_client")
-    def test_no_results(self, mock_get_client):
-        mock_get_client.return_value.search.return_value = make_es_response(
-            total=0, hits=[]
-        )
+    @patch("pinit_api.views.search.find_pins")
+    def test_no_results(self, mock_find_pins):
+        mock_find_pins.return_value = {"total_count": 0, "results": []}
 
         response = self.get(q="horse")
 
@@ -126,9 +114,9 @@ class SearchPinsTests(APITestCase):
             data["errors"], [{"code": ERROR_CODE_MISSING_SEARCH_PARAMETER}]
         )
 
-    @patch("pinit_api.views.search.get_es_client")
-    def test_es_unavailable_returns_503(self, mock_get_client):
-        mock_get_client.return_value.search.side_effect = Exception("ES is down")
+    @patch("pinit_api.views.search.find_pins")
+    def test_search_unavailable_returns_503(self, mock_find_pins):
+        mock_find_pins.side_effect = SearchUnavailableError()
 
         response = self.get()
 
@@ -148,5 +136,6 @@ class SearchPinsTests(APITestCase):
         )
         author = result["author"]
         self.assertEqual(
-            set(author.keys()), {"username", "display_name", "initial", "profile_picture_url"}
+            set(author.keys()),
+            {"username", "display_name", "initial", "profile_picture_url"},
         )
