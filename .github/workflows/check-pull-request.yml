@@ -173,6 +173,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           brew tap wix/brew
+          brew trust wix/brew
           brew install applesimutils
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
