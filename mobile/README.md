@@ -15,7 +15,7 @@ mobile/
 │   ├── hooks/           # Custom hooks
 │   ├── navigators/      # React Navigation structure (authenticated/unauthenticated, tabs, stacks)
 │   └── lib/             # Constants, types, utils, testing helpers
-├── e2e/                 # Detox end-to-end flows (iOS Simulator)
+├── e2e-tests/           # Detox end-to-end flows (iOS Simulator)
 ├── scripts/             # build-ios-e2e.sh
 ├── doc/                 # Developer documentation
 ├── translations/        # i18next translation resources
@@ -25,3 +25,15 @@ mobile/
 ├── .detoxrc.js          # Detox devices, apps, and build commands
 └── tsconfig.json        # TypeScript config
 ```
+
+## Running E2E
+
+Detox iOS E2E is local-only for now (not a CI check yet). From the repo root:
+
+```bash
+make test-e2e-mobile
+```
+
+That brings up the shared E2E Docker backend (`scripts/e2e-backend-up.sh`), builds the
+`ios.sim.release` app, and runs the suite under `e2e-tests/`. Requires Xcode, an
+iPhone 16 simulator, applesimutils, and Docker.

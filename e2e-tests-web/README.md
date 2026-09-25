@@ -17,7 +17,7 @@ e2e-tests-web/
 ```
 
 The Docker stack and the seed data live one level up, because the Detox suite in
-[`../mobile/e2e`](../mobile/e2e) uses them too:
+[`../mobile/e2e-tests`](../mobile/e2e-tests) uses them too:
 
 ```
 docker-compose.e2e.yml         # backend, Postgres, Elasticsearch, Moto, nginx
