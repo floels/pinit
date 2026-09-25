@@ -118,11 +118,48 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
-      - name: Set up Docker (Colima)
-        uses: douglascamata/setup-docker-macos-action@v1.1.0
-        with:
-          # Elasticsearch + Postgres + backend image build need headroom.
-          colima-additional-options: --cpu 4 --memory 8 --disk 40
+      # Inline Colima setup (not douglascamata/setup-docker-macos-action): that
+      # action passes --memory=$host_ram (14GiB on this runner), which OOMs /
+      # hangs the nested VM. Keep steps separate so a hang is visible in CI.
+      - name: Install Lima and Colima
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          LIMA_VERSION=$(gh release -R lima-vm/lima view --json tagName -q ".tagName")
+          COLIMA_VERSION=$(gh release -R abiosoft/colima view --json tagName -q ".tagName")
+          echo "Installing Lima ${LIMA_VERSION} and Colima ${COLIMA_VERSION}"
+          # Lima v2 ships helpers under /usr/local/libexec.
+          if [[ "${LIMA_VERSION}" == v2.* ]]; then
+            sudo mkdir -p /usr/local/libexec
+            sudo chown "${UID}:$(id -g)" /usr/local/libexec
+          fi
+          curl -fsSL "https://github.com/lima-vm/lima/releases/download/${LIMA_VERSION}/lima-${LIMA_VERSION#v}-$(uname -s)-$(uname -m).tar.gz" \
+            | sudo tar -C /usr/local -xz
+          curl -fsSL -o /tmp/colima "https://github.com/abiosoft/colima/releases/download/${COLIMA_VERSION}/colima-$(uname)-$(uname -m)"
+          sudo install /tmp/colima /usr/local/bin/colima
+
+      - name: Install Docker CLI
+        working-directory: ${{ github.workspace }}
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+        run: |
+          set -euo pipefail
+          brew install docker docker-compose docker-buildx
+          mkdir -p ~/.docker/cli-plugins
+          ln -sfn "$(brew --prefix docker-compose)/bin/docker-compose" ~/.docker/cli-plugins/docker-compose
+          ln -sfn "$(brew --prefix docker-buildx)/bin/docker-buildx" ~/.docker/cli-plugins/docker-buildx
+
+      - name: Start Colima
+        working-directory: ${{ github.workspace }}
+        # Leave headroom on the 14GiB host; Elasticsearch + backend need ~2–3GiB.
+        run: |
+          set -euo pipefail
+          colima start --cpu 3 --memory 6 --disk 20 --arch x86_64 --vm-type=vz --mount-type=virtiofs
+          docker info
 
       - name: Set up Node.js
         uses: actions/setup-node@v5
