@@ -156,4 +156,4 @@ check). Changing the workflow file itself triggers every job.
 | `mobile-checks` | `mobile/**` changed | `yarn` install → lint → `tsc` → Jest unit tests |
 | `web-e2e` | web app, Playwright suite, backend, or shared E2E stack changed | Installs Chromium, brings up `docker-compose.e2e.yml`, runs the Playwright suite |
 
-NB: Mobile E2E (Detox) is not run in CI yet — run it locally with `make test-e2e-mobile`.
+NB: Mobile E2E (Detox) is **local-only** — it is not a CI check. Run it with `make test-e2e-mobile`.
